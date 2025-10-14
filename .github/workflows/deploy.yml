@@ -22,7 +22,7 @@ jobs:
       - name: Rsync code
         run: |
           rsync -az --delete \
-            --exclude '.git' --exclude 'node_modules' --exclude '.env' \
+            --exclude '.git' --exclude 'node_modules' --exclude '.env' --exclude 'client/.env' \
             ${SSH_PORT:+-e "ssh -p $SSH_PORT"} \
             ./ $SSH_USER@$SSH_HOST:/var/www/html/privateinhomecare/
         env:
