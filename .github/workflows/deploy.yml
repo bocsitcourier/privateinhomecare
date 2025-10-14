@@ -1,0 +1,60 @@
+name: Deploy (Droplet + PM2)
+
+on:
+  workflow_dispatch: {}           # run manually
+  push:
+    branches: [ main ]            # auto-deploy on push to main (optional)
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install deps & build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Add SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Known hosts
+        run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Upload files to server (rsync)
+        run: |
+          rsync -az --delete \
+            --exclude '.git' --exclude 'node_modules' \
+            ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.APP_DIR }}/
+
+      - name: Install server deps on droplet & restart PM2
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOSSH'
+          cd $APP_DIR
+          npm ci --omit=dev
+          # ensure PM2 is available
+          command -v pm2 >/dev/null 2>&1 || npm i -g pm2
+          # start or restart
+          if pm2 describe "$PM2_APP" >/dev/null 2>&1; then
+            pm2 restart "$PM2_APP"
+          else
+            PORT=5000 NODE_ENV=production pm2 start dist/index.js --name "$PM2_APP" --cwd "$APP_DIR"
+            pm2 save
+            pm2 startup systemd -u $(whoami) --hp $(eval echo ~$USER) >/dev/null || true
+          fi
+          EOSSH
+        env:
+          APP_DIR: ${{ secrets.APP_DIR }}
+          PM2_APP: ${{ secrets.PM2_APP }}
+
