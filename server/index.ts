@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
+import createMemoryStore from "memorystore";
 import helmet from "helmet";
 import cors from "cors";
 import { registerRoutes } from "./routes";
@@ -34,61 +35,43 @@ app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
 app.use(helmet({
   contentSecurityPolicy: {
-    useDefaults: false,
     directives: {
       defaultSrc: ["'self'"],
-
       scriptSrc: [
         "'self'",
         "'unsafe-inline'",
-        "'unsafe-eval'",
-        "https://www.googletagmanager.com",
-        "https://www.google-analytics.com",
-        "https://www.google.com",
-        "https://www.gstatic.com"
-      ],
-
-      connectSrc: [
-        "'self'",
         "https://www.google.com",
         "https://www.gstatic.com",
-        "https://www.google-analytics.com"
+        "https://fonts.googleapis.com"
       ],
-
-      imgSrc: [
-        "'self'",
-        "data:",
-        "https:",
-        "blob:",
-        "https://www.google.com",
-        "https://www.gstatic.com",
-        "https://www.google-analytics.com"
-      ],
-
       styleSrc: [
         "'self'",
         "'unsafe-inline'",
         "https://fonts.googleapis.com"
       ],
-
       fontSrc: [
         "'self'",
         "https://fonts.gstatic.com"
       ],
-
+      imgSrc: [
+        "'self'",
+        "data:",
+        "https:",
+        "blob:"
+      ],
       frameSrc: [
         "'self'",
         "https://www.google.com",
-        "https://recaptcha.google.com",
         "https://www.youtube.com"
       ],
-
+      connectSrc: [
+        "'self'",
+        "https://www.google.com"
+      ],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
       formAction: ["'self'"],
       frameAncestors: ["'none'"],
-
-      // optional for HTTPS enforcement
       upgradeInsecureRequests: process.env.NODE_ENV === "production" ? [] : null,
     },
   },
@@ -108,7 +91,6 @@ app.use(helmet({
     policy: 'strict-origin-when-cross-origin'
   }
 }));
-
 
 const ipLocationCache = new Map<string, { country: string; allowed: boolean; timestamp: number }>();
 const IP_CACHE_TTL = 60 * 60 * 1000; // 1 hour
@@ -244,6 +226,7 @@ app.use(async (req, res, next) => {
 });
 
 const PgSession = connectPgSimple(session);
+const MemoryStore = createMemoryStore(session);
 
 const sessionStore = process.env.NODE_ENV === "production" && process.env.DATABASE_URL
   ? new PgSession({
@@ -255,7 +238,9 @@ const sessionStore = process.env.NODE_ENV === "production" && process.env.DATABA
       createTableIfMissing: true,
       pruneSessionInterval: 60 * 15 // Prune expired sessions every 15 minutes
     })
-  : undefined;
+  : new MemoryStore({
+      checkPeriod: 86400000 // Prune expired entries every 24h
+    });
 
 app.use(session({
   store: sessionStore,
