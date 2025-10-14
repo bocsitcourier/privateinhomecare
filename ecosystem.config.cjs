@@ -18,7 +18,7 @@ module.exports = {
         DATABASE_URL: process.env.DATABASE_URL,
         VITE_RECAPTCHA_SITE_KEY: process.env.VITE_RECAPTCHA_SITE_KEY,
         RECAPTCHA_SECRET_KEY: process.env.RECAPTCHA_SECRET_KEY,
-        SESSION_SECRET=Rz9a1D0o7mQpYFvTq6Ue4WJxH7d2N3Zk
+        SESSION_SECRET: process.env.SESSION_SECRET,
 
         // Optional future envs
         // SESSION_SECRET: process.env.SESSION_SECRET,
