@@ -34,43 +34,61 @@ app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
 app.use(helmet({
   contentSecurityPolicy: {
+    useDefaults: false,
     directives: {
       defaultSrc: ["'self'"],
+
       scriptSrc: [
         "'self'",
         "'unsafe-inline'",
+        "'unsafe-eval'",
+        "https://www.googletagmanager.com",
+        "https://www.google-analytics.com",
+        "https://www.google.com",
+        "https://www.gstatic.com"
+      ],
+
+      connectSrc: [
+        "'self'",
         "https://www.google.com",
         "https://www.gstatic.com",
-        "https://fonts.googleapis.com"
+        "https://www.google-analytics.com"
       ],
+
+      imgSrc: [
+        "'self'",
+        "data:",
+        "https:",
+        "blob:",
+        "https://www.google.com",
+        "https://www.gstatic.com",
+        "https://www.google-analytics.com"
+      ],
+
       styleSrc: [
         "'self'",
         "'unsafe-inline'",
         "https://fonts.googleapis.com"
       ],
+
       fontSrc: [
         "'self'",
         "https://fonts.gstatic.com"
       ],
-      imgSrc: [
-        "'self'",
-        "data:",
-        "https:",
-        "blob:"
-      ],
+
       frameSrc: [
         "'self'",
         "https://www.google.com",
+        "https://recaptcha.google.com",
         "https://www.youtube.com"
       ],
-      connectSrc: [
-        "'self'",
-        "https://www.google.com"
-      ],
+
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
       formAction: ["'self'"],
       frameAncestors: ["'none'"],
+
+      // optional for HTTPS enforcement
       upgradeInsecureRequests: process.env.NODE_ENV === "production" ? [] : null,
     },
   },
@@ -90,6 +108,7 @@ app.use(helmet({
     policy: 'strict-origin-when-cross-origin'
   }
 }));
+
 
 const ipLocationCache = new Map<string, { country: string; allowed: boolean; timestamp: number }>();
 const IP_CACHE_TTL = 60 * 60 * 1000; // 1 hour
