@@ -1,0 +1,12 @@
+# robots.txt for PrivateInHomeCareGiver
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/admin/
+Disallow: /uploads/
+
+# Sitemap location
+Sitemap: https://privateinhomecaregiver.com/sitemap.xml
+
+# Crawl-delay for well-behaved bots
+Crawl-delay: 1

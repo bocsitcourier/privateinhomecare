@@ -1,0 +1,77 @@
+comprehensive Caregiver Daily Log is designed not only to track essential Activities of Daily Living (ADLs) but also to capture crucial narrative observations, ensuring seamless communication and absolute clarity for the family.
+
+Private In-Home Care: Caregiver Daily Activity and Observation Log
+This log documents all care tasks, personal interactions, and changes in client status during the shift, serving as a transparent communication tool for the family and care team.
+
+Section A: Shift and Client Details
+Field	Detail
+Date	
+Shift Time	Start:
+Caregiver Name	
+Client Name	
+Allergies	(As noted on Care Plan)
+
+Export to Sheets
+Section B: Activities of Daily Living (ADLs) Checklist
+Please mark the status for each activity and note the level of assistance required.
+
+Task	Time	Status (Circle One)	Level of Assistance	Caregiver Notes (Dignity/Preference)
+Bathing/Shower		Completed / Refused / Not Applicable	Full Assist / Standby / Minimal Support	
+Dressing/Grooming		Completed / Refused / Not Applicable	Full Assist / Standby / Minimal Support	
+Toileting/Continence		Completed / Refused / Not Applicable	Full Assist / Standby / Minimal Support	(Document elimination: Regular, Difficulty, etc.)
+Transfers/Mobility		Completed / Refused / Not Applicable	Full Assist / Standby / Minimal Support	(e.g., Used walker, Transfer location, Gait noted)
+Feeding/Eating		Completed / Refused / Not Applicable	Full Assist / Standby / Minimal Support	(Document percentage eaten and any difficulty chewing/swallowing)
+
+Export to Sheets
+Key:
+
+Full Assist: Caregiver provides 75–100% of the effort.
+
+Standby/Cueing: Caregiver remains near for safety/provides verbal reminders.
+
+Minimal Support: Caregiver provides 1–25% of the effort.
+
+Section C: Medication and Safety
+The Medication Administration Record (MAR) is a required document to confirm proper medication protocol.
+
+Medication/Task	Time	Status (Circle One)	Caregiver Initials	Observation/Results (Especially PRN)	Source
+Morning Meds		Administered / Omitted / Refused			
+Lunch Meds		Administered / Omitted / Refused			
+Evening/Night Meds		Administered / Omitted / Refused			
+PRN (As Needed)		Administered / Omitted / Refused		(Must note reason given and effectiveness)	
+Safety Check		Completed (Home Hazards, Alarms)		(Check all safety equipment/devices functioning)	
+
+Export to Sheets
+Section D: Instrumental Activities of Daily Living (IADLs) & Engagement
+Please check off tasks completed and describe activities undertaken to support emotional well-being and independence.
+
+IADL / Support Task	Status (Check)	Time/Duration	Caregiver Notes	Source
+Meal Preparation			(Describe meal: e.g., Chicken Soup & Salad)	
+Shopping/Errands			(List items purchased or errands run)	
+Light Housekeeping			(Areas tidied: e.g., Kitchen counter, client's bed)	
+Companionship			(Activities engaged in: e.g., Reading aloud, cards, conversation)	
+Appointment Transport			(Destination and purpose: e.g., Dr. Smith, 2 PM check-up)	
+
+Export to Sheets
+Section E: Caregiver Narrative and Observations (Critical Notes)
+This is a required section to communicate client status, mood, and any deviations from the norm. Detail is critical for continuity of care and family peace of mind.
+
+1. General Appearance and Demeanor:
+
+Client Mood/Affect (Circle One): Happy / Calm / Anxious / Agitated / Withdrawn
+
+Changes Noted: (Document any changes in health, appetite, alertness, or demeanor from previous shifts)
+
+2. Social Engagement and Activities:
+
+Describe social interaction and progress toward personalized goals (e.g., Engaged in conversation for 30 minutes, completed 2 rounds of Sudoku).
+
+3. Communication with Family/Care Team:
+
+(Document any calls, messages, or instructions received or communicated to the family or other team members.)
+
+4. Incidents or Concerns:
+
+(Document any falls, verbal/physical refusals, sudden changes in condition, or concerns about the home environment.)
+
+Caregiver Signature: _________________________________________
