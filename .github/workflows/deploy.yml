@@ -1,60 +1,107 @@
 name: Deploy (Droplet + PM2)
 
 on:
-  workflow_dispatch: {}           # run manually
   push:
-    branches: [ main ]            # auto-deploy on push to main (optional)
+    branches: [ main ]        # deploy on push to main
+  workflow_dispatch: {}       # or run manually
+
+permissions:
+  contents: read
+
+# Avoid overlapping deploys
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+env:
+  # Defaults (can also be set as Actions "Variables")
+  NODE_VERSION: ${{ vars.NODE_VERSION || '20' }}
+  PORT:         ${{ vars.PORT || '5000' }}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Use Node.js 20.x
+      - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
-      - name: Install deps & build
+      - name: Install & Build
         run: |
           npm ci
           npm run build
 
+      # Start ssh-agent and load private key from Secrets
       - name: Add SSH key
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
 
-      - name: Known hosts
+      # Trust the server host key (prevents interactive prompt)
+      - name: Add known_hosts
         run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Upload files to server (rsync)
+      # Upload repo to remote APP_DIR (exclude stuff we don't need)
+      - name: Rsync to server
         run: |
           rsync -az --delete \
-            --exclude '.git' --exclude 'node_modules' \
-            ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.APP_DIR }}/
+            --exclude '.git' \
+            --exclude 'node_modules' \
+            ${SSH_PORT:+-e "ssh -p $SSH_PORT"} \
+            ./ $SSH_USER@$SSH_HOST:$APP_DIR/
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}          # optional (e.g., 2222)
+          APP_DIR:  ${{ secrets.APP_DIR }}
 
-      - name: Install server deps on droplet & restart PM2
+      # Install prod deps on the server & (re)start with PM2
+      - name: Install deps on server & restart PM2
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOSSH'
-          cd $APP_DIR
+          ssh ${SSH_PORT:+-p $SSH_PORT} $SSH_USER@$SSH_HOST <<'EOSSH'
+          set -euo pipefail
+
+          APP_DIR="${APP_DIR}"
+          PM2_APP="${PM2_APP}"
+          PORT="${PORT}"
+
+          cd "$APP_DIR"
+
+          # Install production dependencies
           npm ci --omit=dev
-          # ensure PM2 is available
-          command -v pm2 >/dev/null 2>&1 || npm i -g pm2
-          # start or restart
+
+          # Ensure PM2 is present
+          if ! command -v pm2 >/dev/null 2>&1; then
+            npm i -g pm2
+          fi
+
+          # First run vs subsequent runs
           if pm2 describe "$PM2_APP" >/dev/null 2>&1; then
             pm2 restart "$PM2_APP"
           else
-            PORT=5000 NODE_ENV=production pm2 start dist/index.js --name "$PM2_APP" --cwd "$APP_DIR"
+            PORT="$PORT" NODE_ENV=production \
+              pm2 start dist/index.js --name "$PM2_APP" --cwd "$APP_DIR"
             pm2 save
-            pm2 startup systemd -u $(whoami) --hp $(eval echo ~$USER) >/dev/null || true
+            # enable on boot (ignore if already set)
+            PM2_USER=$(whoami)
+            pm2 startup systemd -u "$PM2_USER" --hp "$(eval echo ~${PM2_USER})" >/dev/null || true
+            pm2 save
           fi
           EOSSH
         env:
-          APP_DIR: ${{ secrets.APP_DIR }}
-          PM2_APP: ${{ secrets.PM2_APP }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          APP_DIR:  ${{ secrets.APP_DIR }}
+          PM2_APP:  ${{ secrets.PM2_APP }}
+          PORT:     ${{ env.PORT }}
+
+      # (Optional) quick health check
+      # - name: Health check
+      #   run: curl -fsS https://privateinhomecaregiver.com/ -o /dev/null
 
