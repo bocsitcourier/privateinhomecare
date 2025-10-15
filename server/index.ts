@@ -227,8 +227,8 @@ app.use(async (req, res, next) => {
 
 const PgSession = connectPgSimple(session);
 const MemoryStore = createMemoryStore(session);
-const usePgStore = !!process.env.DATABASE_URL;
-const sessionStore = usePgStore
+
+const sessionStore = process.env.NODE_ENV === "production" && process.env.DATABASE_URL
   ? new PgSession({
       conObject: {
         connectionString: process.env.DATABASE_URL,
