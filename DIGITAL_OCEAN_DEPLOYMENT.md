@@ -220,14 +220,115 @@ Digital Ocean automatically provisions SSL certificates via Let's Encrypt. No co
 
 ### Step 4: Post-Deployment Configuration
 
-#### 4.1 Verify Deployment
+#### 4.1 Switch to Database Storage (CRITICAL)
+
+Before deployment, you MUST switch from MemStorage to DbStorage:
+
+1. Open `server/storage.ts`
+2. Find lines 1864-1867 at the bottom of the file
+3. **Comment out MemStorage** and **uncomment DbStorage**:
+
+```typescript
+// Development: Use MemStorage (in-memory) for Replit
+// Production: Switch to DbStorage when deploying to Digital Ocean with DATABASE_URL
+// Uncomment the following lines for production with PostgreSQL:
+const { db } = await import("./db");
+export const storage = new DbStorage(db);
+
+// export const storage = new MemStorage(); // ← Comment this out for production
+```
+
+4. Save and commit the changes
+5. Push to GitHub (triggers auto-deploy on Digital Ocean)
+
+#### 4.2 Run Database Migrations
+
+After deploying with DbStorage, the database tables need to be created:
+
+**Option 1: Via SSH Console (Recommended)**
+
+1. Go to Digital Ocean App Platform → Your App → **Console** tab
+2. Click "Launch Console"
+3. Run the migration command:
+   ```bash
+   npm run db:push
+   ```
+4. Confirm the migration when prompted
+
+**Option 2: Add to Build Command**
+
+Update your Digital Ocean app spec to run migrations automatically:
+
+```yaml
+build_command: npm run build && npm run db:push
+```
+
+#### 4.3 Create Admin User (CRITICAL FOR ADMIN LOGIN)
+
+**After deployment and migrations, the admin user does NOT exist yet!**
+
+You have TWO options to create the admin user:
+
+**Option A: API Endpoint (Easiest)**
+
+1. Open browser or use curl to call the seed endpoint:
+   ```bash
+   curl -X POST https://[your-app-name].ondigitalocean.app/api/auth/seed-admin
+   ```
+
+2. You'll receive a response with:
+   ```json
+   {
+     "success": true,
+     "message": "Admin user created successfully",
+     "username": "admin",
+     "password": "demo123",
+     "recoveryCodes": ["CODE1", "CODE2", ...]
+   }
+   ```
+
+3. **SAVE THE RECOVERY CODES!** They're shown only once
+4. Now you can login at `/admin` with:
+   - Username: `admin`
+   - Password: `demo123`
+
+**Option B: SQL Query (Alternative)**
+
+1. Go to Supabase Dashboard → SQL Editor
+2. Run this query (replace with your desired password):
+   ```sql
+   -- Create admin user (password is 'demo123' hashed with bcrypt)
+   INSERT INTO users (id, username, password)
+   VALUES (
+     gen_random_uuid(),
+     'admin',
+     '$2b$10$YourBcryptHashedPasswordHere'
+   );
+   ```
+
+3. Generate bcrypt hash at: https://bcrypt-generator.com/
+4. Use rounds: 10
+
+**IMPORTANT SECURITY NOTE:**
+- Change the default password IMMEDIATELY after first login
+- Go to `/admin/profile` and update your password
+- Generate and save recovery codes in a secure location
+
+#### 4.4 Verify Deployment & Admin Login
 
 1. Visit your app URL: `https://[your-app-name].ondigitalocean.app`
 2. Test homepage loads
 3. Test navigation (articles, services, careers, etc.)
-4. Test admin login: `/admin` (username: admin, password: demo123)
+4. **Test admin login:** Go to `/admin`
+   - Username: `admin`
+   - Password: `demo123` (or your custom password)
+5. If login fails:
+   - Check Console logs for errors
+   - Verify DATABASE_URL is set correctly
+   - Verify SESSION_SECRET is set
+   - Check that admin user was created (see step 4.3)
 
-#### 4.2 Enable RLS on Supabase (If Not Done)
+#### 4.5 Enable RLS on Supabase (If Not Done)
 
 **CRITICAL - Do this immediately if not already done:**
 

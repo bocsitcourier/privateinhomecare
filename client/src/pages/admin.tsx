@@ -56,7 +56,8 @@ export default function AdminPage() {
       return;
     }
     
-    if (!captchaToken) {
+    // Only require CAPTCHA if the site key is configured
+    if (import.meta.env.VITE_RECAPTCHA_SITE_KEY && !captchaToken) {
       setError("Please complete the CAPTCHA verification");
       return;
     }
@@ -68,7 +69,7 @@ export default function AdminPage() {
         body: JSON.stringify({ 
           username: "admin",
           password: password.trim(),
-          captchaToken 
+          captchaToken: captchaToken || undefined
         }),
       });
 
@@ -162,7 +163,7 @@ export default function AdminPage() {
                 <Button
                   type="submit"
                   className="flex-1"
-                  disabled={!captchaToken}
+                  disabled={import.meta.env.VITE_RECAPTCHA_SITE_KEY ? !captchaToken : false}
                   data-testid="button-admin-login"
                 >
                   Login

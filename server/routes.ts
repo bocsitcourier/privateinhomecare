@@ -25,7 +25,12 @@ import {
   hashPassword, verifyPassword, 
   generateRecoveryCode, hashRecoveryCode, verifyRecoveryCode 
 } from "./auth-utils";
-import { sendEmail, generateApplicationNotificationEmail } from "./email-utils";
+import { 
+  sendEmail, 
+  generateApplicationNotificationEmail,
+  generateInquiryNotificationEmail,
+  generateReferralNotificationEmail 
+} from "./email-utils";
 import { z } from "zod";
 import { 
   sanitizeHeaders, 
@@ -370,21 +375,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Password is required" });
       }
       
-      if (!captchaToken || typeof captchaToken !== 'string') {
-        return res.status(400).json({ error: "CAPTCHA verification required" });
-      }
+      // Check if CAPTCHA is configured on the server
+      const captchaConfigured = !!process.env.RECAPTCHA_SECRET_KEY;
       
-      // Verify CAPTCHA with defensive error handling
-      let captchaResult;
-      try {
-        captchaResult = await verifyCaptcha(captchaToken);
-      } catch (captchaError: any) {
-        console.error("[AUTH] CAPTCHA verification error:", captchaError);
-        return res.status(500).json({ error: "CAPTCHA verification failed. Please try again." });
-      }
-      
-      if (!captchaResult?.success) {
-        return res.status(400).json({ error: captchaResult?.error || "CAPTCHA verification failed" });
+      // Require CAPTCHA token if CAPTCHA is configured
+      if (captchaConfigured) {
+        if (!captchaToken || typeof captchaToken !== 'string') {
+          return res.status(400).json({ error: "CAPTCHA verification required" });
+        }
+        
+        // Verify CAPTCHA with defensive error handling
+        let captchaResult;
+        try {
+          captchaResult = await verifyCaptcha(captchaToken);
+        } catch (captchaError: any) {
+          console.error("[AUTH] CAPTCHA verification error:", captchaError);
+          return res.status(500).json({ error: "CAPTCHA verification failed. Please try again." });
+        }
+        
+        if (!captchaResult?.success) {
+          return res.status(400).json({ error: captchaResult?.error || "CAPTCHA verification failed" });
+        }
       }
       
       // Get user with defensive fallback
@@ -630,6 +641,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const data = insertInquirySchema.parse(inquiryData);
       const inquiry = await storage.createInquiry(data);
+      
+      // Send email notification
+      const hrEmail = process.env.HR_EMAIL || 'info@privateinhomecaregiver.com';
+      const emailHtml = generateInquiryNotificationEmail({
+        name: inquiry.name,
+        email: inquiry.email,
+        phone: inquiry.phone,
+        service: inquiry.service || undefined,
+        message: inquiry.message || undefined,
+      });
+      
+      await sendEmail({
+        to: hrEmail,
+        subject: `New Consultation Request - ${inquiry.name}`,
+        html: emailHtml,
+      });
+      
       res.json(inquiry);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -1600,6 +1628,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { captchaToken, ...referralData } = data;
       const referral = await storage.createReferral(referralData);
+      
+      // Send email notification
+      const hrEmail = process.env.HR_EMAIL || 'info@privateinhomecaregiver.com';
+      const emailHtml = generateReferralNotificationEmail({
+        referrerName: referral.referrerName,
+        referrerEmail: referral.referrerEmail,
+        referrerPhone: referral.referrerPhone,
+        relationshipToReferred: referral.relationshipToReferred,
+        referredName: referral.referredName,
+        referredPhone: referral.referredPhone,
+        referredEmail: referral.referredEmail || undefined,
+        referredLocation: referral.referredLocation,
+        primaryNeedForCare: referral.primaryNeedForCare,
+        additionalInfo: referral.additionalInfo || undefined,
+      });
+      
+      await sendEmail({
+        to: hrEmail,
+        subject: `New Client Referral - ${referral.referrerName} referring ${referral.referredName}`,
+        html: emailHtml,
+      });
+      
       res.json(referral);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
