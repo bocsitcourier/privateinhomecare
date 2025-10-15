@@ -1864,4 +1864,5 @@ export class DbStorage implements IStorage {
 // const { db } = await import("./db");
 // export const storage = new DbStorage(db);
 
-export const storage = new MemStorage();
+// export const storage = new MemStorage();
+const { db } = await import("./db");
