@@ -1,0 +1,28 @@
+# Node & Next.js
+node_modules/
+.next/
+out/
+dist/
+build/
+.env
+.env.local
+.env.development
+.env.production
+.DS_Store
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Supabase local configs
+.supabase/
+live.zip
+*.zip
+live.zip
+*.zip
+*.zip
+live.zip
+*.zip
+*.zip

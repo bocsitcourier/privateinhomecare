@@ -1,0 +1,102 @@
+Private In-Home Care: Comprehensive Care Intake Form
+This assessment helps us understand the full spectrum of your needs, ensuring we match you with a professional caregiver who provides the highest standard of compassionate support and personal compatibility.
+
+Section 1: Client and Administrative Information
+Field	Description	Source
+Client Full Legal Name	First, Last Name	
+Date of Birth	(DD/MM/YYYY)	
+Current Street Address	Complete Address, City, State, Zip Code	,
+Primary Phone Number	Mobile or Home	,
+Email Address	For correspondence and updates	
+Preferred Contact Method	(Phone, Text, Email)	
+Payer for Services	(Select one: Private Pay, Long-Term Care Insurance, Other)	
+
+Export to Sheets
+Section 2: Emergency and Decision-Maker Contacts
+We are committed to transparent communication with your family and ensuring safety in the event of an emergency.
+
+Field	Description	Source
+Emergency Contact Name		,
+Emergency Contact Phone		
+Relationship to Client	(e.g., Daughter, Spouse, Neighbor)	
+Primary Physician Name		,
+Physician Location / Phone		
+Legal Guardian/POA (if applicable)	Name and Contact Number	
+Advance Care Planning	Do you have a Living Will or Advanced Directives in place? (Yes/No)	
+
+Export to Sheets
+Section 3: Functional Support Needs (Activities of Daily Living)
+Please check all activities for which the client requires regular help,, [].   
+
+Activity	Needs Assistance (Check)	Description/Specific Challenge	Source
+Bathing/Personal Hygiene		(e.g., shower vs. sponge bath, preferred time)	
+, []   
+
+Dressing/Grooming		(e.g., difficulty with buttons/shoes)	
+, []   
+
+Eating/Feeding		(e.g., need assistance cutting food)	
+, []   
+
+Toileting/Incontinence		(e.g., scheduling, assistance transferring)	
+, []   
+
+Walking/Mobility		(e.g., uses cane/walker, assistance needed)	
+, []   
+
+Transfers		(e.g., bed to chair, chair to toilet)	
+, []   
+
+Instrumental Activities of Daily Living (IADLs)
+Activity	Needs Assistance (Check)	Source
+Meal Preparation	(Planning, cooking, serving nutritious meals)	,
+Light Housekeeping	(Tidying living area, laundry)	,
+Shopping/Errands	(Grocery shopping, prescription pick-up)	
+, []   
+
+Transportation	(To appointments, social outings)	
+, []   
+
+Using Phone	(Dialing, answering, navigating)	
+Section 4: Health and Medication Management
+Field	Description	Source
+Current Diagnosis/Chronic Conditions	List all medical conditions	
+, []   
+
+Mobility Issues	Describe any limitations or recent falls	
+, []   
+
+Medication Review	Are you currently taking any medications? (Yes/No)	,
+Medication Assistance Required	Needs reminders only / Needs assistance with organization (pill boxes) / Needs tracking of refills	
+,, []   
+
+Allergies	(List all known allergies to food, medications, or environment)	
+Section 5: Personalized Care Preferences (For Optimal Matching)
+To ensure compassionate, dignified care, we aim to match the client's personality, culture, and lifestyle with our caregivers,.
+
+Preference Area	Detail/Selection	Source
+Communication & Personality	How often does the client enjoy meeting new people? (Often, Sometimes, Rarely)	
+Hobbies & Interests	Please list favorite activities (e.g., reading, games, art, gardening)	,
+Music/Entertainment	What kinds of music, TV shows, or reading materials does the client prefer?	,
+Cultural/Religious Needs	Are there specific customs or traditions that the caregiver must respect or assist with?	,
+Caregiver Gender Preference	(Male, Female, No Preference) Note: Important for personal care tasks.	
+Language Preference	(Does the client need a caregiver fluent in a language other than English?)	,
+Home Environment Notes	Are there pets present? Is smoking permitted inside? Any environmental sensitivities?	
+Routine Preferences	Are there established daily routines (e.g., specific mealtimes, bedtimes) that must be maintained?	
+  
+Section 6: Authorization and Financial Agreement
+I, (Client/Authorized Representative Name), authorize privateinhomecare (the Agency) to render appropriate home care services as outlined in the co-created Plan of Care. I understand that I have the right to refuse treatment or terminate services at any time.
+
+I certify that the information provided is correct and understand that this service is private-pay. I acknowledge responsibility for the charges for services/supplies provided by the Agency.
+
+Agreement	Confirmation (Client or Representative Initial)
+I have been informed of the Agency's assessment of needs and the proposed Plan of Care.	
+I authorize the release of medical information to third-party payers as needed for claims processing.	
+I agree to the financial terms and payment structure as detailed in the separate Service Agreement.	
+
+Export to Sheets
+Signature: _______________________________________
+Date: _________________________________________
+
+
+Sources and related content

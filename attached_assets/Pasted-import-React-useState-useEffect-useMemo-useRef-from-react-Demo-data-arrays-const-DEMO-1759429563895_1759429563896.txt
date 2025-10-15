@@ -1,0 +1,447 @@
+import React, { useState, useEffect, useMemo, useRef } from "react";
+
+// Demo data arrays
+const DEMO_JOBS = [
+  { id: 1, title: "PCA — Dementia Support (Newton)", type: "Part-time", desc: "4 hours/day, 5 days/week. Dementia experience preferred. $22/hr" },
+  { id: 2, title: "Overnight Caregiver (Brookline)", type: "Overnight", desc: "Overnight shift — reliable, patient caregiver. $24/hr" },
+  { id: 3, title: "Companion Care (Cambridge)", type: "Fill-in", desc: "Afternoon visits to assist with errands and companionship. $19/hr" },
+];
+
+const DEMO_ARTICLES = [
+  {
+    id: 1,
+    title: "The Benefits of Private-Pay Home Care in Massachusetts",
+    summary: "Private-pay home care gives families flexibility, continuity, and personalized services so seniors can remain safe at home.",
+    link: "#",
+    published_at: "2025-06-01",
+  },
+];
+
+const DEMO_REVIEWS = [
+  {
+    id: 1,
+    name: "Susan R.",
+    city: "Newton, MA",
+    rating: 5,
+    text: "PrivateInHomeCare matched us with a caring PCA quickly. Mom is happier and safer at home — thank you!",
+    image: "https://via.placeholder.com/72?text=SR",
+  },
+  {
+    id: 2,
+    name: "Carlos M.",
+    city: "Brookline, MA",
+    rating: 5,
+    text: "Professional, punctual, and compassionate. We appreciate the continuity of care.",
+    image: "https://via.placeholder.com/72?text=CM",
+  },
+  {
+    id: 3,
+    name: "Evelyn P.",
+    city: "Cambridge, MA",
+    rating: 5,
+    text: "Excellent caregiver — helped with daily routines and brought calm to our household.",
+    image: "https://via.placeholder.com/72?text=EP",
+  },
+];
+
+const SERVICES = [
+  { key: "personal-care", title: "Personal Care", short: "Bathing, grooming, toileting, transfers.", full: "Personal care: bathing, grooming, dressing, toileting, transfers and mobility assistance; includes medication reminders and dignity-first support." },
+  { key: "companionship", title: "Companionship", short: "Friendly visits and social support.", full: "Companionship: conversation, activities, escorting to appointments, and reducing social isolation." },
+  { key: "homemaking", title: "Homemaking & Errands", short: "Meal prep, light housekeeping, shopping.", full: "Homemaking: meal prep, light housekeeping, laundry, grocery shopping, and transportation to appointments." },
+  { key: "dementia-care", title: "Specialized Dementia Care", short: "Structured, patient-centered support.", full: "Specialized dementia care with staff trained in communication, routines, and safety for loved ones living with memory loss." },
+];
+
+const CITIES = [
+  "Andover","Arlington","Barnstable","Beverly","Boston","Brockton","Brookline","Chatham","Falmouth","Gloucester","Haverhill","Lawrence","Lexington","Lowell","Marblehead","Mashpee","Methuen","New Bedford","Newton","Plymouth","Quincy","Salem","Saugus","Somerville","Springfield","Waltham","Wellesley","Worcester"
+].sort();
+
+export default function Home() {
+  // demo-first state
+  const [jobs, setJobs] = useState(DEMO_JOBS);
+  const [articles, setArticles] = useState(DEMO_ARTICLES);
+  const [reviews, setReviews] = useState(DEMO_REVIEWS);
+  const [inquiries, setInquiries] = useState([]);
+
+  // contact form
+  const [form, setForm] = useState({ name: "", email: "", phone: "", service: "", message: "" });
+  const [submitted, setSubmitted] = useState(false);
+
+  // admin modal
+  const [adminOpen, setAdminOpen] = useState(false);
+  const [adminAuthenticated, setAdminAuthenticated] = useState(false);
+  const [adminPass, setAdminPass] = useState("");
+
+  // UI helpers
+  const [openService, setOpenService] = useState(null);
+  const contactRef = useRef(null);
+
+  useEffect(() => {
+    // set basic document metadata (safe in browser)
+    try {
+      if (typeof document !== "undefined") {
+        document.title = "PrivateInHomeCare — In-Home Care in Massachusetts";
+        let meta = document.querySelector('meta[name="description"]');
+        if (!meta) {
+          meta = document.createElement('meta');
+          meta.name = 'description';
+          document.head.appendChild(meta);
+        }
+        meta.content = 'Compassionate private in-home care services and PCA jobs across Massachusetts.';
+      }
+    } catch (e) {
+      // ignore in non-browser previews
+    }
+
+    // run lightweight tests (moved inside useEffect to avoid top-level runtime issues)
+    try {
+      const nullReviews = null;
+      const nullArticles = null;
+      const safeReviews = Array.isArray(nullReviews) ? nullReviews : [];
+      const safeArticles = Array.isArray(nullArticles) ? nullArticles : [];
+      console.assert(Array.isArray(safeReviews), "Reviews should default to []");
+      console.assert(Array.isArray(safeArticles), "Articles should default to []");
+      console.log("✅ Null safety test passed");
+    } catch (e) {
+      console.error("❌ Null safety test failed", e);
+    }
+  }, []);
+
+  // Build JSON-LD safely and inject when running in browser
+  const schemaJson = useMemo(() => {
+    try {
+      const safeReviews = Array.isArray(reviews) ? reviews : [];
+      const safeArticles = Array.isArray(articles) ? articles : [];
+
+      const schema = {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        name: "PrivateInHomeCare",
+        url: "https://privateinhomecare.com",
+        logo: "https://privateinhomecare.com/logo.png",
+        description: "Private in-home personal care, companionship, homemaking and dementia care across Massachusetts.",
+        service: SERVICES.map((s) => ({ "@type": "Service", name: s.title, description: s.full })),
+        review: safeReviews.map((r) => ({ "@type": "Review", reviewRating: { "@type": "Rating", ratingValue: String(r.rating || ""), bestRating: "5" }, author: { "@type": "Person", name: r?.name || "Anonymous" }, reviewBody: r?.text || "" })),
+        article: safeArticles.map((a) => ({ "@type": "Article", headline: a?.title || "", description: a?.summary || "", url: a?.link || "#" })),
+        areaServed: CITIES,
+      };
+      return JSON.stringify(schema);
+    } catch (err) {
+      console.error("Error building schema JSON", err);
+      return "{}";
+    }
+  }, [reviews, articles]);
+
+  useEffect(() => {
+    // inject JSON-LD script tag in browser to help SEO in preview environments
+    try {
+      if (typeof document !== "undefined") {
+        const existing = document.getElementById("pi-schema-json");
+        if (existing) existing.remove();
+        const s = document.createElement("script");
+        s.type = "application/ld+json";
+        s.id = "pi-schema-json";
+        s.text = schemaJson;
+        document.head.appendChild(s);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [schemaJson]);
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: value }));
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    const payload = { ...form, created_at: new Date().toISOString() };
+    setInquiries((prev) => [payload, ...prev]);
+    console.log("Simulated email to info@privateinhomecare.com", payload);
+    setSubmitted(true);
+    setTimeout(() => setForm({ name: "", email: "", phone: "", service: "", message: "" }), 800);
+  }
+
+  function openAdmin() {
+    setAdminOpen(true);
+  }
+
+  function adminLogin() {
+    if (adminPass.trim() === "demo123") {
+      setAdminAuthenticated(true);
+    } else {
+      alert("Incorrect admin password. For demo use: demo123");
+    }
+  }
+
+  function deleteInquiry(idx) {
+    setInquiries((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-purple-50 text-gray-800">
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold">PI</div>
+            <div>
+              <h1 className="text-lg font-bold text-purple-700">PrivateInHomeCare</h1>
+              <p className="text-xs text-gray-500">Compassionate care at home across Massachusetts</p>
+            </div>
+          </div>
+
+          <nav className="hidden md:flex gap-6 text-sm">
+            <a href="#about" className="hover:text-purple-600">About</a>
+            <a href="#services" className="hover:text-purple-600">Services</a>
+            <a href="#areas" className="hover:text-purple-600">Areas</a>
+            <a href="#caregivers" className="hover:text-purple-600">Careers</a>
+            <a href="#contact" className="hover:text-purple-600">Contact</a>
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <button onClick={openAdmin} className="px-3 py-2 border rounded-md text-sm">Admin</button>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        {/* Hero */}
+        <section className="py-20 text-center px-4">
+          <div className="max-w-4xl mx-auto bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-3xl p-10 shadow-xl">
+            <h2 className="text-3xl md:text-4xl font-extrabold mb-3">Compassionate care at home, when you need it</h2>
+            <p className="mb-6">We connect families across Massachusetts with experienced Personal Care Assistants (PCAs) for reliable, personalized support.</p>
+            <div className="flex justify-center gap-4">
+              <a href="#contact" className="px-5 py-2 bg-white text-purple-700 rounded-2xl font-semibold">Find Care</a>
+              <a href="#caregivers" className="px-5 py-2 bg-purple-700 text-white rounded-2xl font-semibold">Join Our Team</a>
+            </div>
+          </div>
+        </section>
+
+        {/* About */}
+        <section id="about" className="max-w-5xl mx-auto px-4 py-12 bg-white rounded-2xl shadow-sm">
+          <h3 className="text-2xl font-bold text-center text-purple-700 mb-4">About PrivateInHomeCare</h3>
+          <p className="text-gray-700 text-center">We help families in Massachusetts arrange compassionate, professional in-home care tailored to each household. Our network of vetted PCAs provides personal care, companionship, homemaking, and specialized dementia support.</p>
+        </section>
+
+        {/* Services */}
+        <section id="services" className="max-w-6xl mx-auto px-4 py-12">
+          <h3 className="text-2xl font-bold text-center text-purple-700 mb-6">Our Services</h3>
+          <div className="grid md:grid-cols-3 gap-6">
+            {SERVICES.map((s, i) => (
+              <div key={s.key} className="p-6 bg-white rounded-2xl shadow-sm">
+                <div className="flex items-start gap-4">
+                  <div className="text-2xl">{i === 0 ? "❤️" : i === 1 ? "👥" : i === 2 ? "🏠" : "🧠"}</div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-purple-700">{s.title}</h4>
+                    <p className="text-gray-600">{s.short}</p>
+                  </div>
+                  <button onClick={() => setOpenService(openService === i ? null : i)} className="text-sm text-purple-600">{openService === i ? "Close" : "Learn more"}</button>
+                </div>
+                {openService === i && (
+                  <div className="mt-4 text-gray-700">{s.full}<div className="mt-4"><button onClick={() => { setForm((f) => ({ ...f, service: s.title })); contactRef.current?.scrollIntoView({ behavior: 'smooth' }); }} className="px-4 py-2 bg-pink-600 text-white rounded-2xl">Request This Service</button></div></div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Reviews */}
+        <section className="max-w-6xl mx-auto px-4 py-12 bg-white rounded-2xl shadow-sm">
+          <h3 className="text-2xl font-bold text-center text-purple-700 mb-6">What families say</h3>
+          <div className="grid md:grid-cols-3 gap-6">
+            {reviews.map((r) => (
+              <div key={r.id} className="p-4 bg-gray-50 rounded-lg text-center">
+                <img src={r.image} alt={r.name} className="mx-auto rounded-full w-16 h-16 mb-3" />
+                <div className="flex justify-center mb-2" aria-hidden>
+                  {Array.from({ length: r.rating }).map((_, i) => (<span key={i} className="text-yellow-400">★</span>))}
+                </div>
+                <div className="font-medium">{r.name}</div>
+                <div className="text-sm text-gray-600 mb-2">{r.city}</div>
+                <div className="text-gray-700">{r.text}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Areas */}
+        <section id="areas" className="max-w-6xl mx-auto px-4 py-12">
+          <h3 className="text-2xl font-bold text-center text-purple-700 mb-4">Areas We Serve</h3>
+          <p className="text-center text-gray-600 mb-6">We serve communities across Massachusetts (sample list):</p>
+          <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 text-center text-gray-700 font-medium">
+            {CITIES.map((c) => (<li key={c} className="py-3 px-2 rounded-lg bg-gray-50 hover:bg-purple-50 transition">{c}</li>))}
+          </ul>
+        </section>
+
+        {/* Careers / Jobs */}
+        <section id="caregivers" className="max-w-6xl mx-auto px-4 py-12 bg-purple-50 rounded-2xl">
+          <h3 className="text-2xl font-bold text-center text-purple-700 mb-4">Caregiver Careers</h3>
+          <p className="text-center text-gray-700 mb-6">Flexible schedules, competitive pay, and meaningful work.</p>
+          <div className="grid md:grid-cols-2 gap-6">
+            {jobs.map((job) => (
+              <div key={job.id} className="p-6 bg-white rounded-2xl shadow-sm">
+                <h4 className="font-semibold text-purple-700">{job.title}</h4>
+                <div className="text-sm text-gray-600 mb-2">{job.type}</div>
+                <div className="text-gray-700 mb-4">{job.desc}</div>
+                <button className="px-4 py-2 bg-pink-600 text-white rounded-2xl">Apply</button>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Articles */}
+        <section id="articles" className="max-w-4xl mx-auto px-4 py-12">
+          <h3 className="text-2xl font-bold text-center text-purple-700 mb-6">Latest article</h3>
+          {articles.map((a) => (
+            <article key={a.id} className="bg-white p-6 rounded-2xl shadow-sm mb-6">
+              <h4 className="font-semibold text-purple-700">{a.title}</h4>
+              <p className="text-gray-700 mb-3">{a.summary}</p>
+              <a className="text-pink-500" href={a.link}>Read more</a>
+            </article>
+          ))}
+        </section>
+
+        {/* Contact form */}
+        <section id="contact" ref={contactRef} className="max-w-4xl mx-auto px-4 py-12 bg-white rounded-2xl shadow-sm">
+          <h3 className="text-2xl font-bold text-center text-purple-700 mb-4">Contact our care coordination team</h3>
+          <p className="text-center text-gray-700 mb-6">Need help arranging care? Call (555) 123-4567 or complete the form below.</p>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <p className="font-semibold">Phone</p>
+              <p className="text-purple-700">(555) 123-4567</p>
+              <p className="mt-4 font-semibold">Email</p>
+              <p className="text-purple-700">info@privateinhomecare.com</p>
+              <p className="mt-4 font-semibold">Office</p>
+              <p>3 Cabot Place, Ste. 10A<br/>Stoughton, MA 02072</p>
+            </div>
+
+            <div>
+              {!submitted ? (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <input name="name" value={form.name} onChange={handleChange} placeholder="Your name" className="w-full p-3 border rounded" required />
+                  <input name="email" value={form.email} onChange={handleChange} placeholder="Email" type="email" className="w-full p-3 border rounded" required />
+                  <input name="phone" value={form.phone} onChange={handleChange} placeholder="Phone (optional)" className="w-full p-3 border rounded" />
+                  <select name="service" value={form.service} onChange={handleChange} className="w-full p-3 border rounded">
+                    <option value="">Select type of care</option>
+                    {SERVICES.map((s) => (<option key={s.key} value={s.title}>{s.title}</option>))}
+                  </select>
+                  <textarea name="message" value={form.message} onChange={handleChange} placeholder="Tell us about your loved one" className="w-full p-3 border rounded h-28" />
+                  <button type="submit" className="w-full px-4 py-3 bg-purple-700 text-white rounded-2xl">Request help</button>
+                </form>
+              ) : (
+                <div className="p-6 bg-green-50 rounded text-center">
+                  <h4 className="font-semibold text-green-700">Thanks — we received your request</h4>
+                  <p className="text-gray-700">A care coordinator will contact you within one business day.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="mt-12 bg-gray-900 text-gray-200 py-10">
+        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-8">
+          <div>
+            <h4 className="font-semibold text-purple-300 mb-3">Navigation</h4>
+            <ul className="space-y-2 text-sm">
+              <li><a href="#about" className="hover:text-white">About</a></li>
+              <li><a href="#services" className="hover:text-white">Services</a></li>
+              <li><a href="#areas" className="hover:text-white">Areas</a></li>
+              <li><a href="#caregivers" className="hover:text-white">Caregiver Careers</a></li>
+              <li><a href="#articles" className="hover:text-white">Articles</a></li>
+              <li><a href="#contact" className="hover:text-white">Contact</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-purple-300 mb-3">Contact</h4>
+            <p className="text-sm">3 Cabot Place, Ste. 10A<br/>Stoughton, MA 02072</p>
+            <p className="mt-2">Phone: +1 (617) 686-0595</p>
+            <p className="mt-1">Email: info@privateinhomecare.com</p>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-purple-300 mb-3">Resources & Attachments</h4>
+            <ul className="space-y-2 text-sm">
+              <li><a href="/forms/client-intake.pdf" className="text-pink-400 hover:underline">Client intake form (PDF)</a></li>
+              <li><a href="/forms/caregiver-checklist.pdf" className="text-pink-400 hover:underline">Caregiver checklist (PDF)</a></li>
+              <li><a href="/forms/privacy-policy.pdf" className="text-pink-400 hover:underline">Privacy & consent (PDF)</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-6 mt-8 border-t border-gray-800 pt-6 text-center text-sm text-gray-400">
+          <p>© 2025 PrivateInHomeCare. Serving communities across Massachusetts including Greater Boston, MetroWest, North Shore, Cape Cod, South Coast, the Berkshires, and Central Massachusetts (Worcester).</p>
+        </div>
+      </footer>
+
+      {/* Admin modal */}
+      {adminOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-start justify-center p-6 z-50">
+          <div className="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-lg mt-12">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold">Admin Dashboard (Demo)</h3>
+              <div>
+                <button onClick={() => { setAdminOpen(false); setAdminAuthenticated(false); setAdminPass(""); }} className="px-3 py-1 rounded-md border">Close</button>
+              </div>
+            </div>
+
+            {!adminAuthenticated ? (
+              <div className="p-6 text-center">
+                <p className="mb-4">Enter the admin password to access demo dashboard (demo123)</p>
+                <input value={adminPass} onChange={(e) => setAdminPass(e.target.value)} className="w-full p-3 border rounded mb-3" placeholder="Admin password" type="password" />
+                <div className="flex justify-center gap-3">
+                  <button onClick={adminLogin} className="px-4 py-2 bg-purple-600 text-white rounded">Login</button>
+                  <button onClick={() => { setAdminPass("demo123"); alert('Demo password filled'); }} className="px-4 py-2 border rounded">Fill demo</button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <h4 className="font-semibold mb-2">Recent Inquiries</h4>
+                <div className="space-y-2 mb-4">
+                  {inquiries.length === 0 && <div className="text-sm text-gray-600">No inquiries yet.</div>}
+                  {inquiries.map((iq, idx) => (
+                    <div key={idx} className="p-3 bg-gray-50 rounded flex justify-between items-start">
+                      <div>
+                        <div className="font-medium">{iq.name} <span className="text-xs text-gray-500">{iq.email}</span></div>
+                        <div className="text-sm text-gray-700">Service: {iq.service}</div>
+                        <div className="mt-2 text-gray-800">{iq.message}</div>
+                      </div>
+                      <div className="ml-4 flex flex-col gap-2">
+                        <button onClick={() => deleteInquiry(idx)} className="px-3 py-1 rounded bg-red-600 text-white text-sm">Delete</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <h4 className="font-semibold mb-2">Jobs</h4>
+                <div className="space-y-2 mb-4">
+                  {jobs.map((j) => (
+                    <div key={j.id} className="p-3 bg-gray-50 rounded">
+                      <div className="font-medium">{j.title}</div>
+                      <div className="text-sm text-gray-700">{j.type} — {j.desc}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <h4 className="font-semibold mb-2">Articles</h4>
+                <div className="space-y-2">
+                  {articles.map((a) => (
+                    <div key={a.id} className="p-3 bg-gray-50 rounded">
+                      <div className="font-medium">{a.title}</div>
+                      <div className="text-sm text-gray-700">{a.summary}</div>
+                    </div>
+                  ))}
+                </div>
+
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}

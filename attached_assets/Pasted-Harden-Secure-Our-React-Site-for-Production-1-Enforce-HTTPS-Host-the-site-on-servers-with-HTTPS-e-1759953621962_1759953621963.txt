@@ -1,0 +1,97 @@
+Harden & Secure Our React Site for Production
+1. Enforce HTTPS
+Host the site on servers with HTTPS enabled. Obtain and install a valid SSL/TLS certificate.
+
+Ensure all traffic is redirected from HTTP to HTTPS at both the server and CDN level.
+
+Validate using SSL Labs: confirm an “A” grade and strong cipher suites.
+
+2. Update Dependencies
+Run npm audit and yarn audit to identify and fix vulnerabilities.
+
+Update React, React DOM, and all packages to their latest stable versions.
+
+Set up Snyk or Dependabot for ongoing vulnerability monitoring.
+
+3. Input Validation & Sanitization
+Validate and sanitize all user input client-side using validator.js or similar libraries.
+
+Sanitize server-side inputs as well; never rely solely on frontend checks.
+
+If using dangerouslySetInnerHTML, rigorously sanitize with DOMPurify.
+
+4. Prevent XSS (Cross-Site Scripting)
+Avoid dangerouslySetInnerHTML unless strictly necessary—sanitize all such content.
+
+Only use React JSX variable interpolation ({}) for dynamic values (auto-escaped).
+
+Properly escape < and > when injecting data into SSR hydration.
+
+5. Secure Authentication & Authorization
+Implement backend-validated token authentication (JWT, OAuth2).
+
+Store tokens in HTTP-only cookies, never in localStorage.
+
+Apply server-side checks for user roles/permissions.
+
+Enable MFA for admin or privileged actions.
+
+6. Secure APIs & Communication
+Ensure all API endpoints are HTTPS-only.
+
+Set strict CORS; explicitly whitelist acceptable origins.
+
+Apply rate limiting to critical endpoints.
+
+7. Mitigate CSRF
+Use SameSite cookies for session authentication.
+
+Add CSRF tokens for form and API submissions as needed.
+
+8. Harden HTTP Headers
+Set these headers at the server or CDN:
+
+X-Frame-Options: DENY
+
+X-Content-Type-Options: nosniff
+
+X-XSS-Protection: 1; mode=block
+
+Referrer-Policy: no-referrer-when-downgrade
+
+Strict-Transport-Security enabled.
+
+9. Secure File Uploads
+Whitelist allowed file types on backend.
+
+Scan uploaded files for malware.
+
+Refuse archives (.zip, .tar) unless strictly required.
+
+10. Protect Secrets & API Keys
+Never expose secrets, API keys, or credentials in the frontend bundle.
+
+Store sensitive keys server-side—fetch them securely via authenticated APIs.
+
+11. Audit Third-Party Scripts
+Vet all third-party scripts for security; prefer official sources.
+
+Use Subresource Integrity (SRI) for externally loaded scripts/styles.
+
+12. Set Content Security Policy (CSP)
+Implement a restrictive CSP to block inline scripts and untrusted sources.
+
+13. Monitor & Test Regularly
+Integrate Sentry for client error monitoring.
+
+Set up server-side monitoring, anomaly alerts, and regular pen testing.
+
+14. Encrypt Data in Transit/Storage
+Confirm all active data flows use TLS/HTTPS.
+
+For offline/Progressive Web App data, encrypt using browser crypto APIs.
+
+15. Document Security Measures
+Document all steps taken, key package choices, header configs, and security policies.
+
+Include secure deployment instructions for future reference.

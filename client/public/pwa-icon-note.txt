@@ -1,0 +1,19 @@
+PWA Icon Requirements:
+====================
+
+For full PWA support, create the following icons and place them in client/public/:
+
+1. pwa-192x192.png - 192x192px icon (required)
+2. pwa-512x512.png - 512x512px icon (required)
+3. apple-touch-icon.png - 180x180px (for iOS devices)
+
+These icons should feature your brand logo/colors:
+- Primary: #8B5CF6 (Purple)
+- Background: White or transparent
+
+Tools to create icons:
+- Canva: https://canva.com
+- Figma: https://figma.com
+- PWA Asset Generator: https://www.pwabuilder.com/imageGenerator
+
+Until icons are created, the PWA will function but may show default/missing icon placeholders.
