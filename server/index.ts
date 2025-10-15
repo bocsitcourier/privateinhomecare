@@ -227,8 +227,8 @@ app.use(async (req, res, next) => {
 
 const PgSession = connectPgSimple(session);
 const MemoryStore = createMemoryStore(session);
-
-const sessionStore = process.env.NODE_ENV === "production" && process.env.DATABASE_URL
+const usePgStore = !!process.env.DATABASE_URL;
+const sessionStore = usePgStore
   ? new PgSession({
       conObject: {
         connectionString: process.env.DATABASE_URL,
@@ -248,9 +248,11 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === "production",
+    // secure: process.env.NODE_ENV === "production",
     httpOnly: true,
-    sameSite: 'lax', // Changed from 'strict' to 'lax' for better compatibility with redirects and CORS
+    sameSite: 'lax',
+    domain: '.privateinhomecaregiver.com',
+    secure: 'auto' as const,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
   },
 }));
