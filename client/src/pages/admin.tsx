@@ -26,6 +26,8 @@ export default function AdminPage() {
   const [error, setError] = useState("");
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
+  console.log("RECAPTCHA SITE KEY:");
+  console.log(import.meta.env.VITE_RECAPTCHA_SITE_KEY);
 
   // Check auth status on component mount
   useEffect(() => {
