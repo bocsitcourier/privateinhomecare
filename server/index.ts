@@ -1,11 +1,16 @@
+import dotenv from "dotenv";
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import createMemoryStore from "memorystore";
 import helmet from "helmet";
 import cors from "cors";
+import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+
+// Load environment variables
+dotenv.config();
 
 const app = express();
 app.set('trust proxy', 1);
@@ -42,7 +47,9 @@ app.use(helmet({
         "'unsafe-inline'",
         "https://www.google.com",
         "https://www.gstatic.com",
-        "https://fonts.googleapis.com"
+        "https://fonts.googleapis.com",
+        "https://www.googletagmanager.com",
+        "https://www.google-analytics.com"
       ],
       styleSrc: [
         "'self'",
@@ -66,7 +73,9 @@ app.use(helmet({
       ],
       connectSrc: [
         "'self'",
-        "https://www.google.com"
+        "https://www.google.com",
+        "https://www.googletagmanager.com",
+        "https://www.google-analytics.com"
       ],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
@@ -112,6 +121,7 @@ function cleanIPCache() {
     toDelete.forEach(([ip]) => ipLocationCache.delete(ip));
   }
 }
+
 
 function isPrivateIP(ip: string): boolean {
   let normalizedIP = ip.replace(/:\d+$/, '');
@@ -224,23 +234,37 @@ app.use(async (req, res, next) => {
   
   next();
 });
+const __dirname = import.meta.dirname;
 
-const PgSession = connectPgSimple(session);
+app.use(express.static(path.join(__dirname, 'uploads'), {
+  maxAge: '1y',
+  setHeaders: function (res, path, stat) {
+    res.set('Expires', new Date(Date.now() + 31536000000).toUTCString()); // Explicit Expires header
+  }
+}));
+
+app.use(express.static(path.join(__dirname, 'assets'), {
+  maxAge: '1y',
+  setHeaders: function (res, path, stat) {
+    res.set('Expires', new Date(Date.now() + 31536000000).toUTCString()); // Explicit Expires header
+  }
+}));
+
+// const PgSession = connectPgSimple(session);
 const MemoryStore = createMemoryStore(session);
 
-const sessionStore = process.env.NODE_ENV === "production" && process.env.DATABASE_URL
-  ? new PgSession({
-      conObject: {
-        connectionString: process.env.DATABASE_URL,
-        ssl: process.env.DATABASE_URL.includes('sslmode=require') ? { rejectUnauthorized: false } : false
-      },
-      tableName: 'session',
-      createTableIfMissing: true,
-      pruneSessionInterval: 60 * 15 // Prune expired sessions every 15 minutes
-    })
-  : new MemoryStore({
-      checkPeriod: 86400000 // Prune expired entries every 24h
-    });
+// Create session store with fallback to memory store on DB connection issues
+let sessionStore;
+try {
+  sessionStore = new MemoryStore({
+        checkPeriod: 86400000 // Prune expired entries every 24h
+      });
+} catch (error) {
+  console.error('[SESSION STORE] Failed to create PostgreSQL session store, falling back to memory store:', error);
+  sessionStore = new MemoryStore({
+    checkPeriod: 86400000 // Prune expired entries every 24h
+  });
+}
 
 app.use(session({
   store: sessionStore,
@@ -248,11 +272,10 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    // secure: process.env.NODE_ENV === "production",
+    secure: process.env.NODE_ENV === "production",
     httpOnly: true,
     sameSite: 'lax',
     domain: '.privateinhomecaregiver.com',
-    secure: 'auto' as const,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
   },
 }));

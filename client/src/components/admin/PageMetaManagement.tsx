@@ -107,7 +107,7 @@ export default function PageMetaManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center md:justify-between md:flex-row flex-col gap-4">
         <div>
           <h2 className="text-3xl font-bold">SEO & Page Metadata</h2>
           <p className="text-muted-foreground">Manage meta tags and SEO settings for pages</p>

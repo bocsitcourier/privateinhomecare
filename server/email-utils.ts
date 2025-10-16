@@ -1,14 +1,107 @@
+import * as nodemailer from 'nodemailer';
+import { google } from 'googleapis';
+
 interface EmailOptions {
   to: string;
   subject: string;
   html: string;
 }
 
+// OAuth2 Configuration for Gmail
+const OAuth2 = google.auth.OAuth2;
+
+async function createGmailTransporter() {
+  const clientId = process.env.CLIENT_ID;
+  const clientSecret = process.env.CLIENT_SECRET;
+  const refreshToken = process.env.GMAIL_REFRESH_TOKEN;
+  const fromEmail = process.env.FROM_EMAIL || process.env.SMTP_USER;
+
+  if (!clientId || !clientSecret || !refreshToken) {
+    console.log('[EMAIL] OAuth2 configuration incomplete:', {
+      CLIENT_ID: !!clientId,
+      CLIENT_SECRET: !!clientSecret,
+      GMAIL_REFRESH_TOKEN: !!refreshToken
+    });
+    return null;
+  }
+
+  const oauth2Client = new OAuth2(
+    clientId,
+    clientSecret,
+    'https://developers.google.com/oauthplayground'
+  );
+
+  oauth2Client.setCredentials({
+    refresh_token: refreshToken
+  });
+
+  try {
+    console.log('[EMAIL] Getting access token...');
+    const accessToken = await oauth2Client.getAccessToken();
+    console.log('[EMAIL] Access token obtained:', accessToken.token ? 'SUCCESS' : 'FAILED');
+    
+    // Use the generic createTransport with proper typing
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        type: 'OAuth2',
+        user: fromEmail,
+        clientId: clientId,
+        clientSecret: clientSecret,
+        refreshToken: refreshToken,
+        accessToken: accessToken.token,
+      },
+    } as any); // Type assertion to bypass strict typing
+
+    return transporter;
+  } catch (error) {
+    console.error('[EMAIL] Error creating OAuth2 transporter:', error);
+    return null;
+  }
+}
+
+async function createSMTPTransporter() {
+  const smtpHost = process.env.SMTP_HOST;
+  const smtpPort = process.env.SMTP_PORT || '587';
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+
+  if (!smtpHost || !smtpUser || !smtpPass) {
+    return null;
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: smtpHost,
+    port: parseInt(smtpPort),
+    secure: parseInt(smtpPort) === 465,
+    auth: {
+      user: smtpUser,
+      pass: smtpPass,
+    },
+    tls: {
+      rejectUnauthorized: true,
+    },
+  });
+
+  return transporter;
+}
+
 export async function sendEmail(options: EmailOptions): Promise<{ success: boolean; error?: string }> {
-  const resendApiKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.FROM_EMAIL || process.env.SMTP_USER;
   
-  if (!resendApiKey) {
-    console.log('[EMAIL] Resend API key not configured. Email would have been sent:');
+  if (!fromEmail) {
+    return { success: false, error: 'FROM_EMAIL not configured' };
+  }
+
+  // Try SMTP first for testing, then OAuth2
+  let transporter: any = await createGmailTransporter();
+  let authMethod = 'SMTP';
+  
+    console.log('[EMAIL] SMTP not available, trying OAuth2...');
+    authMethod = 'OAuth2';
+
+  if (!transporter) {
+    console.log('[EMAIL] No email configuration available. Email would have been sent:');
     console.log('[EMAIL] To:', options.to);
     console.log('[EMAIL] Subject:', options.subject);
     console.log('[EMAIL] Body:', options.html);
@@ -16,31 +109,18 @@ export async function sendEmail(options: EmailOptions): Promise<{ success: boole
   }
 
   try {
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: process.env.FROM_EMAIL || 'onboarding@resend.dev',
-        to: options.to,
-        subject: options.subject,
-        html: options.html,
-      }),
+    // Send email
+    const info = await transporter.sendMail({
+      from: fromEmail,
+      to: options.to,
+      subject: options.subject,
+      html: options.html,
     });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Unknown error' }));
-      console.error('[EMAIL] Failed to send email:', error);
-      return { success: false, error: error.message || 'Failed to send email' };
-    }
-
-    const result = await response.json();
-    console.log('[EMAIL] Email sent successfully:', result.id);
+    console.log(`[EMAIL] Email sent successfully via ${authMethod}:`, info.messageId);
     return { success: true };
   } catch (error: any) {
-    console.error('[EMAIL] Error sending email:', error);
+    console.error(`[EMAIL] Error sending email via ${authMethod}:`, error);
     return { success: false, error: error.message };
   }
 }
@@ -373,6 +453,55 @@ export function generateReferralNotificationEmail(referral: {
         <div class="footer">
           <p>This is an automated notification from your PrivateInHomeCareGiver referral system.</p>
           <p>Remember to track this referral for potential incentive rewards!</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+export function generateInquiryReplyEmail(inquiry: {
+  name: string;
+}, replyMessage: string): string {
+  const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+    ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+    : 'http://localhost:5000';
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #7c3aed; color: white; padding: 20px; border-radius: 5px 5px 0 0; }
+        .content { background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; }
+        .field { margin-bottom: 15px; }
+        .label { font-weight: bold; color: #6b7280; }
+        .value { margin-top: 5px; }
+        .button { display: inline-block; background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin-top: 20px; }
+        .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1 style="margin: 0;">Reply from admin</h1>
+        </div>
+        <div class="content">
+          <div class="field">
+            <div class="label">Name:</div>
+            <div class="value">${inquiry.name}</div>
+          </div>
+          
+          <div class="field">
+            <div class="label">Reply:</div>
+            <div class="value">${replyMessage}</div>
+          </div>
+        </div>
+        <div class="footer">
+          <p>This is an automated notification from your PrivateInHomeCareGiver consultation system.</p>
         </div>
       </div>
     </body>

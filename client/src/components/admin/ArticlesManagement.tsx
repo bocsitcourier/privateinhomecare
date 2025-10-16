@@ -194,7 +194,7 @@ export default function ArticlesManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center md:justify-between md:flex-row flex-col gap-4">
         <div>
           <h2 className="text-3xl font-bold">Articles Management</h2>
           <p className="text-muted-foreground">Create and manage blog articles with SEO optimization</p>
@@ -208,14 +208,14 @@ export default function ArticlesManagement() {
       {isLoading ? (
         <Card><CardContent className="p-8 text-center">Loading...</CardContent></Card>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-4 grid-flow-row">
           {Array.isArray(articles) && articles.length === 0 && (
             <Card><CardContent className="p-8 text-center text-muted-foreground">No articles yet. Create one to get started.</CardContent></Card>
           )}
           {Array.isArray(articles) && articles.map((article: Article) => (
             <Card key={article.id} data-testid={`card-article-${article.id}`}>
               <CardHeader>
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between flex-col md:flex-row gap-4">
                   <div className="space-y-1 flex-1">
                     <CardTitle className="flex items-center gap-2">
                       {article.title}
@@ -258,7 +258,7 @@ export default function ArticlesManagement() {
                 {article.keywords && article.keywords.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {article.keywords.map(kw => (
-                      <Badge key={kw} variant="outline" className="text-xs">{kw}</Badge>
+                      <Badge key={kw} variant="outline" className="text-xs whitespace-pre-line">{kw}</Badge>
                     ))}
                   </div>
                 )}

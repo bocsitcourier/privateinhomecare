@@ -168,14 +168,14 @@ export default function AdminPage() {
                 >
                   Login
                 </Button>
-                <Button
+                {/* <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setPassword("demo123")}
+                  onClick={() => setPassword("admin123")}
                   data-testid="button-fill-demo"
                 >
                   Fill Demo
-                </Button>
+                </Button> */}
               </div>
             </form>
           </CardContent>
@@ -202,7 +202,7 @@ export default function AdminPage() {
               variant="outline" 
               onClick={async () => {
                 try {
-                  await fetch("/api/auth/logout", { method: "POST" });
+                  await fetch("/api/auth/logout", { method: "POST", body: JSON.stringify([]) });
                 } catch (error) {
                   console.error("Logout error:", error);
                 }
@@ -224,7 +224,7 @@ export default function AdminPage() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList className="grid grid-cols-10 w-full max-w-6xl mb-8">
+          <TabsList className="grid md:grid-cols-10 grid-cols-2 w-full max-w-6xl mb-8 h-auto md:h-10">
             <TabsTrigger value="dashboard" data-testid="tab-dashboard">
               <LayoutDashboard className="w-4 h-4 mr-2" />
               Dashboard

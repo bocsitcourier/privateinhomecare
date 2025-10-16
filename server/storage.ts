@@ -29,7 +29,7 @@ import {
 import { randomUUID } from "crypto";
 import { slugify, generateUniqueSlug } from "@shared/utils";
 import { eq, and, or, desc, sql, isNull, gte, lte } from "drizzle-orm";
-
+import { db } from "./db";
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -64,6 +64,7 @@ export interface IStorage {
   updateInquiry(id: string, inquiry: UpdateInquiry): Promise<Inquiry | undefined>;
   updateInquiryStatus(id: string, status: string): Promise<Inquiry | undefined>;
   addInquiryReply(id: string, reply: Reply): Promise<Inquiry | undefined>;
+  deleteInquiry(id: string): Promise<boolean>;
   
   listPageMeta(): Promise<PageMeta[]>;
   getPageMeta(pageSlug: string): Promise<PageMeta | undefined>;
@@ -578,6 +579,10 @@ export class MemStorage implements IStorage {
     };
     this.inquiries.set(id, updated);
     return updated;
+  }
+
+  async deleteInquiry(id: string): Promise<boolean> {
+    return this.inquiries.delete(id);
   }
 
   async listPageMeta(): Promise<PageMeta[]> {
@@ -1441,6 +1446,11 @@ export class DbStorage implements IStorage {
     return result[0];
   }
 
+  async deleteInquiry(id: string): Promise<boolean> {
+    const result = await this.db.delete(inquiries).where(eq(inquiries.id, id)).returning();
+    return result.length > 0;
+  }
+
   async listPageMeta(): Promise<PageMeta[]> {
     return await this.db.select().from(pageMeta).orderBy(pageMeta.pageSlug);
   }
@@ -1860,9 +1870,8 @@ export class DbStorage implements IStorage {
 
 // Development: Use MemStorage (in-memory) for Replit
 // Production: Switch to DbStorage when deploying to Digital Ocean with DATABASE_URL
-// Uncomment the following lines for production with PostgreSQL:
-// const { db } = await import("./db");
-// export const storage = new DbStorage(db);
-
-export const storage = new MemStorage();
+// Use a dynamic import without top-level await — export a Promise that resolves to a DbStorage instance.
+// Uncomment the following lines for production with PostgreSQL (when your environment supports top-level await):
+export const storage = new DbStorage(db);
+// export const storage: Promise<IStorage> = import("./db").then(({ db }) => new DbStorage(db));
 // const { db } = await import("./db");

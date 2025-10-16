@@ -19,22 +19,12 @@ jobs:
       - name: Trust host
         run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Rsync code
-        run: |
-          rsync -az --delete \
-            --exclude '.git' --exclude 'node_modules' --exclude '.env' --exclude 'client/.env' \
-            ${SSH_PORT:+-e "ssh -p $SSH_PORT"} \
-            ./ $SSH_USER@$SSH_HOST:/var/www/html/privateinhomecare/
-        env:
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-
       - name: Reload PM2 (ecosystem)
         run: |
           ssh ${SSH_PORT:+-p "$SSH_PORT"} $SSH_USER@$SSH_HOST <<'EOSSH'
           set -e
           cd /var/www/html/privateinhomecare
+          git pull origin main
           npm ci && npm install dotenv && npm run build
           pm2 startOrReload ecosystem.config.cjs --env production
           pm2 save

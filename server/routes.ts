@@ -29,7 +29,8 @@ import {
   sendEmail, 
   generateApplicationNotificationEmail,
   generateInquiryNotificationEmail,
-  generateReferralNotificationEmail 
+  generateReferralNotificationEmail, 
+  generateInquiryReplyEmail
 } from "./email-utils";
 import { z } from "zod";
 import { 
@@ -40,6 +41,9 @@ import {
   auditLog,
   sanitizeErrors
 } from "./api-hardening";
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 declare module 'express-session' {
   interface SessionData {
@@ -294,7 +298,7 @@ const uploadStorage = multer.diskStorage({
 const upload = multer({
   storage: uploadStorage,
   limits: {
-    fileSize: 5 * 1024 * 1024,
+    fileSize: 20 * 1024 * 1024,
   },
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
@@ -364,7 +368,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     next();
   });
-  app.use('/uploads', express.static('uploads'));
+  app.use('/uploads', express.static('uploads', {
+    maxAge: "1y",
+    immutable: true
+  }));
   
   app.post("/api/auth/login", authLimiter, async (req, res) => {
     try {
@@ -1009,6 +1016,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!inquiry) {
         return res.status(404).json({ error: "Inquiry not found" });
       }
+
+      await sendEmail({
+        to: inquiry.email,
+        subject: `Inquiry Reply: ${inquiry.name || 'Your Inquiry'}`,
+        html: generateInquiryReplyEmail(inquiry, data.body),
+      });
+      if (!inquiry) {
+        return res.status(404).json({ error: "Inquiry not found" });
+      }
       res.json(inquiry);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -1025,6 +1041,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(inquiry);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/admin/inquiries/:id", requireAuth, async (req, res) => {
+    try {
+      const deleted = await storage.deleteInquiry(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Inquiry not found" });
+      }
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   });
 

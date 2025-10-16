@@ -280,7 +280,7 @@ export default function ArticlePage() {
             <img 
               src={article.heroImageUrl} 
               alt={article.title}
-              className="w-full h-64 md:h-96 object-cover rounded-lg mb-8"
+              className="w-full h-64 md:h-96 object-contain rounded-lg mb-8"
               data-testid="img-hero"
             />
           )}
@@ -289,22 +289,22 @@ export default function ArticlePage() {
             {article.title}
           </h1>
 
-          {article.excerpt && (
+          {/* {article.excerpt && (
             <p className="text-xl text-muted-foreground mb-6" data-testid="text-excerpt">
               {article.excerpt}
             </p>
-          )}
+          )} */}
 
           <div className="flex items-center justify-between mb-8">
-            {article.keywords && article.keywords.length > 0 && (
+            {/* {article.keywords && article.keywords.length > 0 && (
               <div className="flex flex-wrap gap-2" data-testid="container-keywords">
                 {article.keywords.map(keyword => (
-                  <Badge key={keyword} variant="secondary" data-testid={`badge-keyword-${keyword}`}>
+                  <Badge key={keyword} variant="secondary" data-testid={`badge-keyword-${keyword}`} className="whitespace-pre-line">
                     {keyword}
                   </Badge>
                 ))}
               </div>
-            )}
+            )} */}
             
             <Button
               variant="outline"

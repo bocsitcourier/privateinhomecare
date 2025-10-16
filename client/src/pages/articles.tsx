@@ -62,14 +62,23 @@ export default function ArticlesPage() {
                     className="hover-elevate cursor-pointer h-full transition-all"
                     data-testid={`card-article-${article.id}`}
                   >
-                    {article.heroImageUrl && (
+                    {article.heroImageUrl ? (
                       <img 
                         src={article.heroImageUrl} 
                         alt={article.title}
-                        className="w-full h-48 object-cover rounded-t-lg"
+                        className="w-full h-48 object-contain rounded-t-lg"
                         data-testid={`img-article-${article.id}`}
                       />
-                    )}
+                    ) : <svg 
+                        className="w-full h-48 bg-muted rounded-t-lg"
+                        xmlns="http://www.w3.org/2000/svg" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                        data-testid={`svg-article-placeholder-${article.id}`}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>}
                     <CardHeader>
                       <CardTitle className="line-clamp-2" data-testid={`text-article-title-${article.id}`}>
                         {article.title}
@@ -81,20 +90,20 @@ export default function ArticlesPage() {
                           {article.excerpt}
                         </p>
                       )}
-                      {article.keywords && article.keywords.length > 0 && (
+                      {/* {article.keywords && article.keywords.length > 0 && (
                         <div className="flex flex-wrap gap-1">
                           {article.keywords.slice(0, 3).map(keyword => (
-                            <Badge key={keyword} variant="outline" className="text-xs">
+                            <Badge key={keyword} variant="outline" className="text-xs whitespace-pre-line">
                               {keyword}
                             </Badge>
                           ))}
                           {article.keywords.length > 3 && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs whitespace-pre-line">
                               +{article.keywords.length - 3}
                             </Badge>
                           )}
                         </div>
-                      )}
+                      )} */}
                     </CardContent>
                   </Card>
                 </Link>
