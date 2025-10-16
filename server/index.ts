@@ -1,3 +1,4 @@
+import dotenv from "dotenv";
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
@@ -6,6 +7,9 @@ import helmet from "helmet";
 import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+
+// Load environment variables
+dotenv.config();
 
 const app = express();
 app.set('trust proxy', 1);
