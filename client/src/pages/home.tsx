@@ -254,6 +254,44 @@ export default function Home() {
     }
   }, [schemaJson]);
 
+  // Scroll to bookmark if present on load
+  useEffect(() => {
+    const scrollToHashElement = () => {
+      if (typeof window !== "undefined") {
+        const hash = window.location.hash;
+        if (hash) {
+          // Remove the # from the hash
+          const elementId = hash.substring(1);
+          const element = document.getElementById(elementId);
+          if (element) {
+            // Small delay to ensure page is fully rendered
+            setTimeout(() => {
+              element.scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+              });
+            }, 100);
+          }
+        }
+      }
+    };
+
+    // Run on mount
+    scrollToHashElement();
+
+    // Also run when hash changes (for browser back/forward navigation)
+    const handleHashChange = () => {
+      scrollToHashElement();
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener('hashchange', handleHashChange);
+      return () => {
+        window.removeEventListener('hashchange', handleHashChange);
+      };
+    }
+  }, []);
+
   const handleRequestService = (title: string) => {
     setSelectedService(title);
     contactRef.current?.scrollIntoView({ behavior: 'smooth' });
