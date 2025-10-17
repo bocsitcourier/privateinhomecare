@@ -237,24 +237,7 @@ const MemoryStore = createMemoryStore(session);
 // Create session store with fallback to memory store on DB connection issues
 let sessionStore;
 try {
-  sessionStore = process.env.NODE_ENV === "production" && process.env.DATABASE_URL
-    ? new PgSession({
-        conObject: {
-          connectionString: process.env.DATABASE_URL,
-          ssl: process.env.DATABASE_URL.includes('localhost') ? false : { rejectUnauthorized: false },
-          max: 5, // Limit concurrent connections for sessions
-          idleTimeoutMillis: 30000, // 30 seconds
-          connectionTimeoutMillis: 10000, // 10 seconds
-        },
-        tableName: 'session',
-        createTableIfMissing: true,
-        pruneSessionInterval: 60 * 15, // Prune expired sessions every 15 minutes
-        errorLog: (error: Error) => {
-          console.error('[SESSION STORE] Database error:', error.message);
-          // Could implement fallback to memory store here if needed
-        }
-      })
-    : new MemoryStore({
+  sessionStore = new MemoryStore({
         checkPeriod: 86400000 // Prune expired entries every 24h
       });
 } catch (error) {
