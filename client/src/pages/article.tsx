@@ -280,7 +280,7 @@ export default function ArticlePage() {
             <img 
               src={article.heroImageUrl} 
               alt={article.title}
-              className="w-full h-64 md:h-96 object-cover rounded-lg mb-8"
+              className="w-full h-64 md:h-96 object-contain rounded-lg mb-8"
               data-testid="img-hero"
             />
           )}
