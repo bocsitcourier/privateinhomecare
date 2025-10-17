@@ -33,7 +33,7 @@ const hipaaFormSchema = z.object({
   agreedToPolicy: z.enum(["yes", "no"], { required_error: "You must agree to the Privacy Policy" }).refine(val => val === "yes", {
     message: "You must agree to the Privacy Policy",
   }),
-  captchaToken: z.string().min(1, "Please complete the CAPTCHA"),
+  // captchaToken: z.string().min(1, "Please complete the CAPTCHA"),
   website: z.string().optional(),
 });
 
