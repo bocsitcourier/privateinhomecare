@@ -171,7 +171,7 @@ export default function AdminPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setPassword("demo123")}
+                  onClick={() => setPassword("admin123")}
                   data-testid="button-fill-demo"
                 >
                   Fill Demo
