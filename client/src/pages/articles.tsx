@@ -66,7 +66,7 @@ export default function ArticlesPage() {
                       <img 
                         src={article.heroImageUrl} 
                         alt={article.title}
-                        className="w-full h-48 object-cover rounded-t-lg"
+                        className="w-full h-48 object-contain rounded-t-lg"
                         data-testid={`img-article-${article.id}`}
                       />
                     )}
