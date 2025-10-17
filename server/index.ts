@@ -46,7 +46,8 @@ app.use(helmet({
         "'unsafe-inline'",
         "https://www.google.com",
         "https://www.gstatic.com",
-        "https://fonts.googleapis.com"
+        "https://fonts.googleapis.com",
+        "https://www.googletagmanager.com"
       ],
       styleSrc: [
         "'self'",
@@ -70,7 +71,8 @@ app.use(helmet({
       ],
       connectSrc: [
         "'self'",
-        "https://www.google.com"
+        "https://www.google.com",
+        "https://www.googletagmanager.com"
       ],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
