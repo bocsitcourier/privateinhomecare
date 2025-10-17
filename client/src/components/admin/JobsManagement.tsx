@@ -54,7 +54,7 @@ export default function JobsManagement() {
   });
 
   const publishMutation = useMutation({
-    mutationFn: (id: string) => apiRequest("POST", `/api/admin/jobs/${id}/publish`),
+    mutationFn: (id: string) => apiRequest("POST", `/api/admin/jobs/${id}/publish`, []),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/jobs"] });
       toast({ title: "Job published" });
@@ -62,7 +62,7 @@ export default function JobsManagement() {
   });
 
   const unpublishMutation = useMutation({
-    mutationFn: (id: string) => apiRequest("POST", `/api/admin/jobs/${id}/unpublish`),
+    mutationFn: (id: string) => apiRequest("POST", `/api/admin/jobs/${id}/unpublish`, []),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/jobs"] });
       toast({ title: "Job unpublished" });
