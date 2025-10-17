@@ -50,7 +50,7 @@ export default function PageMetaManagement() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (slug: string) => apiRequest("DELETE", `/api/admin/pages/${slug}`),
+    mutationFn: (slug: string) => apiRequest("DELETE", `/api/admin/pages${slug}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/pages"] });
       toast({ title: "Page metadata deleted" });
