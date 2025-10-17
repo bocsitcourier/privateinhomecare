@@ -19,6 +19,10 @@ module.exports = {
         VITE_RECAPTCHA_SITE_KEY: process.env.VITE_RECAPTCHA_SITE_KEY,
         RECAPTCHA_SECRET_KEY: process.env.RECAPTCHA_SECRET_KEY,
         SESSION_SECRET: process.env.SESSION_SECRET,
+        SMTP_HOST: process.env.SMTP_HOST,
+        SMTP_PORT: process.env.SMTP_PORT,
+        SMTP_USER: process.env.SMTP_USER,
+        SMTP_PASS: process.env.SMTP_PASS,
 
         // Optional future envs
         // SESSION_SECRET: process.env.SESSION_SECRET,
