@@ -1860,9 +1860,9 @@ export class DbStorage implements IStorage {
 
 // Development: Use MemStorage (in-memory) for Replit
 // Production: Switch to DbStorage when deploying to Digital Ocean with DATABASE_URL
-// Uncomment the following lines for production with PostgreSQL:
+// Use a dynamic import without top-level await — export a Promise that resolves to a DbStorage instance.
+// Uncomment the following lines for production with PostgreSQL (when your environment supports top-level await):
 // const { db } = await import("./db");
 // export const storage = new DbStorage(db);
-
-export const storage = new MemStorage();
+export const storage: Promise<IStorage> = import("./db").then(({ db }) => new DbStorage(db));
 // const { db } = await import("./db");
