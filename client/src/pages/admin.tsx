@@ -202,7 +202,7 @@ export default function AdminPage() {
               variant="outline" 
               onClick={async () => {
                 try {
-                  await fetch("/api/auth/logout", { method: "POST", body: JSON.stringify({}) });
+                  await fetch("/api/auth/logout", { method: "POST", body: JSON.stringify([]) });
                 } catch (error) {
                   console.error("Logout error:", error);
                 }
