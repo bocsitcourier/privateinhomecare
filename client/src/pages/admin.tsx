@@ -168,14 +168,14 @@ export default function AdminPage() {
                 >
                   Login
                 </Button>
-                <Button
+                {/* <Button
                   type="button"
                   variant="outline"
                   onClick={() => setPassword("admin123")}
                   data-testid="button-fill-demo"
                 >
                   Fill Demo
-                </Button>
+                </Button> */}
               </div>
             </form>
           </CardContent>

@@ -113,14 +113,14 @@ export default function AdminModal({ open, onClose }: AdminModalProps) {
                 >
                   Login
                 </Button>
-                <Button
+                {/* <Button
                   type="button"
                   variant="outline"
                   onClick={() => setPassword("demo123")}
                   data-testid="button-fill-demo"
                 >
                   Fill Demo
-                </Button>
+                </Button> */}
               </div>
             </form>
           </div>
