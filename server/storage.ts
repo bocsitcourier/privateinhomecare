@@ -29,7 +29,7 @@ import {
 import { randomUUID } from "crypto";
 import { slugify, generateUniqueSlug } from "@shared/utils";
 import { eq, and, or, desc, sql, isNull, gte, lte } from "drizzle-orm";
-
+import { db } from "./db";
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -1862,7 +1862,6 @@ export class DbStorage implements IStorage {
 // Production: Switch to DbStorage when deploying to Digital Ocean with DATABASE_URL
 // Use a dynamic import without top-level await — export a Promise that resolves to a DbStorage instance.
 // Uncomment the following lines for production with PostgreSQL (when your environment supports top-level await):
-// const { db } = await import("./db");
-// export const storage = new DbStorage(db);
-export const storage: Promise<IStorage> = import("./db").then(({ db }) => new DbStorage(db));
+export const storage = new DbStorage(db);
+// export const storage: Promise<IStorage> = import("./db").then(({ db }) => new DbStorage(db));
 // const { db } = await import("./db");
