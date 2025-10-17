@@ -1,3 +1,5 @@
+import * as nodemailer from 'nodemailer';
+
 interface EmailOptions {
   to: string;
   subject: string;
@@ -5,39 +7,51 @@ interface EmailOptions {
 }
 
 export async function sendEmail(options: EmailOptions): Promise<{ success: boolean; error?: string }> {
-  const resendApiKey = process.env.RESEND_API_KEY;
+  // Check for SMTP configuration
+  const smtpHost = process.env.SMTP_HOST;
+  const smtpPort = process.env.SMTP_PORT || '587';
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+  const fromEmail = process.env.FROM_EMAIL || process.env.SMTP_USER;
   
-  if (!resendApiKey) {
-    console.log('[EMAIL] Resend API key not configured. Email would have been sent:');
+  if (!smtpHost || !smtpUser || !smtpPass) {
+    console.log('[EMAIL] SMTP configuration not complete. Email would have been sent:');
     console.log('[EMAIL] To:', options.to);
     console.log('[EMAIL] Subject:', options.subject);
     console.log('[EMAIL] Body:', options.html);
+    console.log('[EMAIL] Missing config:', {
+      SMTP_HOST: !!smtpHost,
+      SMTP_USER: !!smtpUser,
+      SMTP_PASS: !!smtpPass
+    });
     return { success: true };
   }
 
   try {
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
+    // Create transporter
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: parseInt(smtpPort),
+      secure: parseInt(smtpPort) === 465, // true for 465, false for other ports
+      auth: {
+        user: smtpUser,
+        pass: smtpPass,
       },
-      body: JSON.stringify({
-        from: process.env.FROM_EMAIL || 'onboarding@resend.dev',
-        to: options.to,
-        subject: options.subject,
-        html: options.html,
-      }),
+      tls: {
+        // Don't fail on invalid certs
+        rejectUnauthorized: false,
+      },
     });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Unknown error' }));
-      console.error('[EMAIL] Failed to send email:', error);
-      return { success: false, error: error.message || 'Failed to send email' };
-    }
+    // Send email
+    const info = await transporter.sendMail({
+      from: fromEmail,
+      to: options.to,
+      subject: options.subject,
+      html: options.html,
+    });
 
-    const result = await response.json();
-    console.log('[EMAIL] Email sent successfully:', result.id);
+    console.log('[EMAIL] Email sent successfully:', info.messageId);
     return { success: true };
   } catch (error: any) {
     console.error('[EMAIL] Error sending email:', error);
