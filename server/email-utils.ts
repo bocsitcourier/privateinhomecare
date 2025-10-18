@@ -32,14 +32,14 @@ export async function sendEmail(options: EmailOptions): Promise<{ success: boole
     const transporter = nodemailer.createTransport({
       host: smtpHost,
       port: parseInt(smtpPort),
-      secure: true, // true for 587, false for other ports
+      secure: false, // true for 587, false for other ports
       auth: {
         user: smtpUser,
         pass: smtpPass,
       },
       tls: {
         // Don't fail on invalid certs
-        rejectUnauthorized: false,
+        rejectUnauthorized: true,
       },
     });
 

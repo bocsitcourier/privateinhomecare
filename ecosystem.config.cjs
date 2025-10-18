@@ -8,6 +8,8 @@ module.exports = {
       script: "dist/index.js",
       exec_mode: "fork", // use "cluster" if stateless & want multi-core
       instances: 1,
+      autorestart: true,
+      restart_delay: 5000,
       watch: false,
       max_restarts: 10,
       env: {
