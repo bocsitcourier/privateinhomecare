@@ -25,6 +25,13 @@ module.exports = {
         SMTP_PORT: process.env.SMTP_PORT,
         SMTP_USER: process.env.SMTP_USER,
         SMTP_PASS: process.env.SMTP_PASS,
+        FROM_EMAIL: process.env.FROM_EMAIL,
+        
+        // Gmail OAuth2
+        CLIENT_ID: process.env.CLIENT_ID,
+        CLIENT_SECRET: process.env.CLIENT_SECRET,
+        REDIRECT_URI: process.env.REDIRECT_URI,
+        GMAIL_REFRESH_TOKEN: process.env.GMAIL_REFRESH_TOKEN,
 
         // Optional future envs
         // SESSION_SECRET: process.env.SESSION_SECRET,

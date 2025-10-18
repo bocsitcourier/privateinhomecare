@@ -1,4 +1,5 @@
 import * as nodemailer from 'nodemailer';
+import { google } from 'googleapis';
 
 interface EmailOptions {
   to: string;
@@ -6,43 +7,108 @@ interface EmailOptions {
   html: string;
 }
 
-export async function sendEmail(options: EmailOptions): Promise<{ success: boolean; error?: string }> {
-  // Check for SMTP configuration
+// OAuth2 Configuration for Gmail
+const OAuth2 = google.auth.OAuth2;
+
+async function createGmailTransporter() {
+  const clientId = process.env.CLIENT_ID;
+  const clientSecret = process.env.CLIENT_SECRET;
+  const refreshToken = process.env.GMAIL_REFRESH_TOKEN;
+  const fromEmail = process.env.FROM_EMAIL || process.env.SMTP_USER;
+
+  if (!clientId || !clientSecret || !refreshToken) {
+    console.log('[EMAIL] OAuth2 configuration incomplete:', {
+      CLIENT_ID: !!clientId,
+      CLIENT_SECRET: !!clientSecret,
+      GMAIL_REFRESH_TOKEN: !!refreshToken
+    });
+    return null;
+  }
+
+  const oauth2Client = new OAuth2(
+    clientId,
+    clientSecret,
+    'https://developers.google.com/oauthplayground'
+  );
+
+  oauth2Client.setCredentials({
+    refresh_token: refreshToken
+  });
+
+  try {
+    console.log('[EMAIL] Getting access token...');
+    const accessToken = await oauth2Client.getAccessToken();
+    console.log('[EMAIL] Access token obtained:', accessToken.token ? 'SUCCESS' : 'FAILED');
+    
+    // Use the generic createTransport with proper typing
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        type: 'OAuth2',
+        user: fromEmail,
+        clientId: clientId,
+        clientSecret: clientSecret,
+        refreshToken: refreshToken,
+        accessToken: accessToken.token,
+      },
+    } as any); // Type assertion to bypass strict typing
+
+    return transporter;
+  } catch (error) {
+    console.error('[EMAIL] Error creating OAuth2 transporter:', error);
+    return null;
+  }
+}
+
+async function createSMTPTransporter() {
   const smtpHost = process.env.SMTP_HOST;
   const smtpPort = process.env.SMTP_PORT || '587';
   const smtpUser = process.env.SMTP_USER;
   const smtpPass = process.env.SMTP_PASS;
+
+  if (!smtpHost || !smtpUser || !smtpPass) {
+    return null;
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: smtpHost,
+    port: parseInt(smtpPort),
+    secure: parseInt(smtpPort) === 465,
+    auth: {
+      user: smtpUser,
+      pass: smtpPass,
+    },
+    tls: {
+      rejectUnauthorized: true,
+    },
+  });
+
+  return transporter;
+}
+
+export async function sendEmail(options: EmailOptions): Promise<{ success: boolean; error?: string }> {
   const fromEmail = process.env.FROM_EMAIL || process.env.SMTP_USER;
   
-  if (!smtpHost || !smtpUser || !smtpPass) {
-    console.log('[EMAIL] SMTP configuration not complete. Email would have been sent:');
+  if (!fromEmail) {
+    return { success: false, error: 'FROM_EMAIL not configured' };
+  }
+
+  // Try SMTP first for testing, then OAuth2
+  let transporter: any = await createGmailTransporter();
+  let authMethod = 'SMTP';
+  
+    console.log('[EMAIL] SMTP not available, trying OAuth2...');
+    authMethod = 'OAuth2';
+
+  if (!transporter) {
+    console.log('[EMAIL] No email configuration available. Email would have been sent:');
     console.log('[EMAIL] To:', options.to);
     console.log('[EMAIL] Subject:', options.subject);
     console.log('[EMAIL] Body:', options.html);
-    console.log('[EMAIL] Missing config:', {
-      SMTP_HOST: !!smtpHost,
-      SMTP_USER: !!smtpUser,
-      SMTP_PASS: !!smtpPass
-    });
     return { success: true };
   }
 
   try {
-    // Create transporter
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: parseInt(smtpPort),
-      secure: false, // true for 587, false for other ports
-      auth: {
-        user: smtpUser,
-        pass: smtpPass,
-      },
-      tls: {
-        // Don't fail on invalid certs
-        rejectUnauthorized: true,
-      },
-    });
-
     // Send email
     const info = await transporter.sendMail({
       from: fromEmail,
@@ -51,10 +117,10 @@ export async function sendEmail(options: EmailOptions): Promise<{ success: boole
       html: options.html,
     });
 
-    console.log('[EMAIL] Email sent successfully:', info.messageId);
+    console.log(`[EMAIL] Email sent successfully via ${authMethod}:`, info.messageId);
     return { success: true };
   } catch (error: any) {
-    console.error('[EMAIL] Error sending email:', error);
+    console.error(`[EMAIL] Error sending email via ${authMethod}:`, error);
     return { success: false, error: error.message };
   }
 }
