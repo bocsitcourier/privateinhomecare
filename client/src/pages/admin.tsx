@@ -224,7 +224,7 @@ export default function AdminPage() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList className="grid md:grid-cols-10 grid-cols-2 w-full max-w-6xl mb-8 ">
+          <TabsList className="grid md:grid-cols-10 grid-cols-2 w-full max-w-6xl mb-8 h-auto md:h-10">
             <TabsTrigger value="dashboard" data-testid="tab-dashboard">
               <LayoutDashboard className="w-4 h-4 mr-2" />
               Dashboard
