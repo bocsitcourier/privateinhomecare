@@ -29,7 +29,8 @@ import {
   sendEmail, 
   generateApplicationNotificationEmail,
   generateInquiryNotificationEmail,
-  generateReferralNotificationEmail 
+  generateReferralNotificationEmail, 
+  generateInquiryReplyEmail
 } from "./email-utils";
 import { z } from "zod";
 import { 
@@ -40,6 +41,9 @@ import {
   auditLog,
   sanitizeErrors
 } from "./api-hardening";
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 declare module 'express-session' {
   interface SessionData {
@@ -1006,6 +1010,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const data = replySchema.parse(req.body);
       const inquiry = await storage.addInquiryReply(req.params.id, data);
+      if (!inquiry) {
+        return res.status(404).json({ error: "Inquiry not found" });
+      }
+
+      await sendEmail({
+        to: inquiry.email,
+        subject: `Inquiry Reply: ${inquiry.name || 'Your Inquiry'}`,
+        html: generateInquiryReplyEmail(inquiry, data.body),
+      });
       if (!inquiry) {
         return res.status(404).json({ error: "Inquiry not found" });
       }

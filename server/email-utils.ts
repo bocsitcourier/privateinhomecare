@@ -459,3 +459,52 @@ export function generateReferralNotificationEmail(referral: {
     </html>
   `;
 }
+
+export function generateInquiryReplyEmail(inquiry: {
+  name: string;
+}, replyMessage: string): string {
+  const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+    ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+    : 'http://localhost:5000';
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #7c3aed; color: white; padding: 20px; border-radius: 5px 5px 0 0; }
+        .content { background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; }
+        .field { margin-bottom: 15px; }
+        .label { font-weight: bold; color: #6b7280; }
+        .value { margin-top: 5px; }
+        .button { display: inline-block; background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin-top: 20px; }
+        .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1 style="margin: 0;">Reply from admin</h1>
+        </div>
+        <div class="content">
+          <div class="field">
+            <div class="label">Name:</div>
+            <div class="value">${inquiry.name}</div>
+          </div>
+          
+          <div class="field">
+            <div class="label">Reply:</div>
+            <div class="value">${replyMessage}</div>
+          </div>
+        </div>
+        <div class="footer">
+          <p>This is an automated notification from your PrivateInHomeCareGiver consultation system.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
