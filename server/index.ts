@@ -47,7 +47,8 @@ app.use(helmet({
         "https://www.google.com",
         "https://www.gstatic.com",
         "https://fonts.googleapis.com",
-        "https://www.googletagmanager.com"
+        "https://www.googletagmanager.com",
+        "https://www.google-analytics.com"
       ],
       styleSrc: [
         "'self'",
@@ -72,7 +73,8 @@ app.use(helmet({
       connectSrc: [
         "'self'",
         "https://www.google.com",
-        "https://www.googletagmanager.com"
+        "https://www.googletagmanager.com",
+        "https://www.google-analytics.com"
       ],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
@@ -231,7 +233,7 @@ app.use(async (req, res, next) => {
   next();
 });
 
-const PgSession = connectPgSimple(session);
+// const PgSession = connectPgSimple(session);
 const MemoryStore = createMemoryStore(session);
 
 // Create session store with fallback to memory store on DB connection issues
@@ -253,11 +255,10 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    // secure: process.env.NODE_ENV === "production",
+    secure: process.env.NODE_ENV === "production",
     httpOnly: true,
     sameSite: 'lax',
     domain: '.privateinhomecaregiver.com',
-    secure: 'auto' as const,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
   },
 }));
