@@ -90,7 +90,7 @@ export default function ArticlesPage() {
                           {article.excerpt}
                         </p>
                       )}
-                      {article.keywords && article.keywords.length > 0 && (
+                      {/* {article.keywords && article.keywords.length > 0 && (
                         <div className="flex flex-wrap gap-1">
                           {article.keywords.slice(0, 3).map(keyword => (
                             <Badge key={keyword} variant="outline" className="text-xs whitespace-pre-line">
@@ -103,7 +103,7 @@ export default function ArticlesPage() {
                             </Badge>
                           )}
                         </div>
-                      )}
+                      )} */}
                     </CardContent>
                   </Card>
                 </Link>

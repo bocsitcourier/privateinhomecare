@@ -296,7 +296,7 @@ export default function ArticlePage() {
           )}
 
           <div className="flex items-center justify-between mb-8">
-            {article.keywords && article.keywords.length > 0 && (
+            {/* {article.keywords && article.keywords.length > 0 && (
               <div className="flex flex-wrap gap-2" data-testid="container-keywords">
                 {article.keywords.map(keyword => (
                   <Badge key={keyword} variant="secondary" data-testid={`badge-keyword-${keyword}`} className="whitespace-pre-line">
@@ -304,7 +304,7 @@ export default function ArticlePage() {
                   </Badge>
                 ))}
               </div>
-            )}
+            )} */}
             
             <Button
               variant="outline"
