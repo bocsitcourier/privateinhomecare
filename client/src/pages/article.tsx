@@ -289,11 +289,11 @@ export default function ArticlePage() {
             {article.title}
           </h1>
 
-          {article.excerpt && (
+          {/* {article.excerpt && (
             <p className="text-xl text-muted-foreground mb-6" data-testid="text-excerpt">
               {article.excerpt}
             </p>
-          )}
+          )} */}
 
           <div className="flex items-center justify-between mb-8">
             {/* {article.keywords && article.keywords.length > 0 && (
