@@ -74,7 +74,7 @@ export default function InquiriesManagement() {
           {Array.isArray(inquiries) && inquiries.map((inquiry: Inquiry) => (
             <Card key={inquiry.id} data-testid={`card-inquiry-${inquiry.id}`}>
               <CardHeader>
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between flex-col md:flex-row gap-4">
                   <div className="space-y-1 flex-1">
                     <CardTitle className="flex items-center gap-2">
                       <Mail className="w-5 h-5" />
