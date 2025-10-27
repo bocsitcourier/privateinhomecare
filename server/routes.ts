@@ -1041,6 +1041,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/admin/inquiries/:id", requireAuth, async (req, res) => {
+    try {
+      const deleted = await storage.deleteInquiry(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Inquiry not found" });
+      }
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.get("/api/admin/pages", requireAuth, async (req, res) => {
     try {
       const pages = await storage.listPageMeta();

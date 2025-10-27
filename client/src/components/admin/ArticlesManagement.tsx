@@ -208,7 +208,7 @@ export default function ArticlesManagement() {
       {isLoading ? (
         <Card><CardContent className="p-8 text-center">Loading...</CardContent></Card>
       ) : (
-        <div className="grid gap-4 grid-flow-row md:grid-flow-col">
+        <div className="grid gap-4 grid-flow-row">
           {Array.isArray(articles) && articles.length === 0 && (
             <Card><CardContent className="p-8 text-center text-muted-foreground">No articles yet. Create one to get started.</CardContent></Card>
           )}

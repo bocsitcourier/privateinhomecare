@@ -64,6 +64,7 @@ export interface IStorage {
   updateInquiry(id: string, inquiry: UpdateInquiry): Promise<Inquiry | undefined>;
   updateInquiryStatus(id: string, status: string): Promise<Inquiry | undefined>;
   addInquiryReply(id: string, reply: Reply): Promise<Inquiry | undefined>;
+  deleteInquiry(id: string): Promise<boolean>;
   
   listPageMeta(): Promise<PageMeta[]>;
   getPageMeta(pageSlug: string): Promise<PageMeta | undefined>;
@@ -578,6 +579,10 @@ export class MemStorage implements IStorage {
     };
     this.inquiries.set(id, updated);
     return updated;
+  }
+
+  async deleteInquiry(id: string): Promise<boolean> {
+    return this.inquiries.delete(id);
   }
 
   async listPageMeta(): Promise<PageMeta[]> {
@@ -1439,6 +1444,11 @@ export class DbStorage implements IStorage {
       .where(eq(inquiries.id, id))
       .returning();
     return result[0];
+  }
+
+  async deleteInquiry(id: string): Promise<boolean> {
+    const result = await this.db.delete(inquiries).where(eq(inquiries.id, id)).returning();
+    return result.length > 0;
   }
 
   async listPageMeta(): Promise<PageMeta[]> {
