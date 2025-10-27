@@ -5,6 +5,7 @@ import connectPgSimple from "connect-pg-simple";
 import createMemoryStore from "memorystore";
 import helmet from "helmet";
 import cors from "cors";
+import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
@@ -121,6 +122,7 @@ function cleanIPCache() {
   }
 }
 
+
 function isPrivateIP(ip: string): boolean {
   let normalizedIP = ip.replace(/:\d+$/, '');
   
@@ -232,6 +234,20 @@ app.use(async (req, res, next) => {
   
   next();
 });
+
+app.use(express.static(path.join(__dirname, 'uploads'), {
+  maxAge: '1y',
+  setHeaders: function (res, path, stat) {
+    res.set('Expires', new Date(Date.now() + 31536000000).toUTCString()); // Explicit Expires header
+  }
+}));
+
+app.use(express.static(path.join(__dirname, 'assets'), {
+  maxAge: '1y',
+  setHeaders: function (res, path, stat) {
+    res.set('Expires', new Date(Date.now() + 31536000000).toUTCString()); // Explicit Expires header
+  }
+}));
 
 // const PgSession = connectPgSimple(session);
 const MemoryStore = createMemoryStore(session);
