@@ -234,6 +234,7 @@ app.use(async (req, res, next) => {
   
   next();
 });
+const __dirname = import.meta.dirname;
 
 app.use(express.static(path.join(__dirname, 'uploads'), {
   maxAge: '1y',
