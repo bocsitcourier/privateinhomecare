@@ -368,7 +368,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     next();
   });
-  app.use('/uploads', express.static('uploads'));
+  app.use('/uploads', express.static('uploads', {
+    maxAge: "1y",
+    immutable: true
+  }));
   
   app.post("/api/auth/login", authLimiter, async (req, res) => {
     try {
