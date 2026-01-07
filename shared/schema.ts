@@ -1007,3 +1007,160 @@ export const updatePodcastSchema = insertPodcastSchema.partial();
 export type InsertPodcast = z.infer<typeof insertPodcastSchema>;
 export type UpdatePodcast = z.infer<typeof updatePodcastSchema>;
 export type Podcast = typeof podcasts.$inferSelect;
+
+// Facility types enum
+export const facilityTypeEnum = [
+  "nursing-home",
+  "assisted-living",
+  "memory-care",
+  "independent-living",
+  "continuing-care",
+] as const;
+
+// Facilities table for senior care facility directory
+export const facilities = pgTable("facilities", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  facilityType: text("facility_type").notNull(), // nursing-home, assisted-living, memory-care, independent-living
+  
+  // Location info
+  address: text("address").notNull(),
+  city: text("city").notNull(),
+  state: text("state").notNull().default("MA"),
+  zipCode: text("zip_code"),
+  county: text("county"),
+  latitude: text("latitude"),
+  longitude: text("longitude"),
+  
+  // Contact info
+  phone: text("phone"),
+  website: text("website"),
+  email: text("email"),
+  
+  // Description and details
+  description: text("description"),
+  shortDescription: text("short_description"),
+  
+  // Capacity and beds
+  totalBeds: integer("total_beds"),
+  certifiedBeds: integer("certified_beds"),
+  
+  // Images
+  heroImageUrl: text("hero_image_url"),
+  galleryImages: jsonb("gallery_images").$type<string[]>().default([]),
+  
+  // Services and amenities (stored as JSON arrays)
+  services: jsonb("services").$type<string[]>().default([]),
+  amenities: jsonb("amenities").$type<string[]>().default([]),
+  specializations: jsonb("specializations").$type<string[]>().default([]),
+  
+  // Pricing
+  priceRangeMin: integer("price_range_min"),
+  priceRangeMax: integer("price_range_max"),
+  pricingNotes: text("pricing_notes"),
+  
+  // Ratings and reviews
+  overallRating: text("overall_rating"), // stored as string for decimal like "4.5"
+  reviewCount: integer("review_count").notNull().default(0),
+  
+  // Medicare/Medicaid info
+  acceptsMedicare: text("accepts_medicare").default("unknown"),
+  acceptsMedicaid: text("accepts_medicaid").default("unknown"),
+  
+  // Certifications and licensing
+  licensedBy: text("licensed_by"),
+  licenseNumber: text("license_number"),
+  certifications: jsonb("certifications").$type<string[]>().default([]),
+  
+  // Quality metrics
+  healthInspectionRating: text("health_inspection_rating"),
+  staffingRating: text("staffing_rating"),
+  qualityRating: text("quality_rating"),
+  
+  // SEO
+  metaTitle: text("meta_title"),
+  metaDescription: text("meta_description"),
+  keywords: jsonb("keywords").$type<string[]>().default([]),
+  
+  // Organization
+  featured: text("featured").notNull().default("no"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  
+  // Status
+  status: text("status").notNull().default("draft"), // draft, published
+  publishedAt: timestamp("published_at"),
+  
+  // Source tracking (for imported data)
+  dataSource: text("data_source"), // e.g., "massgis", "medicare", "manual"
+  externalId: text("external_id"), // ID from external data source
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertFacilitySchema = createInsertSchema(facilities).omit({
+  id: true,
+  reviewCount: true,
+  publishedAt: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  facilityType: z.enum(facilityTypeEnum),
+  services: z.array(z.string()).default([]),
+  amenities: z.array(z.string()).default([]),
+  specializations: z.array(z.string()).default([]),
+  galleryImages: z.array(z.string()).default([]),
+  certifications: z.array(z.string()).default([]),
+  keywords: z.array(z.string()).default([]),
+  slug: z.string().optional(),
+  acceptsMedicare: z.enum(["yes", "no", "unknown"]).default("unknown"),
+  acceptsMedicaid: z.enum(["yes", "no", "unknown"]).default("unknown"),
+});
+
+export const updateFacilitySchema = insertFacilitySchema.partial();
+
+export type InsertFacility = z.infer<typeof insertFacilitySchema>;
+export type UpdateFacility = z.infer<typeof updateFacilitySchema>;
+export type Facility = typeof facilities.$inferSelect;
+
+// Facility reviews table
+export const facilityReviews = pgTable("facility_reviews", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  facilityId: varchar("facility_id").notNull().references(() => facilities.id, { onDelete: "cascade" }),
+  
+  // Reviewer info
+  reviewerName: text("reviewer_name").notNull(),
+  reviewerRelation: text("reviewer_relation"), // e.g., "family member", "resident", "visitor"
+  
+  // Rating (1-5 scale)
+  rating: integer("rating").notNull(),
+  
+  // Review content
+  title: text("title"),
+  content: text("content").notNull(),
+  
+  // Date of experience
+  visitDate: timestamp("visit_date"),
+  
+  // Moderation
+  status: text("status").notNull().default("pending"), // pending, approved, rejected
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertFacilityReviewSchema = createInsertSchema(facilityReviews).omit({
+  id: true,
+  status: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  rating: z.number().min(1).max(5),
+});
+
+export const updateFacilityReviewSchema = insertFacilityReviewSchema.partial();
+
+export type InsertFacilityReview = z.infer<typeof insertFacilityReviewSchema>;
+export type UpdateFacilityReview = z.infer<typeof updateFacilityReviewSchema>;
+export type FacilityReview = typeof facilityReviews.$inferSelect;

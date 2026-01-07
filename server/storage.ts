@@ -22,6 +22,8 @@ import {
   type CareType,
   type Video, type InsertVideo, type UpdateVideo,
   type Podcast, type InsertPodcast, type UpdatePodcast,
+  type Facility, type InsertFacility, type UpdateFacility,
+  type FacilityReview, type InsertFacilityReview, type UpdateFacilityReview,
   users,
   recoveryCodes,
   jobs,
@@ -43,7 +45,9 @@ import {
   serviceTypes,
   locationServices,
   videos,
-  podcasts
+  podcasts,
+  facilities,
+  facilityReviews
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { slugify, generateUniqueSlug } from "@shared/utils";
@@ -196,6 +200,26 @@ export interface IStorage {
   publishPodcast(id: string): Promise<Podcast | undefined>;
   unpublishPodcast(id: string): Promise<Podcast | undefined>;
   incrementPodcastPlays(id: string): Promise<Podcast | undefined>;
+  
+  // Facilities
+  listFacilities(filters?: { facilityType?: string; city?: string; county?: string; status?: string; featured?: string }): Promise<Facility[]>;
+  getFacility(id: string): Promise<Facility | undefined>;
+  getFacilityBySlug(slug: string): Promise<Facility | undefined>;
+  createFacility(facility: InsertFacility): Promise<Facility>;
+  updateFacility(id: string, facility: UpdateFacility): Promise<Facility | undefined>;
+  deleteFacility(id: string): Promise<boolean>;
+  publishFacility(id: string): Promise<Facility | undefined>;
+  unpublishFacility(id: string): Promise<Facility | undefined>;
+  searchFacilities(query: string, facilityType?: string): Promise<Facility[]>;
+  
+  // Facility Reviews
+  listFacilityReviews(facilityId: string, status?: string): Promise<FacilityReview[]>;
+  getFacilityReview(id: string): Promise<FacilityReview | undefined>;
+  createFacilityReview(review: InsertFacilityReview): Promise<FacilityReview>;
+  updateFacilityReview(id: string, review: UpdateFacilityReview): Promise<FacilityReview | undefined>;
+  deleteFacilityReview(id: string): Promise<boolean>;
+  approveFacilityReview(id: string): Promise<FacilityReview | undefined>;
+  rejectFacilityReview(id: string): Promise<FacilityReview | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -221,6 +245,8 @@ export class MemStorage implements IStorage {
   private locationServicesMap: Map<string, LocationService>;
   private videosMap: Map<string, Video>;
   private podcastsMap: Map<string, Podcast>;
+  private facilitiesMap: Map<string, Facility>;
+  private facilityReviewsMap: Map<string, FacilityReview>;
 
   constructor() {
     this.users = new Map();
@@ -245,6 +271,8 @@ export class MemStorage implements IStorage {
     this.locationServicesMap = new Map();
     this.videosMap = new Map();
     this.podcastsMap = new Map();
+    this.facilitiesMap = new Map();
+    this.facilityReviewsMap = new Map();
     
     this.seedDefaultData();
   }
@@ -1670,6 +1698,189 @@ export class MemStorage implements IStorage {
     this.podcastsMap.set(id, updated);
     return updated;
   }
+
+  // Facilities
+  async listFacilities(filters?: { facilityType?: string; city?: string; county?: string; status?: string; featured?: string }): Promise<Facility[]> {
+    let list = Array.from(this.facilitiesMap.values());
+    if (filters?.facilityType) {
+      list = list.filter(f => f.facilityType === filters.facilityType);
+    }
+    if (filters?.city) {
+      list = list.filter(f => f.city.toLowerCase() === filters.city!.toLowerCase());
+    }
+    if (filters?.county) {
+      list = list.filter(f => f.county?.toLowerCase() === filters.county!.toLowerCase());
+    }
+    if (filters?.status) {
+      list = list.filter(f => f.status === filters.status);
+    }
+    if (filters?.featured) {
+      list = list.filter(f => f.featured === filters.featured);
+    }
+    return list.sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name));
+  }
+
+  async getFacility(id: string): Promise<Facility | undefined> {
+    return this.facilitiesMap.get(id);
+  }
+
+  async getFacilityBySlug(slug: string): Promise<Facility | undefined> {
+    return Array.from(this.facilitiesMap.values()).find(f => f.slug === slug);
+  }
+
+  async createFacility(facility: InsertFacility): Promise<Facility> {
+    const id = randomUUID();
+    const slug = facility.slug || slugify(facility.name);
+    const now = new Date();
+    const newFacility: Facility = {
+      ...facility,
+      id,
+      slug,
+      state: facility.state || "MA",
+      zipCode: facility.zipCode || null,
+      county: facility.county || null,
+      latitude: facility.latitude || null,
+      longitude: facility.longitude || null,
+      phone: facility.phone || null,
+      website: facility.website || null,
+      email: facility.email || null,
+      description: facility.description || null,
+      shortDescription: facility.shortDescription || null,
+      totalBeds: facility.totalBeds || null,
+      certifiedBeds: facility.certifiedBeds || null,
+      heroImageUrl: facility.heroImageUrl || null,
+      galleryImages: facility.galleryImages || [],
+      services: facility.services || [],
+      amenities: facility.amenities || [],
+      specializations: facility.specializations || [],
+      priceRangeMin: facility.priceRangeMin || null,
+      priceRangeMax: facility.priceRangeMax || null,
+      pricingNotes: facility.pricingNotes || null,
+      overallRating: facility.overallRating || null,
+      reviewCount: 0,
+      acceptsMedicare: facility.acceptsMedicare || "unknown",
+      acceptsMedicaid: facility.acceptsMedicaid || "unknown",
+      licensedBy: facility.licensedBy || null,
+      licenseNumber: facility.licenseNumber || null,
+      certifications: facility.certifications || [],
+      healthInspectionRating: facility.healthInspectionRating || null,
+      staffingRating: facility.staffingRating || null,
+      qualityRating: facility.qualityRating || null,
+      metaTitle: facility.metaTitle || null,
+      metaDescription: facility.metaDescription || null,
+      keywords: facility.keywords || [],
+      featured: facility.featured || "no",
+      sortOrder: facility.sortOrder || 0,
+      status: facility.status || "draft",
+      publishedAt: null,
+      dataSource: facility.dataSource || null,
+      externalId: facility.externalId || null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.facilitiesMap.set(id, newFacility);
+    return newFacility;
+  }
+
+  async updateFacility(id: string, facility: UpdateFacility): Promise<Facility | undefined> {
+    const existing = this.facilitiesMap.get(id);
+    if (!existing) return undefined;
+    const updated: Facility = { ...existing, ...facility, updatedAt: new Date() };
+    this.facilitiesMap.set(id, updated);
+    return updated;
+  }
+
+  async deleteFacility(id: string): Promise<boolean> {
+    return this.facilitiesMap.delete(id);
+  }
+
+  async publishFacility(id: string): Promise<Facility | undefined> {
+    const existing = this.facilitiesMap.get(id);
+    if (!existing) return undefined;
+    const updated: Facility = { ...existing, status: "published", publishedAt: new Date(), updatedAt: new Date() };
+    this.facilitiesMap.set(id, updated);
+    return updated;
+  }
+
+  async unpublishFacility(id: string): Promise<Facility | undefined> {
+    const existing = this.facilitiesMap.get(id);
+    if (!existing) return undefined;
+    const updated: Facility = { ...existing, status: "draft", publishedAt: null, updatedAt: new Date() };
+    this.facilitiesMap.set(id, updated);
+    return updated;
+  }
+
+  async searchFacilities(query: string, facilityType?: string): Promise<Facility[]> {
+    const lowerQuery = query.toLowerCase();
+    let list = Array.from(this.facilitiesMap.values()).filter(f =>
+      f.name.toLowerCase().includes(lowerQuery) ||
+      f.city.toLowerCase().includes(lowerQuery) ||
+      f.address.toLowerCase().includes(lowerQuery) ||
+      f.description?.toLowerCase().includes(lowerQuery)
+    );
+    if (facilityType) {
+      list = list.filter(f => f.facilityType === facilityType);
+    }
+    return list;
+  }
+
+  // Facility Reviews
+  async listFacilityReviews(facilityId: string, status?: string): Promise<FacilityReview[]> {
+    let list = Array.from(this.facilityReviewsMap.values()).filter(r => r.facilityId === facilityId);
+    if (status) {
+      list = list.filter(r => r.status === status);
+    }
+    return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getFacilityReview(id: string): Promise<FacilityReview | undefined> {
+    return this.facilityReviewsMap.get(id);
+  }
+
+  async createFacilityReview(review: InsertFacilityReview): Promise<FacilityReview> {
+    const id = randomUUID();
+    const now = new Date();
+    const newReview: FacilityReview = {
+      ...review,
+      id,
+      title: review.title || null,
+      reviewerRelation: review.reviewerRelation || null,
+      visitDate: review.visitDate || null,
+      status: "pending",
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.facilityReviewsMap.set(id, newReview);
+    return newReview;
+  }
+
+  async updateFacilityReview(id: string, review: UpdateFacilityReview): Promise<FacilityReview | undefined> {
+    const existing = this.facilityReviewsMap.get(id);
+    if (!existing) return undefined;
+    const updated: FacilityReview = { ...existing, ...review, updatedAt: new Date() };
+    this.facilityReviewsMap.set(id, updated);
+    return updated;
+  }
+
+  async deleteFacilityReview(id: string): Promise<boolean> {
+    return this.facilityReviewsMap.delete(id);
+  }
+
+  async approveFacilityReview(id: string): Promise<FacilityReview | undefined> {
+    const existing = this.facilityReviewsMap.get(id);
+    if (!existing) return undefined;
+    const updated: FacilityReview = { ...existing, status: "approved", updatedAt: new Date() };
+    this.facilityReviewsMap.set(id, updated);
+    return updated;
+  }
+
+  async rejectFacilityReview(id: string): Promise<FacilityReview | undefined> {
+    const existing = this.facilityReviewsMap.get(id);
+    if (!existing) return undefined;
+    const updated: FacilityReview = { ...existing, status: "rejected", updatedAt: new Date() };
+    this.facilityReviewsMap.set(id, updated);
+    return updated;
+  }
 }
 
 export class DbStorage implements IStorage {
@@ -2675,6 +2886,124 @@ export class DbStorage implements IStorage {
 
   async incrementPodcastPlays(id: string): Promise<Podcast | undefined> {
     const result = await this.db.update(podcasts).set({ playCount: sql`${podcasts.playCount} + 1` }).where(eq(podcasts.id, id)).returning();
+    return result[0];
+  }
+
+  // Facilities
+  async listFacilities(filters?: { facilityType?: string; city?: string; county?: string; status?: string; featured?: string }): Promise<Facility[]> {
+    let query = this.db.select().from(facilities);
+    const conditions = [];
+    if (filters?.facilityType) {
+      conditions.push(eq(facilities.facilityType, filters.facilityType));
+    }
+    if (filters?.city) {
+      conditions.push(sql`lower(${facilities.city}) = ${filters.city.toLowerCase()}`);
+    }
+    if (filters?.county) {
+      conditions.push(sql`lower(${facilities.county}) = ${filters.county.toLowerCase()}`);
+    }
+    if (filters?.status) {
+      conditions.push(eq(facilities.status, filters.status));
+    }
+    if (filters?.featured) {
+      conditions.push(eq(facilities.featured, filters.featured));
+    }
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+    return query.orderBy(facilities.sortOrder, facilities.name);
+  }
+
+  async getFacility(id: string): Promise<Facility | undefined> {
+    const result = await this.db.select().from(facilities).where(eq(facilities.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getFacilityBySlug(slug: string): Promise<Facility | undefined> {
+    const result = await this.db.select().from(facilities).where(eq(facilities.slug, slug)).limit(1);
+    return result[0];
+  }
+
+  async createFacility(facility: InsertFacility): Promise<Facility> {
+    const existingFacilities = await this.db.select({ slug: facilities.slug }).from(facilities);
+    const existingSlugs = existingFacilities.map((f: { slug: string }) => f.slug);
+    const slug = facility.slug || generateUniqueSlug(facility.name, existingSlugs);
+    const result = await this.db.insert(facilities).values({ ...facility, slug }).returning();
+    return result[0];
+  }
+
+  async updateFacility(id: string, facility: UpdateFacility): Promise<Facility | undefined> {
+    const result = await this.db.update(facilities).set({ ...facility, updatedAt: new Date() }).where(eq(facilities.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteFacility(id: string): Promise<boolean> {
+    const result = await this.db.delete(facilities).where(eq(facilities.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async publishFacility(id: string): Promise<Facility | undefined> {
+    const result = await this.db.update(facilities).set({ status: "published", publishedAt: new Date(), updatedAt: new Date() }).where(eq(facilities.id, id)).returning();
+    return result[0];
+  }
+
+  async unpublishFacility(id: string): Promise<Facility | undefined> {
+    const result = await this.db.update(facilities).set({ status: "draft", publishedAt: null, updatedAt: new Date() }).where(eq(facilities.id, id)).returning();
+    return result[0];
+  }
+
+  async searchFacilities(query: string, facilityType?: string): Promise<Facility[]> {
+    const lowerQuery = `%${query.toLowerCase()}%`;
+    let dbQuery = this.db.select().from(facilities).where(
+      or(
+        sql`lower(${facilities.name}) LIKE ${lowerQuery}`,
+        sql`lower(${facilities.city}) LIKE ${lowerQuery}`,
+        sql`lower(${facilities.address}) LIKE ${lowerQuery}`,
+        sql`lower(${facilities.description}) LIKE ${lowerQuery}`
+      )
+    );
+    if (facilityType) {
+      dbQuery = dbQuery.where(eq(facilities.facilityType, facilityType));
+    }
+    return dbQuery;
+  }
+
+  // Facility Reviews
+  async listFacilityReviews(facilityId: string, status?: string): Promise<FacilityReview[]> {
+    let query = this.db.select().from(facilityReviews).where(eq(facilityReviews.facilityId, facilityId));
+    if (status) {
+      query = query.where(eq(facilityReviews.status, status));
+    }
+    return query.orderBy(desc(facilityReviews.createdAt));
+  }
+
+  async getFacilityReview(id: string): Promise<FacilityReview | undefined> {
+    const result = await this.db.select().from(facilityReviews).where(eq(facilityReviews.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createFacilityReview(review: InsertFacilityReview): Promise<FacilityReview> {
+    const result = await this.db.insert(facilityReviews).values(review).returning();
+    return result[0];
+  }
+
+  async updateFacilityReview(id: string, review: UpdateFacilityReview): Promise<FacilityReview | undefined> {
+    const result = await this.db.update(facilityReviews).set({ ...review, updatedAt: new Date() }).where(eq(facilityReviews.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteFacilityReview(id: string): Promise<boolean> {
+    const result = await this.db.delete(facilityReviews).where(eq(facilityReviews.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async approveFacilityReview(id: string): Promise<FacilityReview | undefined> {
+    const result = await this.db.update(facilityReviews).set({ status: "approved", updatedAt: new Date() }).where(eq(facilityReviews.id, id)).returning();
+    return result[0];
+  }
+
+  async rejectFacilityReview(id: string): Promise<FacilityReview | undefined> {
+    const result = await this.db.update(facilityReviews).set({ status: "rejected", updatedAt: new Date() }).where(eq(facilityReviews.id, id)).returning();
     return result[0];
   }
 }
