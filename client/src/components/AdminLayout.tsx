@@ -12,6 +12,7 @@ import {
   X,
   UserCircle,
   Gift,
+  Building2,
 } from "lucide-react";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
@@ -45,6 +46,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { path: "/admin/referrals", icon: Gift, label: "Referrals" },
     { path: "/admin/jobs", icon: Users, label: "Jobs" },
     { path: "/admin/articles", icon: FileText, label: "Articles" },
+    { path: "/admin/facilities", icon: Building2, label: "Facilities" },
     { path: "/admin/profile", icon: Settings, label: "Profile" },
   ];
 

@@ -7,7 +7,8 @@ export function slugify(text: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
-export function generateUniqueSlug(baseSlug: string, existingSlugs: string[]): string {
+export function generateUniqueSlug(baseName: string, existingSlugs: string[]): string {
+  const baseSlug = slugify(baseName);
   let slug = baseSlug;
   let counter = 1;
   

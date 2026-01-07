@@ -200,8 +200,12 @@ export default function FacilityDirectoryPage() {
   const [selectedType, setSelectedType] = useState<string>(params.type || "all");
   const [selectedCounty, setSelectedCounty] = useState<string>("all");
 
+  const apiUrl = selectedType !== "all" 
+    ? `/api/facilities?type=${selectedType}` 
+    : "/api/facilities";
+  
   const { data: facilities = [], isLoading } = useQuery<Facility[]>({
-    queryKey: ["/api/facilities", { type: selectedType !== "all" ? selectedType : undefined }],
+    queryKey: [apiUrl],
   });
 
   const filteredFacilities = useMemo(() => {

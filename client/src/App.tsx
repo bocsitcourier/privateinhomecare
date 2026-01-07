@@ -17,6 +17,7 @@ const AdminProfile = lazy(() => import("@/pages/admin/profile"));
 const AdminInquiries = lazy(() => import("@/pages/admin/inquiries"));
 const AdminApplications = lazy(() => import("@/pages/admin/applications"));
 const AdminReferrals = lazy(() => import("@/pages/admin/referrals"));
+const AdminFacilities = lazy(() => import("@/pages/admin/facilities"));
 const ServicesPage = lazy(() => import("@/pages/services"));
 const ConsultationPage = lazy(() => import("@/pages/consultation"));
 const CaregiversPage = lazy(() => import("@/pages/caregivers"));
@@ -96,6 +97,7 @@ function Router() {
         <Route path="/admin/inquiries" component={AdminInquiries} />
         <Route path="/admin/applications" component={AdminApplications} />
         <Route path="/admin/referrals" component={AdminReferrals} />
+        <Route path="/admin/facilities" component={AdminFacilities} />
         <Route path="/admin/profile" component={AdminProfile} />
         <Route path="/admin" component={AdminPage} />
         <Route component={NotFound} />
