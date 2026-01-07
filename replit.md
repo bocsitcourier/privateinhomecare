@@ -21,7 +21,7 @@ Preferred communication style: Simple, everyday language.
 -   **Navigation**: Header with purple "Contact Us" button, navigation links include About, Services, Locations (links to Communities section), Articles, Find Caregivers, and Careers. Mobile menu includes all navigation links.
 -   **SEO**: Comprehensive SEO with database-driven metadata, dynamic sitemap generation, `robots.txt`, enhanced 404 page, canonical URLs, structured data (JSON-LD including SiteNavigationElement for Google search sitelinks), Open Graph tags, Twitter Card support, and custom favicon with MA location keywords. Performance optimized with resource hints.
 -   **PWA**: Progressive Web App support with service worker for offline capabilities and secure caching.
--   **City Location Pages**: Dynamic pages for 31 Massachusetts cities with local SEO, golden star ratings in testimonials, and "10+ years experience" trust indicator.
+-   **Massachusetts Care Directory**: Comprehensive location directory at `/care-directory` with 65+ MA municipalities, search/filter by region/county, dynamic city pages at `/care-directory/:slug` with HomeHealthCareService structured data, BreadcrumbList schema, real zip codes/county data, and stock images. Admin CMS for location management with full CRUD operations.
 -   **Careers Page**: Enhanced "Join Our Team" experience with benefits, role comparison, requirements, and multiple CTAs to the application system.
 -   **Branding**: "Communities We Serve" section (previously "Areas We Serve"), emphasis on local community engagement.
 
@@ -30,7 +30,7 @@ Preferred communication style: Simple, everyday language.
 -   **Server**: Express.js with Node.js and TypeScript.
 -   **API**: RESTful API for public inquiries and admin CRUD operations (jobs, articles, inquiries, applications, referrals, page metadata).
 -   **Data Layer**: Drizzle ORM for PostgreSQL (currently using in-memory `MemStorage` due to Replit network restrictions, `DbStorage` ready for Supabase). Zod schemas for validation.
--   **Database Schema**: Includes `Users`, `RecoveryCodes`, `Jobs`, `Articles`, `Inquiries`, `PageMetadata`, `Caregivers`, `JobApplications`, `LeadMagnets`, and an `IntakeForm` for health care plan assessment.
+-   **Database Schema**: Includes `Users`, `RecoveryCodes`, `Jobs`, `Articles`, `Inquiries`, `PageMetadata`, `Caregivers`, `JobApplications`, `LeadMagnets`, `IntakeForm` for health care plan assessment, and directory tables (`MaLocations`, `DirectoryPages`, `LocationFaqs`, `LocationReviews`) for the Massachusetts Care Directory.
 -   **Security**: Multi-layered architecture including `bcrypt` for password hashing, `express-session` with PostgreSQL-backed session store in production (MemoryStore in development), `helmet` for security headers (CSP, X-Frame-Options etc.), API hardening (SQL injection, XSS prevention, rate limiting), anti-spam measures (honeypot, disposable email blocking, server-side CAPTCHA), IP-based geo-blocking, DOMPurify for HTML sanitization, and comprehensive audit logging. Admin login requires reCAPTCHA when `RECAPTCHA_SECRET_KEY` is configured; skips CAPTCHA in development environments for testing. SSN field removed from applications for compliance. Cookie settings: secure (HTTPS-only in production), httpOnly, sameSite='lax' for compatibility with Digital Ocean deployments.
 -   **Content Management**: Draft/published status for articles and jobs, Rich Text Editor (TipTap) for content.
 -   **Lead Magnet System**: Email capture for downloadable resources with security measures.
