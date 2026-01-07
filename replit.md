@@ -39,7 +39,18 @@ Preferred communication style: Simple, everyday language.
 -   **API**: RESTful API for public inquiries and admin CRUD operations (jobs, articles, inquiries, applications, referrals, page metadata).
 -   **Data Layer**: Drizzle ORM for PostgreSQL (currently using in-memory `MemStorage` due to Replit network restrictions, `DbStorage` ready for Supabase). Zod schemas for validation.
 -   **Database Schema**: Includes `Users`, `RecoveryCodes`, `Jobs`, `Articles`, `ArticleFaqs` (for article-specific FAQs), `Inquiries`, `PageMetadata`, `Caregivers`, `JobApplications`, `LeadMagnets`, `IntakeForm` for health care plan assessment, directory tables (`MaLocations`, `DirectoryPages`, `LocationFaqs`, `LocationReviews`) for the Massachusetts Care Directory, and care type tables (`CareTypePages`, `LocationFaqs`, `LocationReviews`) for care-type specific location pages.
--   **Caregiver Resources**: Comprehensive article library with 12+ seed articles covering in-home care, dementia care, caregiver burnout, safety, legal/financial planning, nutrition, respite care, and Massachusetts-specific programs (PCA, MassHealth). Each article includes 3-4 FAQs with detailed Q&A.
+-   **Caregiver Resources**: Comprehensive article library with 100+ SEO-optimized articles covering:
+    -   Care Guides: Complete guides to in-home care, home care vs home health care, choosing agencies
+    -   Dementia Care: Alzheimer's care, dementia stages, memory care strategies, sundowning
+    -   Caregiver Support: Burnout prevention, self-care, family dynamics, support networks
+    -   Safety: Fall prevention, home safety checklists, emergency planning
+    -   Financial Planning: Paying for care, MassHealth, veterans benefits, long-term care insurance
+    -   Legal Planning: Power of attorney, healthcare proxy, advance directives
+    -   Health & Wellness: Nutrition, medication management, chronic disease care
+    -   Types of Care: Companion care, respite care, live-in care, post-hospital care
+    -   Massachusetts Resources: PCA program, local ASAPs, state-specific programs
+    -   Each article includes 2-4 FAQs for FAQ schema markup, meta descriptions, and keywords
+    -   Seed endpoint: `POST /api/seed/articles` (with `?force=true` to reseed)
 -   **Security**: Multi-layered architecture including `bcrypt` for password hashing, `express-session` with PostgreSQL-backed session store in production (MemoryStore in development), `helmet` for security headers (CSP, X-Frame-Options etc.), API hardening (SQL injection, XSS prevention, rate limiting), anti-spam measures (honeypot, disposable email blocking, server-side CAPTCHA), IP-based geo-blocking, DOMPurify for HTML sanitization, and comprehensive audit logging. Admin login requires reCAPTCHA when `RECAPTCHA_SECRET_KEY` is configured; skips CAPTCHA in development environments for testing. SSN field removed from applications for compliance. Cookie settings: secure (HTTPS-only in production), httpOnly, sameSite='lax' for compatibility with Digital Ocean deployments.
 -   **Content Management**: Draft/published status for articles and jobs, Rich Text Editor (TipTap) for content.
 -   **Lead Magnet System**: Email capture for downloadable resources with security measures.

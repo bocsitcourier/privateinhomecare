@@ -86,7 +86,7 @@ async function seedDemoArticles() {
   try {
     const existingArticles = await storage.listArticles('published');
     if (existingArticles.length > 0) {
-      console.log("[STARTUP] Articles already exist");
+      console.log("[STARTUP] Articles already exist, skipping seed");
       return;
     }
 
@@ -121,6 +121,61 @@ async function seedDemoArticles() {
     console.log(`[STARTUP] ✓ Caregiver resource articles created: ${caregiverArticles.length}`);
   } catch (error: any) {
     console.error("[STARTUP] ✗ Failed to seed articles:", error.message);
+  }
+}
+
+async function seedComprehensiveArticles(forceReseed = false) {
+  try {
+    const comprehensiveArticlesModule = await import("./seeds/comprehensive-articles");
+    const comprehensiveArticles = comprehensiveArticlesModule.default || comprehensiveArticlesModule.comprehensiveArticles;
+    
+    let created = 0;
+    let skipped = 0;
+    
+    for (const articleData of comprehensiveArticles) {
+      const existing = await storage.getArticleBySlug(articleData.slug);
+      if (existing && !forceReseed) {
+        skipped++;
+        continue;
+      }
+      
+      if (existing && forceReseed) {
+        await storage.deleteArticle(existing.id);
+      }
+
+      const article = await storage.createArticle({
+        title: articleData.title,
+        slug: articleData.slug,
+        excerpt: articleData.excerpt,
+        body: articleData.body,
+        category: articleData.category,
+        heroImageUrl: articleData.heroImageUrl,
+        metaTitle: articleData.metaTitle,
+        metaDescription: articleData.metaDescription,
+        keywords: articleData.keywords,
+        status: "published"
+      });
+
+      if (articleData.faqs && articleData.faqs.length > 0) {
+        for (let i = 0; i < articleData.faqs.length; i++) {
+          const faq = articleData.faqs[i];
+          await storage.createArticleFaq({
+            articleId: article.id,
+            question: faq.question,
+            answer: faq.answer,
+            displayOrder: i,
+            isActive: 'yes'
+          });
+        }
+      }
+      created++;
+    }
+
+    console.log(`[SEED] ✓ Comprehensive articles: ${created} created, ${skipped} skipped`);
+    return { created, skipped, total: comprehensiveArticles.length };
+  } catch (error: any) {
+    console.error("[SEED] ✗ Failed to seed comprehensive articles:", error.message);
+    throw error;
   }
 }
 
@@ -529,6 +584,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         username: "admin",
         password: "demo123",
         recoveryCodes: recoveryCodes 
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/seed/articles", async (req, res) => {
+    try {
+      const forceReseed = req.query.force === 'true';
+      const result = await seedComprehensiveArticles(forceReseed);
+      res.json({ 
+        success: true, 
+        message: `Comprehensive articles seeded successfully`,
+        ...result
       });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
