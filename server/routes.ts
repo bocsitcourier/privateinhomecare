@@ -3499,6 +3499,257 @@ export async function registerRoutes(app: Express): Promise<Server> {
               { value: "healthcare", label: "On-site healthcare", score: 2 }
             ]}
           ]
+        },
+        {
+          slug: "homemaking-care-assessment",
+          title: "Homemaking Care Assessment",
+          subtitle: "Find the right household support",
+          description: "Help us understand your homemaking and household management needs.",
+          category: "service",
+          targetType: "homemaking",
+          serviceType: "homemaking",
+          status: "published",
+          resultTitle: "Your Homemaking Care Plan",
+          resultDescription: "Based on your responses, we've identified homemaking services that match your needs.",
+          ctaText: "Schedule a Free Consultation",
+          ctaUrl: "/consultation",
+          metaTitle: "Homemaking Care Assessment | PrivateInHomeCareGiver",
+          metaDescription: "Take our free assessment to find the right homemaking and household support services in Massachusetts.",
+          questions: [
+            { text: "What household tasks need assistance?", type: "multiple_choice", options: [
+              { value: "cleaning", label: "Light housekeeping and cleaning", score: 1 },
+              { value: "laundry", label: "Laundry and linens", score: 1 },
+              { value: "meals", label: "Meal preparation", score: 2 },
+              { value: "shopping", label: "Grocery shopping and errands", score: 1 },
+              { value: "organization", label: "Home organization", score: 1 }
+            ]},
+            { text: "How often is homemaking help needed?", options: [
+              { value: "weekly", label: "Once a week", score: 1 },
+              { value: "twiceweek", label: "2-3 times per week", score: 2 },
+              { value: "daily", label: "Daily assistance", score: 3 }
+            ]},
+            { text: "Are there any mobility limitations to consider?", options: [
+              { value: "none", label: "No mobility issues", score: 1 },
+              { value: "some", label: "Some difficulty with movement", score: 2 },
+              { value: "significant", label: "Significant mobility challenges", score: 3 }
+            ]}
+          ]
+        },
+        {
+          slug: "respite-care-assessment",
+          title: "Respite Care Assessment",
+          subtitle: "Give family caregivers a well-deserved break",
+          description: "Let us help you find temporary relief care while you recharge.",
+          category: "service",
+          targetType: "respite-care",
+          serviceType: "respite-care",
+          status: "published",
+          resultTitle: "Your Respite Care Options",
+          resultDescription: "We've identified respite care solutions to support your family.",
+          ctaText: "Schedule Respite Care",
+          ctaUrl: "/consultation",
+          metaTitle: "Respite Care Assessment | PrivateInHomeCareGiver",
+          metaDescription: "Find temporary relief care for family caregivers in Massachusetts with our free respite care assessment.",
+          questions: [
+            { text: "How long do you need respite care?", options: [
+              { value: "hours", label: "A few hours", score: 1 },
+              { value: "day", label: "Full day", score: 2 },
+              { value: "overnight", label: "Overnight stay", score: 3 },
+              { value: "extended", label: "Multiple days/week", score: 4 }
+            ]},
+            { text: "What level of care does your loved one need?", options: [
+              { value: "companionship", label: "Mainly companionship and supervision", score: 1 },
+              { value: "personal", label: "Personal care assistance", score: 2 },
+              { value: "medical", label: "Medical care management", score: 3 },
+              { value: "memory", label: "Memory care support", score: 3 }
+            ]},
+            { text: "How soon do you need respite care?", options: [
+              { value: "planning", label: "Planning for the future", score: 1 },
+              { value: "month", label: "Within the next month", score: 2 },
+              { value: "week", label: "Within a week", score: 3 },
+              { value: "urgent", label: "As soon as possible", score: 4 }
+            ]}
+          ]
+        },
+        {
+          slug: "live-in-care-assessment",
+          title: "Live-In Care Assessment",
+          subtitle: "24/7 care in the comfort of home",
+          description: "Determine if live-in care is the right solution for your family.",
+          category: "service",
+          targetType: "live-in-care",
+          serviceType: "live-in-care",
+          status: "published",
+          resultTitle: "Your Live-In Care Recommendation",
+          resultDescription: "Based on your needs, here are our live-in care recommendations.",
+          ctaText: "Learn About Live-In Care",
+          ctaUrl: "/live-in-care/massachusetts",
+          metaTitle: "Live-In Care Assessment | PrivateInHomeCareGiver",
+          metaDescription: "Discover if 24/7 live-in care is right for your loved one in Massachusetts.",
+          questions: [
+            { text: "Why is live-in care being considered?", options: [
+              { value: "safety", label: "Safety concerns when alone", score: 2 },
+              { value: "medical", label: "Complex medical needs", score: 3 },
+              { value: "memory", label: "Memory issues requiring supervision", score: 3 },
+              { value: "preference", label: "Prefer aging in place vs facility", score: 1 }
+            ]},
+            { text: "What is the current living situation?", options: [
+              { value: "alone", label: "Living alone", score: 3 },
+              { value: "spouse", label: "Living with spouse/partner", score: 2 },
+              { value: "family", label: "Living with family", score: 1 }
+            ]},
+            { text: "Is there a private room available for a live-in caregiver?", options: [
+              { value: "yes", label: "Yes, private room available", score: 1 },
+              { value: "can-arrange", label: "Can arrange accommodations", score: 2 },
+              { value: "no", label: "No, need to discuss options", score: 2 }
+            ]}
+          ]
+        },
+        {
+          slug: "post-hospital-care-assessment",
+          title: "Post-Hospital Care Assessment",
+          subtitle: "Smooth recovery after hospitalization",
+          description: "Get the right support during recovery after a hospital stay or surgery.",
+          category: "service",
+          targetType: "post-hospital-care",
+          serviceType: "post-hospital-care",
+          status: "published",
+          resultTitle: "Your Recovery Care Plan",
+          resultDescription: "We've created a recovery support plan based on your needs.",
+          ctaText: "Schedule Recovery Care",
+          ctaUrl: "/consultation",
+          metaTitle: "Post-Hospital Care Assessment | PrivateInHomeCareGiver",
+          metaDescription: "Get the right home care support after hospitalization or surgery in Massachusetts.",
+          questions: [
+            { text: "What type of hospital stay occurred?", options: [
+              { value: "surgery", label: "Planned surgery", score: 2 },
+              { value: "emergency", label: "Emergency hospitalization", score: 3 },
+              { value: "illness", label: "Illness treatment", score: 2 },
+              { value: "rehab", label: "Rehabilitation stay", score: 2 }
+            ]},
+            { text: "What recovery support is needed?", type: "multiple_choice", options: [
+              { value: "mobility", label: "Mobility assistance", score: 2 },
+              { value: "medication", label: "Medication reminders", score: 1 },
+              { value: "wound", label: "Wound care monitoring", score: 2 },
+              { value: "therapy", label: "Therapy exercise support", score: 2 },
+              { value: "meals", label: "Meal preparation", score: 1 }
+            ]},
+            { text: "When is hospital discharge expected?", options: [
+              { value: "discharged", label: "Already discharged", score: 3 },
+              { value: "days", label: "Within a few days", score: 3 },
+              { value: "week", label: "Within a week", score: 2 },
+              { value: "planning", label: "Planning ahead", score: 1 }
+            ]}
+          ]
+        },
+        {
+          slug: "memory-care-facility-quiz",
+          title: "Memory Care Facility Assessment",
+          subtitle: "Find specialized memory care for your loved one",
+          description: "Evaluate if a memory care community is the right choice for dementia or Alzheimer's care.",
+          category: "facility",
+          targetType: "memory-care",
+          facilityType: "memory-care",
+          status: "published",
+          resultTitle: "Your Memory Care Options",
+          resultDescription: "Based on your responses, here are memory care facility recommendations.",
+          ctaText: "Browse Memory Care Facilities",
+          ctaUrl: "/facilities/memory-care",
+          metaTitle: "Memory Care Facility Assessment | PrivateInHomeCareGiver",
+          metaDescription: "Find the right memory care community for Alzheimer's or dementia care in Massachusetts.",
+          questions: [
+            { text: "What is the current memory care diagnosis?", options: [
+              { value: "early-alzheimers", label: "Early-stage Alzheimer's", score: 1 },
+              { value: "mid-alzheimers", label: "Mid-stage Alzheimer's", score: 2 },
+              { value: "late-alzheimers", label: "Late-stage Alzheimer's", score: 3 },
+              { value: "other-dementia", label: "Other form of dementia", score: 2 }
+            ]},
+            { text: "What safety concerns exist?", type: "multiple_choice", options: [
+              { value: "wandering", label: "Wandering risk", score: 2 },
+              { value: "falls", label: "Fall risk", score: 2 },
+              { value: "medication", label: "Medication management", score: 1 },
+              { value: "behavior", label: "Behavioral challenges", score: 2 }
+            ]},
+            { text: "What is most important in a memory care facility?", options: [
+              { value: "security", label: "Secure environment", score: 2 },
+              { value: "activities", label: "Engaging activities program", score: 1 },
+              { value: "medical", label: "Medical support on-site", score: 2 },
+              { value: "homelike", label: "Home-like atmosphere", score: 1 }
+            ]}
+          ]
+        },
+        {
+          slug: "independent-living-quiz",
+          title: "Independent Living Assessment",
+          subtitle: "Active senior living with peace of mind",
+          description: "Discover if an independent living community is right for your lifestyle.",
+          category: "facility",
+          targetType: "independent-living",
+          facilityType: "independent-living",
+          status: "published",
+          resultTitle: "Your Independent Living Match",
+          resultDescription: "We've identified independent living options based on your preferences.",
+          ctaText: "Explore Independent Living",
+          ctaUrl: "/facilities/independent-living",
+          metaTitle: "Independent Living Assessment | PrivateInHomeCareGiver",
+          metaDescription: "Find the perfect independent living community for active seniors in Massachusetts.",
+          questions: [
+            { text: "What is motivating the move to independent living?", options: [
+              { value: "downsize", label: "Want to downsize and simplify", score: 1 },
+              { value: "social", label: "Seeking more social connections", score: 1 },
+              { value: "maintenance", label: "Tired of home maintenance", score: 1 },
+              { value: "future", label: "Planning for future care needs", score: 2 }
+            ]},
+            { text: "What amenities are most important?", type: "multiple_choice", options: [
+              { value: "dining", label: "Restaurant-style dining", score: 1 },
+              { value: "fitness", label: "Fitness center and pool", score: 1 },
+              { value: "activities", label: "Social activities and clubs", score: 1 },
+              { value: "transportation", label: "Transportation services", score: 1 },
+              { value: "concierge", label: "Concierge services", score: 1 }
+            ]},
+            { text: "What living space do you prefer?", options: [
+              { value: "studio", label: "Studio apartment", score: 1 },
+              { value: "one-bed", label: "One-bedroom apartment", score: 1 },
+              { value: "two-bed", label: "Two-bedroom apartment", score: 2 },
+              { value: "cottage", label: "Cottage or villa", score: 2 }
+            ]}
+          ]
+        },
+        {
+          slug: "continuing-care-quiz",
+          title: "Continuing Care Community Assessment",
+          subtitle: "Plan for all stages of senior living",
+          description: "Explore if a continuing care retirement community (CCRC) fits your long-term plans.",
+          category: "facility",
+          targetType: "continuing-care",
+          facilityType: "continuing-care",
+          status: "published",
+          resultTitle: "Your CCRC Options",
+          resultDescription: "Based on your responses, here are continuing care community recommendations.",
+          ctaText: "Explore CCRCs",
+          ctaUrl: "/facilities/continuing-care",
+          metaTitle: "Continuing Care Assessment | PrivateInHomeCareGiver",
+          metaDescription: "Find the right continuing care retirement community (CCRC) in Massachusetts.",
+          questions: [
+            { text: "What is the current health status?", options: [
+              { value: "excellent", label: "Excellent - fully independent", score: 1 },
+              { value: "good", label: "Good - minor health management", score: 1 },
+              { value: "fair", label: "Fair - some ongoing care needs", score: 2 },
+              { value: "planning", label: "Planning for future needs", score: 1 }
+            ]},
+            { text: "What is most important about a CCRC?", options: [
+              { value: "security", label: "Long-term care security", score: 2 },
+              { value: "lifestyle", label: "Active lifestyle amenities", score: 1 },
+              { value: "healthcare", label: "On-campus healthcare", score: 2 },
+              { value: "community", label: "Strong sense of community", score: 1 }
+            ]},
+            { text: "What type of contract is preferred?", options: [
+              { value: "lifecare", label: "Life care (Type A) - predictable costs", score: 2 },
+              { value: "modified", label: "Modified (Type B) - balance of costs", score: 2 },
+              { value: "fee-service", label: "Fee-for-service (Type C) - lower entry", score: 1 },
+              { value: "unsure", label: "Need guidance on options", score: 1 }
+            ]}
+          ]
         }
       ];
 
