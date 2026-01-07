@@ -10,7 +10,7 @@ import PageSEO from "@/components/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Heart, Users, Home as HomeIcon, Brain, Phone, Mail, MapPin, ArrowRight, Clock, DollarSign } from "lucide-react";
+import { Heart, Users, Home as HomeIcon, Brain, Phone, Mail, MapPin, ArrowRight, Clock, DollarSign, Building2, BookOpen, ClipboardCheck, Play, Mic } from "lucide-react";
 import type { Article, Job } from "@shared/schema";
 import caregiverImage from "@assets/compassionate inhome care_1760033982348.webp";
 import careCoordinatorImage from "@assets/Private inhome care in MA_1760035857926.png";
@@ -284,6 +284,87 @@ export default function Home() {
                 onRequestService={handleRequestService}
               />
             ))}
+          </div>
+        </section>
+
+        <section id="explore" className="bg-muted/30 py-16 md:py-20">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-12">
+              <h3 className="text-2xl md:text-3xl font-bold text-primary mb-3">
+                Explore Care Options
+              </h3>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Find the right care solution for your family with our comprehensive resources
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6 mb-10">
+              <Link href="/facilities">
+                <Card className="h-full hover-elevate cursor-pointer group" data-testid="card-explore-facilities">
+                  <CardContent className="p-6 text-center">
+                    <div className="inline-flex items-center justify-center w-14 h-14 bg-primary/10 rounded-full mb-4 group-hover:bg-primary/20 transition-colors">
+                      <Building2 className="w-7 h-7 text-primary" />
+                    </div>
+                    <h4 className="font-semibold text-lg mb-2">Facility Directory</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Browse 68+ senior care facilities across all 14 Massachusetts counties
+                    </p>
+                    <span className="text-primary text-sm font-medium inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+                      Explore Facilities <ArrowRight className="w-4 h-4" />
+                    </span>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link href="/caregiver-resources">
+                <Card className="h-full hover-elevate cursor-pointer group" data-testid="card-explore-resources">
+                  <CardContent className="p-6 text-center">
+                    <div className="inline-flex items-center justify-center w-14 h-14 bg-chart-2/10 rounded-full mb-4 group-hover:bg-chart-2/20 transition-colors">
+                      <BookOpen className="w-7 h-7 text-chart-2" />
+                    </div>
+                    <h4 className="font-semibold text-lg mb-2">Care Resources</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Expert guides on caregiving, health conditions, costs, and planning
+                    </p>
+                    <span className="text-chart-2 text-sm font-medium inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+                      View Resources <ArrowRight className="w-4 h-4" />
+                    </span>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link href="/quiz/personal-care">
+                <Card className="h-full hover-elevate cursor-pointer group border-primary/20 bg-primary/5" data-testid="card-explore-quiz">
+                  <CardContent className="p-6 text-center">
+                    <div className="inline-flex items-center justify-center w-14 h-14 bg-primary/20 rounded-full mb-4 group-hover:bg-primary/30 transition-colors">
+                      <ClipboardCheck className="w-7 h-7 text-primary" />
+                    </div>
+                    <h4 className="font-semibold text-lg mb-2">Care Assessment</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Answer a few questions to find the right care options for your needs
+                    </p>
+                    <span className="text-primary text-sm font-medium inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+                      Start Assessment <ArrowRight className="w-4 h-4" />
+                    </span>
+                  </CardContent>
+                </Card>
+              </Link>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link href="/videos">
+                <Button variant="outline" size="sm" className="gap-2" data-testid="button-videos">
+                  <Play className="w-4 h-4" />
+                  Watch Videos
+                </Button>
+              </Link>
+              <Link href="/podcasts">
+                <Button variant="outline" size="sm" className="gap-2" data-testid="button-podcasts">
+                  <Mic className="w-4 h-4" />
+                  Listen to Podcasts
+                </Button>
+              </Link>
+            </div>
           </div>
         </section>
 
@@ -652,7 +733,7 @@ export default function Home() {
       </main>
 
       <footer className="mt-12 bg-card border-t py-10">
-        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-8">
+        <div className="max-w-7xl mx-auto px-6 grid sm:grid-cols-2 md:grid-cols-4 gap-8">
           <div>
             <h4 className="font-semibold text-primary mb-3">Navigation</h4>
             <ul className="space-y-2 text-sm">
@@ -680,13 +761,23 @@ export default function Home() {
           </div>
 
           <div>
+            <h4 className="font-semibold text-primary mb-3">Explore</h4>
+            <ul className="space-y-2 text-sm">
+              <li><Link href="/facilities" className="text-foreground/70 hover:text-primary" data-testid="link-footer-facilities">Facility Directory</Link></li>
+              <li><Link href="/caregiver-resources" className="text-foreground/70 hover:text-primary" data-testid="link-footer-resources">Care Resources</Link></li>
+              <li><Link href="/quiz/personal-care" className="text-foreground/70 hover:text-primary" data-testid="link-footer-quiz">Care Assessment</Link></li>
+              <li><Link href="/videos" className="text-foreground/70 hover:text-primary" data-testid="link-footer-videos">Videos</Link></li>
+              <li><Link href="/podcasts" className="text-foreground/70 hover:text-primary" data-testid="link-footer-podcasts">Podcasts</Link></li>
+            </ul>
+          </div>
+
+          <div>
             <h4 className="font-semibold text-primary mb-3">Resources</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/intake" className="text-chart-2 hover:underline" data-testid="link-intake-form">Client intake form</Link></li>
-              <li><Link href="/hipaa-acknowledgment" className="text-chart-2 hover:underline" data-testid="link-hipaa-form">HIPAA privacy acknowledgment</Link></li>
-              <li><Link href="/caregiver-log" className="text-chart-2 hover:underline" data-testid="link-caregiver-log">Caregiver daily log</Link></li>
-              <li><Link href="/privacy-policy" className="text-chart-2 hover:underline" data-testid="link-privacy-policy">Privacy policy</Link></li>
-              <li><Link href="/terms-and-conditions" className="text-chart-2 hover:underline" data-testid="link-terms-conditions">Terms and conditions</Link></li>
+              <li><Link href="/intake" className="text-foreground/70 hover:text-primary" data-testid="link-intake-form">Client intake form</Link></li>
+              <li><Link href="/hipaa-acknowledgment" className="text-foreground/70 hover:text-primary" data-testid="link-hipaa-form">HIPAA acknowledgment</Link></li>
+              <li><Link href="/privacy-policy" className="text-foreground/70 hover:text-primary" data-testid="link-privacy-policy">Privacy policy</Link></li>
+              <li><Link href="/terms-and-conditions" className="text-foreground/70 hover:text-primary" data-testid="link-terms-conditions">Terms and conditions</Link></li>
             </ul>
           </div>
         </div>

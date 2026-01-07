@@ -1,4 +1,5 @@
-import { Heart } from "lucide-react";
+import { Heart, ClipboardCheck } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Hero() {
   return (
@@ -28,14 +29,22 @@ export default function Hero() {
               >
                 Find Care
               </a>
-              <a 
-                href="#caregivers" 
-                data-testid="button-join-team"
-                className="px-6 py-3 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-lg border border-white/30 hover-elevate active-elevate-2 transition-all"
+              <Link 
+                href="/quiz/personal-care" 
+                data-testid="button-take-assessment"
+                className="px-6 py-3 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-lg border border-white/30 hover-elevate active-elevate-2 transition-all inline-flex items-center gap-2"
               >
-                Join Our Team
-              </a>
+                <ClipboardCheck className="w-4 h-4" />
+                Take Care Assessment
+              </Link>
             </div>
+            
+            <p className="mt-6 text-sm text-white/70">
+              Not sure what care you need?{" "}
+              <Link href="/quiz/personal-care" className="underline hover:text-white" data-testid="link-assessment-help">
+                Our free assessment can help
+              </Link>
+            </p>
           </div>
         </div>
       </div>
