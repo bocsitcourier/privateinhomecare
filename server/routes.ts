@@ -127,7 +127,28 @@ async function seedDemoArticles() {
 async function seedComprehensiveArticles(forceReseed = false) {
   try {
     const comprehensiveArticlesModule = await import("./seeds/comprehensive-articles");
-    const comprehensiveArticles = comprehensiveArticlesModule.default || comprehensiveArticlesModule.comprehensiveArticles;
+    const batch2Module = await import("./seeds/articles-batch-2");
+    const batch3Module = await import("./seeds/articles-batch-3");
+    const batch4Module = await import("./seeds/articles-batch-4");
+    const batch5Module = await import("./seeds/articles-batch-5");
+    const batch6Module = await import("./seeds/articles-batch-6");
+    const batch7Module = await import("./seeds/articles-batch-7");
+    const batch8Module = await import("./seeds/articles-batch-8");
+    const batch9Module = await import("./seeds/articles-batch-9");
+    const batch10Module = await import("./seeds/articles-batch-10");
+    
+    const baseArticles = comprehensiveArticlesModule.default || comprehensiveArticlesModule.comprehensiveArticles;
+    const batch2Articles = batch2Module.articlesBatch2 || [];
+    const batch3Articles = batch3Module.articlesBatch3 || [];
+    const batch4Articles = batch4Module.articlesBatch4 || [];
+    const batch5Articles = batch5Module.articlesBatch5 || [];
+    const batch6Articles = batch6Module.articlesBatch6 || [];
+    const batch7Articles = batch7Module.articlesBatch7 || [];
+    const batch8Articles = batch8Module.articlesBatch8 || [];
+    const batch9Articles = batch9Module.articlesBatch9 || [];
+    const batch10Articles = batch10Module.articlesBatch10 || [];
+    
+    const comprehensiveArticles = [...baseArticles, ...batch2Articles, ...batch3Articles, ...batch4Articles, ...batch5Articles, ...batch6Articles, ...batch7Articles, ...batch8Articles, ...batch9Articles, ...batch10Articles];
     
     let created = 0;
     let skipped = 0;
@@ -375,6 +396,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   });
   app.use('/uploads', express.static('uploads'));
+  
+  app.use('/attached_assets', (req, res, next) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+  });
+  app.use('/attached_assets', express.static('attached_assets'));
   
   app.post("/api/auth/login", authLimiter, async (req, res) => {
     try {

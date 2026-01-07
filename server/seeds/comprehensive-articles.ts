@@ -8,7 +8,7 @@ interface ArticleImage {
   caption?: string;
 }
 
-interface ArticleSeed {
+export interface ArticleSeed {
   title: string;
   slug: string;
   excerpt: string;
