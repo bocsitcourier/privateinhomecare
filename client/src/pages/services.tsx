@@ -1,8 +1,9 @@
 import PageSEO from "@/components/PageSEO";
-import { Heart, Users, Home as HomeIcon, Brain, Clock, Shield, Award, CheckCircle2, Phone, Mail, Hospital } from "lucide-react";
+import { Heart, Users, Home as HomeIcon, Brain, Clock, Shield, Award, CheckCircle2, Phone, Mail, Hospital, ClipboardList, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
+import { Link } from "wouter";
 
 const SERVICES = [
   {
@@ -10,6 +11,7 @@ const SERVICES = [
     title: "Personal Care",
     icon: <Heart className="w-12 h-12 text-primary" />,
     description: "Compassionate assistance with activities of daily living to help your loved one maintain dignity and independence.",
+    quizSlug: "personal-care-assessment",
     features: [
       "Bathing and grooming assistance",
       "Dressing and undressing support",
@@ -24,6 +26,7 @@ const SERVICES = [
     title: "Companionship",
     icon: <Users className="w-12 h-12 text-primary" />,
     description: "Meaningful social engagement and emotional support to combat loneliness and enhance quality of life.",
+    quizSlug: "companionship-needs-quiz",
     features: [
       "Friendly conversation and active listening",
       "Shared activities and hobbies",
@@ -38,6 +41,7 @@ const SERVICES = [
     title: "Homemaking & Errands",
     icon: <HomeIcon className="w-12 h-12 text-primary" />,
     description: "Practical household support to maintain a safe, clean, and comfortable living environment.",
+    quizSlug: "homemaking-care-assessment",
     features: [
       "Meal planning and preparation",
       "Light housekeeping and laundry",
@@ -52,6 +56,7 @@ const SERVICES = [
     title: "Specialized Dementia Care",
     icon: <Brain className="w-12 h-12 text-primary" />,
     description: "Expert care for individuals living with Alzheimer's, dementia, and memory-related conditions.",
+    quizSlug: "dementia-care-assessment",
     features: [
       "Specialized dementia training",
       "Patient, compassionate communication",
@@ -66,6 +71,7 @@ const SERVICES = [
     title: "Respite Care",
     icon: <Clock className="w-12 h-12 text-primary" />,
     description: "Temporary relief for family caregivers, giving you time to recharge while your loved one receives quality care.",
+    quizSlug: "respite-care-assessment",
     features: [
       "Flexible scheduling options",
       "Hourly, daily, or weekly care",
@@ -80,6 +86,7 @@ const SERVICES = [
     title: "Live-In Care",
     icon: <Shield className="w-12 h-12 text-primary" />,
     description: "Around-the-clock support with a dedicated caregiver who lives in your home for comprehensive daily assistance.",
+    quizSlug: "live-in-care-assessment",
     features: [
       "24/7 caregiver presence",
       "Continuous monitoring and support",
@@ -94,6 +101,7 @@ const SERVICES = [
     title: "Post-Hospital Care",
     icon: <Hospital className="w-12 h-12 text-primary" />,
     description: "Transitional care after hospital discharge to ensure a safe, smooth recovery at home.",
+    quizSlug: "post-hospital-care-assessment",
     features: [
       "Discharge planning coordination",
       "Medication management",
@@ -192,7 +200,7 @@ export default function ServicesPage() {
                   <div className="mb-4">{service.icon}</div>
                   <h3 className="text-2xl font-bold mb-3">{service.title}</h3>
                   <p className="text-muted-foreground mb-6">{service.description}</p>
-                  <ul className="space-y-3">
+                  <ul className="space-y-3 mb-6">
                     {service.features.map((feature, index) => (
                       <li key={index} className="flex items-start gap-3" data-testid={`feature-${service.key}-${index}`}>
                         <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
@@ -200,6 +208,20 @@ export default function ServicesPage() {
                       </li>
                     ))}
                   </ul>
+                  <div className="flex flex-wrap gap-3">
+                    <Button asChild variant="outline" data-testid={`button-assessment-${service.key}`}>
+                      <Link href={`/quiz/${service.quizSlug}`}>
+                        <ClipboardList className="w-4 h-4 mr-2" />
+                        Take Assessment
+                      </Link>
+                    </Button>
+                    <Button asChild variant="ghost" data-testid={`button-learn-more-${service.key}`}>
+                      <Link href={`/${service.key}/massachusetts`}>
+                        Learn More
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Link>
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}
