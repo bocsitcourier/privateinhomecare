@@ -54,14 +54,16 @@ Preferred communication style: Simple, everyday language.
     -   Each page includes: hero section with CTAs, MA-specific cost data, services/amenities lists, top cities, facility vs in-home care comparison, FAQs, cross-links to other care options
     -   Positioned as educational guides to help families understand care options and compare to in-home care alternatives
     -   Navigation: "Care Options" dropdown in header with links to all 5 pages
--   **Facility Directory System**: Comprehensive senior care facility directory:
+-   **Facility Directory System**: Comprehensive statewide senior care facility directory:
     -   Routes: `/facilities` (all types), `/facilities/:type` (filtered), `/facility/:slug` (detail)
     -   5 facility types: nursing-home, assisted-living, memory-care, independent-living, continuing-care
-    -   40+ fields per facility: basic info, contact, location, services, amenities, pricing, ratings, Medicare/Medicaid
+    -   68 facilities covering all 14 Massachusetts counties: Suffolk, Middlesex, Essex, Norfolk, Plymouth, Bristol, Worcester, Hampden, Hampshire, Franklin, Berkshire, Barnstable, Dukes (Martha's Vineyard), and Nantucket
+    -   40+ fields per facility: basic info, contact, location, services, amenities, pricing, ratings, Medicare/Medicaid, license numbers, year established
     -   SEO: JSON-LD structured data (LocalBusiness, AggregateRating), Open Graph, canonical URLs
     -   Features: type/county filtering, search, ratings display, review system
+    -   Navigation: "Find Facilities" link in Care Options dropdown (desktop and mobile)
     -   Admin: Full CRUD at `/admin/facilities` with status management (draft/published)
-    -   Seed endpoint: `POST /api/seed/facilities` to populate with 12 real MA facilities
+    -   Seed endpoint: `POST /api/seed/facilities` (use `?force=true` to reseed with comprehensive data)
 -   **Quiz Lead Generation System**: Interactive assessment quizzes for lead capture:
     -   Public routes: `/quiz/:slug` for each quiz
     -   12 quiz types: 7 service types (personal-care, companionship, homemaking, dementia-care, respite-care, live-in-care, post-hospital-care) and 5 facility types (nursing-home, assisted-living, memory-care, independent-living, continuing-care)
