@@ -79,6 +79,12 @@ export default function Header() {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-56">
+                  <DropdownMenuItem asChild>
+                    <Link href="/facilities" data-testid="link-facilities">
+                      Find Facilities
+                    </Link>
+                  </DropdownMenuItem>
+                  <div className="h-px bg-border my-1" />
                   {careOptions.map((co) => (
                     <DropdownMenuItem key={co.slug} asChild>
                       <Link href={`/${co.slug}/massachusetts`} data-testid={`link-${co.slug}`}>
@@ -211,6 +217,14 @@ export default function Header() {
               <div className="px-3 py-2">
                 <p className="text-sm font-medium text-muted-foreground mb-2">Care Options</p>
                 <div className="flex flex-col gap-1 pl-2">
+                  <Link
+                    href="/facilities"
+                    className="text-foreground hover-elevate px-3 py-2 rounded-md text-sm font-medium"
+                    data-testid="link-facilities-mobile"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Find Facilities
+                  </Link>
                   {careOptions.map((co) => (
                     <Link
                       key={co.slug}
