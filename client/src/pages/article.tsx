@@ -16,14 +16,20 @@ import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import Header from "@/components/Header";
 import ArticleCTA from "@/components/ArticleCTA";
-import { ArrowLeft, Share2, Check } from "lucide-react";
+import { ArrowLeft, Share2, Check, HelpCircle } from "lucide-react";
 import { Link as WouterLink } from "wouter";
 import { Helmet } from "react-helmet";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import type { Article } from "@shared/schema";
+import type { Article, ArticleFaq } from "@shared/schema";
 
 export default function ArticlePage() {
   const [, params] = useRoute("/articles/:slug");
@@ -41,6 +47,18 @@ export default function ArticlePage() {
       return response.json();
     },
     enabled: !!slug,
+  });
+
+  const { data: faqs } = useQuery<ArticleFaq[]>({
+    queryKey: ["/api/articles", article?.id, "faqs"],
+    queryFn: async () => {
+      const response = await fetch(`/api/articles/${article?.id}/faqs`);
+      if (!response.ok) {
+        return [];
+      }
+      return response.json();
+    },
+    enabled: !!article?.id,
   });
 
   const editor = useEditor({
@@ -237,6 +255,19 @@ export default function ArticlePage() {
     structuredData.articleSection = article.category;
   }
 
+  const faqStructuredData = faqs && faqs.length > 0 ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(faq => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  } : null;
+
   return (
     <>
       <Helmet>
@@ -265,6 +296,11 @@ export default function ArticlePage() {
         <script type="application/ld+json">
           {JSON.stringify(structuredData)}
         </script>
+        {faqStructuredData && (
+          <script type="application/ld+json">
+            {JSON.stringify(faqStructuredData)}
+          </script>
+        )}
       </Helmet>
       <Header />
       <div className="container mx-auto px-4 py-8">
@@ -330,6 +366,27 @@ export default function ArticlePage() {
           <div className="prose-editor prose-article" data-testid="container-body">
             <EditorContent editor={editor} />
           </div>
+
+          {faqs && faqs.length > 0 && (
+            <div className="mt-12 border-t pt-8" data-testid="container-faqs">
+              <div className="flex items-center gap-2 mb-6">
+                <HelpCircle className="w-6 h-6 text-primary" />
+                <h2 className="text-2xl font-bold">Frequently Asked Questions</h2>
+              </div>
+              <Accordion type="single" collapsible className="w-full">
+                {faqs.map((faq, index) => (
+                  <AccordionItem key={faq.id} value={`faq-${faq.id}`} data-testid={`accordion-faq-${index}`}>
+                    <AccordionTrigger className="text-left font-medium" data-testid={`trigger-faq-${index}`}>
+                      {faq.question}
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground" data-testid={`content-faq-${index}`}>
+                      {faq.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </div>
+          )}
 
           {/* Article CTAs - Conversion Elements */}
           <ArticleCTA category={article.category} />

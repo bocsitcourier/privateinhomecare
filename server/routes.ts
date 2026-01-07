@@ -90,82 +90,37 @@ async function seedDemoArticles() {
       return;
     }
 
-    const demoArticles = [
-      {
-        title: "Creating a Safe Home for Older Adults This Holiday Season",
-        slug: "safe-home-older-adults-holiday",
-        excerpt: "As families gather during the holidays, learn how to identify and address household hazards to ensure your aging loved ones can stay safe and independent at home.",
-        body: `<p>The holidays are a time when families often visit aging loved ones, making it the perfect opportunity to assess their living situation. Research shows that while 90% of seniors want to age in place, nearly 65% live in homes with at least one safety hazard. This guide will help you identify and address common risks room by room.</p>
+    const { caregiverArticles } = await import("./seeds/caregiver-articles");
 
-<h2>Bedroom Safety</h2>
-<p>Ensure the bed is at the right height - feet should touch the floor when sitting. Install nightlights to prevent falls during nighttime bathroom trips. Remove throw rugs and ensure clear pathways around the bed.</p>
-
-<h2>Bathroom</h2>
-<p>Add grab bars near the toilet and in the shower. Use non-slip mats and consider a raised toilet seat for easier use. Ensure adequate lighting and remove any clutter that could cause trips.</p>
-
-<h2>Living Room</h2>
-<p>Secure furniture that could tip over. Remove clutter and ensure clear pathways. Keep the thermostat accessible and set to a safe temperature between 68-70°F.</p>
-
-<h2>Kitchen</h2>
-<p>Ensure adequate lighting and store frequently used items within easy reach. Check that smoke detectors are working and consider automatic shut-off devices for the stove.</p>
-
-<h2>Stairs</h2>
-<p>Install sturdy handrails on both sides. Consider a stairlift if mobility is limited. Ensure proper lighting at top and bottom of stairs.</p>`,
-        category: "Safety",
-        keywords: ["home safety", "fall prevention", "aging in place", "senior safety", "holiday safety"],
-        metaTitle: "Home Safety Tips for Older Adults | Holiday Season Guide",
-        metaDescription: "Essential home safety checklist for older adults during the holidays. Learn how to identify and fix household hazards to prevent falls and ensure independence.",
+    for (const articleData of caregiverArticles) {
+      const article = await storage.createArticle({
+        title: articleData.title,
+        slug: articleData.slug,
+        excerpt: articleData.excerpt,
+        body: articleData.body,
+        category: articleData.category,
+        heroImageUrl: articleData.heroImageUrl,
+        metaTitle: articleData.metaTitle,
+        metaDescription: articleData.metaDescription,
+        keywords: articleData.keywords,
         status: "published"
-      },
-      {
-        title: "A Caregiver's Guide to Alzheimer's Care in Massachusetts",
-        slug: "alzheimers-care-guide-massachusetts",
-        excerpt: "A comprehensive guide for Massachusetts caregivers navigating Alzheimer's care, from understanding disease stages to finding local resources and support services.",
-        body: `<p>Caring for someone with Alzheimer's disease in Massachusetts requires understanding both the progression of the disease and the resources available in our state.</p>
+      });
 
-<h2>Understanding the Stages</h2>
-<h3>Early Stage (Mild)</h3>
-<p>Memory lapses, difficulty with complex tasks, mild confusion about time and place. People can still drive, work, and participate in social activities with some assistance.</p>
-
-<h3>Middle Stage (Moderate)</h3>
-<p>Increased memory loss, difficulty recognizing family members, behavioral changes, and wandering. More assistance needed with daily activities.</p>
-
-<h3>Late Stage (Severe)</h3>
-<p>Severe memory impairment, limited mobility, difficulty communicating, and need for full-time care.</p>
-
-<h2>Massachusetts Care Options</h2>
-<p><strong>In-Home Care:</strong> Professional caregivers provide assistance at home, allowing your loved one to remain in familiar surroundings.</p>
-<p><strong>MassHealth Programs:</strong> State assistance for eligible seniors, including the MassHealth Home Care program.</p>
-<p><strong>Memory Care Facilities:</strong> Specialized environments designed for advanced stages with 24/7 support.</p>
-
-<h2>Local Resources</h2>
-<ul>
-<li>Massachusetts Alzheimer's Association (24/7 helpline: 800-272-3900)</li>
-<li>Aging Services Access Points (ASAPs) throughout the state</li>
-<li>Veterans benefits for those who served</li>
-<li>Local support groups and respite care services</li>
-</ul>
-
-<h2>Legal Planning</h2>
-<p>Ensure you have Health Care Proxy and Power of Attorney documents in place while your loved one can still participate in decisions. Massachusetts offers specific forms for these documents.</p>
-
-<h2>Support for Caregivers</h2>
-<p>Join support groups through local ASAPs or the Alzheimer's Association. Remember that caring for yourself is essential to caring for others. Take advantage of respite care services to prevent burnout.</p>`,
-        category: "Alzheimer's & Dementia",
-        keywords: ["Alzheimer's care", "dementia support", "Massachusetts resources", "caregiver guide", "memory care"],
-        metaTitle: "Alzheimer's Care Guide for Massachusetts Caregivers",
-        metaDescription: "Complete guide to Alzheimer's care in Massachusetts. Find local resources, understand disease stages, and get caregiver support for dementia care.",
-        status: "published"
+      for (let i = 0; i < articleData.faqs.length; i++) {
+        const faq = articleData.faqs[i];
+        await storage.createArticleFaq({
+          articleId: article.id,
+          question: faq.question,
+          answer: faq.answer,
+          displayOrder: i,
+          isActive: 'yes'
+        });
       }
-    ];
-
-    for (const articleData of demoArticles) {
-      await storage.createArticle(articleData);
     }
 
-    console.log(`[STARTUP] ✓ Demo articles created: ${demoArticles.length}`);
+    console.log(`[STARTUP] ✓ Caregiver resource articles created: ${caregiverArticles.length}`);
   } catch (error: any) {
-    console.error("[STARTUP] ✗ Failed to seed demo articles:", error.message);
+    console.error("[STARTUP] ✗ Failed to seed articles:", error.message);
   }
 }
 
