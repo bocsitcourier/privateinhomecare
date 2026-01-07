@@ -1,8 +1,24 @@
-import { Menu, Phone, Mail } from "lucide-react";
+import { Menu, Phone, Mail, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import logo from "@assets/Private InHome CareGiver_1760037444526.png";
+
+const careTypes = [
+  { slug: "personal-care", label: "Personal Care" },
+  { slug: "companionship", label: "Companionship Care" },
+  { slug: "homemaking", label: "Homemaking Services" },
+  { slug: "dementia-care", label: "Dementia & Memory Care" },
+  { slug: "respite-care", label: "Respite Care" },
+  { slug: "live-in-care", label: "Live-In Care" },
+  { slug: "post-hospital-care", label: "Post-Hospital Care" },
+];
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -24,6 +40,23 @@ export default function Header() {
             <nav className="hidden lg:flex items-center gap-6 text-sm font-medium">
               <a href="/#about" data-testid="link-about" className="text-foreground hover-elevate px-3 py-2 rounded-md transition">About</a>
               <Link href="/services" data-testid="link-services" className="text-foreground hover-elevate px-3 py-2 rounded-md transition">Services</Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1 text-foreground hover-elevate px-3 py-2 rounded-md transition" data-testid="link-care-types">
+                    Care Types
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56">
+                  {careTypes.map((ct) => (
+                    <DropdownMenuItem key={ct.slug} asChild>
+                      <Link href={`/${ct.slug}/massachusetts`} data-testid={`link-${ct.slug}`}>
+                        {ct.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <a href="/#areas" data-testid="link-locations" className="text-foreground hover-elevate px-3 py-2 rounded-md transition">Locations</a>
               <Link href="/articles" data-testid="link-articles" className="text-foreground hover-elevate px-3 py-2 rounded-md transition">Articles</Link>
               <Link href="/caregivers" data-testid="link-find-caregivers" className="text-foreground hover-elevate px-3 py-2 rounded-md transition">
@@ -92,6 +125,22 @@ export default function Header() {
               >
                 Services
               </Link>
+              <div className="px-3 py-2">
+                <p className="text-sm font-medium text-muted-foreground mb-2">Care Types</p>
+                <div className="flex flex-col gap-1 pl-2">
+                  {careTypes.map((ct) => (
+                    <Link
+                      key={ct.slug}
+                      href={`/${ct.slug}/massachusetts`}
+                      className="text-foreground hover-elevate px-3 py-2 rounded-md text-sm"
+                      data-testid={`link-${ct.slug}-mobile`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {ct.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
               <a 
                 href="/#areas" 
                 className="text-foreground hover-elevate px-3 py-3 rounded-md text-base" 
