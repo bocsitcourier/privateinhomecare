@@ -1,0 +1,235 @@
+AI-Driven Massachusetts Care Directory
+
+PrivateInHomeCaregiver.com – Functional & Content Specification
+
+1. Core Objective
+
+Develop a fully searchable, filterable, and CMS-managed directory of senior care services for all Massachusetts locations, branded exclusively for PrivateInHomeCaregiver.com, covering:
+
+Home Care
+
+Memory Care
+
+Assisted Living
+
+Nursing Homes
+
+The system must support AI-generated localized content while remaining fully editable by administrators.
+
+2. Page Architecture & URL Structure
+
+Generate individual location pages for every Massachusetts city and town.
+
+Pages must be segmented by care type + location.
+
+URLs must follow a uniform, scalable pattern and be indexable by search engines.
+
+Example URL patterns (illustrative):
+
+/home-care/massachusetts/lowell-ma/
+
+/memory-care/massachusetts/springfield-ma/
+
+/assisted-living/massachusetts/cambridge-ma/
+
+/nursing-homes/massachusetts/new-bedford-ma/
+
+All URLs must:
+
+Be dynamically generated
+
+Be editable via admin
+
+Support canonicalization and redirects
+
+3. Search Functionality (Global & Local)
+
+The platform must include a site-wide search system with:
+
+Keyword search (city, ZIP code, care type)
+
+Auto-suggest and predictive results
+
+Location-based search (city/town, county, radius)
+
+Search results that link directly to location pages
+
+Search must be:
+
+Fast (indexed or cached)
+
+Crawlable for SEO
+
+Accessible from header and directory pages
+
+4. Advanced Filtering System
+
+Each directory and results page must include dynamic filters, allowing users to refine results by:
+
+Location Filters
+
+City / Town
+
+County
+
+ZIP Code
+
+Distance radius
+
+Care Type Filters
+
+Home Care
+
+Memory Care
+
+Assisted Living
+
+Nursing Homes
+
+Service & Care Filters
+
+Dementia / Alzheimer’s support
+
+24-hour care
+
+Live-in care
+
+Companion care
+
+Skilled nursing
+
+Respite care
+
+Administrative Filters
+
+Accepts insurance / private pay
+
+Availability status
+
+Rating / review score
+
+Filters must:
+
+Be multi-select
+
+Update results dynamically
+
+Generate SEO-friendly filtered URLs where applicable
+
+5. Content Requirements per Location Page
+
+Each page must include:
+
+Localized overview content (unique per city/town)
+
+Description of care types available in that location
+
+“Why Private In-Home Caregiver in [City]” section
+
+Service highlights
+
+Call-to-action (phone, form, scheduling)
+
+All content must be:
+
+AI-generated but human-editable
+
+Version-controlled in CMS
+
+Structured for reuse and scaling
+
+6. SEO, GEO & Schema Requirements
+
+Each page must include:
+
+Custom Meta Title & Meta Description
+
+H1 with Care Type + City + State
+
+Geo-keywords (city, county, MA)
+
+Internal linking to related locations
+
+XML sitemap inclusion
+
+Structured data:
+
+LocalBusiness
+
+FAQPage
+
+Review / AggregateRating (when applicable)
+
+7. FAQs & Reviews (Per Location)
+
+FAQs
+
+Minimum of 5 localized FAQs per page
+
+Editable via admin
+
+Marked up with FAQ schema
+
+Reviews
+
+Location-specific testimonials or aggregated reviews
+
+Moderation controls
+
+Review schema for rich results
+
+8. Media & Assets
+
+Location-specific images (stock or custom)
+
+Optimized file naming and alt text
+
+Admin-replaceable images per page
+
+Lazy loading and performance optimization
+
+9. Admin & CMS Capabilities
+
+Admin must be able to:
+
+Edit content, metadata, FAQs, and reviews
+
+Enable/disable locations or services
+
+Manage filters and search logic
+
+Bulk-update content via AI prompts or templates
+
+Assign pages to navigation menus by care type
+
+10. Navigation & Menu Structure
+
+Dedicated top-level menu items per care type
+
+Massachusetts directory landing pages
+
+City and county sub-navigation
+
+Breadcrumbs for SEO and UX
+
+11. Compliance & Best Practices
+
+Original content (no direct duplication)
+
+ADA-compliant UI
+
+Mobile-first design
+
+Fast page load and Core Web Vitals compliance
+
+Deliverable Outcome
+
+A scalable, searchable, filter-driven Massachusetts senior care directory that:
+
+Competes with major industry platforms
+
+Is fully branded for PrivateInHomeCaregiver.com
+
+Supports AI content expansion
+
+Is SEO-dominant at city, county, and state levels
