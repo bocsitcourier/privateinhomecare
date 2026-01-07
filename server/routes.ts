@@ -2861,6 +2861,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json({ message: "Facilities already seeded. Use ?force=true to reseed." });
       }
 
+      // Delete existing facilities if force mode
+      if (force && existing.length > 0) {
+        for (const facility of existing) {
+          await storage.deleteFacility(facility.id);
+        }
+      }
+
       // Map comprehensive facilities data to expected format
       const facilitiesForStorage = comprehensiveFacilities.map((f) => ({
         name: f.name,
