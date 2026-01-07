@@ -10,7 +10,7 @@ import PageSEO from "@/components/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Heart, Users, Home as HomeIcon, Brain, Phone, Mail, MapPin, ArrowRight, Clock, DollarSign, Building2, BookOpen, ClipboardCheck, Play, Mic } from "lucide-react";
+import { Heart, Users, Home as HomeIcon, Brain, Phone, Mail, MapPin, ArrowRight, Clock, DollarSign, Building2, BookOpen, ClipboardCheck, Play, Mic, Shield, Hospital } from "lucide-react";
 import type { Article, Job } from "@shared/schema";
 import caregiverImage from "@assets/compassionate inhome care_1760033982348.webp";
 import careCoordinatorImage from "@assets/Private inhome care in MA_1760035857926.png";
@@ -79,6 +79,27 @@ const SERVICES = [
     short: "Structured, patient-centered support.", 
     full: "Specialized dementia care with staff trained in communication, routines, and safety for loved ones living with memory loss.",
     icon: <Brain className="w-6 h-6 text-primary" />
+  },
+  { 
+    key: "respite-care", 
+    title: "Respite Care", 
+    short: "Temporary relief for family caregivers.", 
+    full: "Respite care provides family caregivers with a well-deserved break while ensuring your loved one receives quality, professional care.",
+    icon: <Clock className="w-6 h-6 text-primary" />
+  },
+  { 
+    key: "live-in-care", 
+    title: "Live-In Care", 
+    short: "24/7 around-the-clock support at home.", 
+    full: "Live-in care offers continuous support with a dedicated caregiver who resides in your home, providing comprehensive daily assistance.",
+    icon: <Shield className="w-6 h-6 text-primary" />
+  },
+  { 
+    key: "post-hospital-care", 
+    title: "Post-Hospital Care", 
+    short: "Recovery support after discharge.", 
+    full: "Post-hospital transitional care helps ensure a smooth recovery at home with medication management, wound care, and rehabilitation support.",
+    icon: <Hospital className="w-6 h-6 text-primary" />
   },
 ];
 
@@ -273,7 +294,7 @@ export default function Home() {
           <h3 className="text-2xl md:text-3xl font-bold text-center text-primary mb-8">
             Our Services
           </h3>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {SERVICES.map((service) => (
               <ServiceCard
                 key={service.key}

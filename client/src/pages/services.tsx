@@ -1,5 +1,5 @@
 import PageSEO from "@/components/PageSEO";
-import { Heart, Users, Home as HomeIcon, Brain, Clock, Shield, Award, CheckCircle2, Phone, Mail } from "lucide-react";
+import { Heart, Users, Home as HomeIcon, Brain, Clock, Shield, Award, CheckCircle2, Phone, Mail, Hospital } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
@@ -59,6 +59,48 @@ const SERVICES = [
       "Safety monitoring and wandering prevention",
       "Cognitive stimulation exercises",
       "Family caregiver support and education"
+    ]
+  },
+  {
+    key: "respite-care",
+    title: "Respite Care",
+    icon: <Clock className="w-12 h-12 text-primary" />,
+    description: "Temporary relief for family caregivers, giving you time to recharge while your loved one receives quality care.",
+    features: [
+      "Flexible scheduling options",
+      "Hourly, daily, or weekly care",
+      "All personal care services included",
+      "Companionship and engagement",
+      "Peace of mind for family caregivers",
+      "Emergency respite available"
+    ]
+  },
+  {
+    key: "live-in-care",
+    title: "Live-In Care",
+    icon: <Shield className="w-12 h-12 text-primary" />,
+    description: "Around-the-clock support with a dedicated caregiver who lives in your home for comprehensive daily assistance.",
+    features: [
+      "24/7 caregiver presence",
+      "Continuous monitoring and support",
+      "All personal care and homemaking",
+      "Overnight assistance available",
+      "Consistent caregiver relationship",
+      "Cost-effective alternative to facilities"
+    ]
+  },
+  {
+    key: "post-hospital-care",
+    title: "Post-Hospital Care",
+    icon: <Hospital className="w-12 h-12 text-primary" />,
+    description: "Transitional care after hospital discharge to ensure a safe, smooth recovery at home.",
+    features: [
+      "Discharge planning coordination",
+      "Medication management",
+      "Wound care and monitoring",
+      "Physical therapy support",
+      "Fall prevention",
+      "Regular health status updates"
     ]
   }
 ];
