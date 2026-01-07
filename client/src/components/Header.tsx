@@ -58,7 +58,36 @@ export default function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
               <a href="/#areas" data-testid="link-locations" className="text-foreground hover-elevate px-3 py-2 rounded-md transition">Locations</a>
-              <Link href="/articles" data-testid="link-articles" className="text-foreground hover-elevate px-3 py-2 rounded-md transition">Articles</Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1 text-foreground hover-elevate px-3 py-2 rounded-md transition" data-testid="link-resources">
+                    Resources
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56">
+                  <DropdownMenuItem asChild>
+                    <Link href="/caregiver-resources" data-testid="link-caregiver-resources">
+                      Caregiver Resources
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/articles" data-testid="link-articles">
+                      Articles
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/videos" data-testid="link-videos">
+                      Videos
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/podcasts" data-testid="link-podcasts">
+                      Podcasts
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Link href="/caregivers" data-testid="link-find-caregivers" className="text-foreground hover-elevate px-3 py-2 rounded-md transition">
                 Find Caregivers
               </Link>
@@ -149,14 +178,43 @@ export default function Header() {
               >
                 Locations
               </a>
-              <Link 
-                href="/articles" 
-                className="text-foreground hover-elevate px-3 py-3 rounded-md text-base" 
-                data-testid="link-articles-mobile"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Articles
-              </Link>
+              <div className="px-3 py-2">
+                <p className="text-sm font-medium text-muted-foreground mb-2">Resources</p>
+                <div className="flex flex-col gap-1 pl-2">
+                  <Link
+                    href="/caregiver-resources"
+                    className="text-foreground hover-elevate px-3 py-2 rounded-md text-sm"
+                    data-testid="link-caregiver-resources-mobile"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Caregiver Resources
+                  </Link>
+                  <Link
+                    href="/articles"
+                    className="text-foreground hover-elevate px-3 py-2 rounded-md text-sm"
+                    data-testid="link-articles-mobile"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Articles
+                  </Link>
+                  <Link
+                    href="/videos"
+                    className="text-foreground hover-elevate px-3 py-2 rounded-md text-sm"
+                    data-testid="link-videos-mobile"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Videos
+                  </Link>
+                  <Link
+                    href="/podcasts"
+                    className="text-foreground hover-elevate px-3 py-2 rounded-md text-sm"
+                    data-testid="link-podcasts-mobile"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Podcasts
+                  </Link>
+                </div>
+              </div>
               <Link 
                 href="/caregivers" 
                 className="text-foreground hover-elevate px-3 py-3 rounded-md text-base" 
@@ -164,14 +222,6 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Find Caregivers
-              </Link>
-              <Link 
-                href="/resources" 
-                className="text-foreground hover-elevate px-3 py-3 rounded-md text-base" 
-                data-testid="link-resources-mobile"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Resources
               </Link>
               <Link 
                 href="/careers" 
