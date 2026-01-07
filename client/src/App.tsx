@@ -40,6 +40,11 @@ const CareTypeLocationPage = lazy(() => import("@/pages/care-type-location"));
 const VideosPage = lazy(() => import("@/pages/videos"));
 const PodcastsPage = lazy(() => import("@/pages/podcasts"));
 const CaregiverResourcesPage = lazy(() => import("@/pages/caregiver-resources"));
+const NursingHomesPage = lazy(() => import("@/pages/care-options/nursing-homes"));
+const AssistedLivingPage = lazy(() => import("@/pages/care-options/assisted-living"));
+const MemoryCarePage = lazy(() => import("@/pages/care-options/memory-care"));
+const IndependentLivingPage = lazy(() => import("@/pages/care-options/independent-living"));
+const HomeCareOverviewPage = lazy(() => import("@/pages/care-options/home-care"));
 
 // Loading fallback component
 function PageLoader() {
@@ -70,6 +75,11 @@ function Router() {
         <Route path="/application-thank-you" component={ApplicationThankYouPage} />
         <Route path="/directory" component={DirectoryPage} />
         <Route path="/locations/:citySlug" component={CityPage} />
+        <Route path="/nursing-homes/massachusetts" component={NursingHomesPage} />
+        <Route path="/assisted-living/massachusetts" component={AssistedLivingPage} />
+        <Route path="/memory-care/massachusetts" component={MemoryCarePage} />
+        <Route path="/independent-living/massachusetts" component={IndependentLivingPage} />
+        <Route path="/home-care/massachusetts" component={HomeCareOverviewPage} />
         <Route path="/:careType/massachusetts/:citySlug" component={CareTypeLocationPage} />
         <Route path="/:careType/massachusetts" component={CareTypeStatePage} />
         <Route path="/privacy-policy" component={PrivacyPolicyPage} />

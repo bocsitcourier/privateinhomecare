@@ -48,6 +48,12 @@ Preferred communication style: Simple, everyday language.
     -   Support for upload, Spotify, Apple Podcasts, and Anchor embeds
     -   Episode numbers, guest information, play counts
     -   Featured episodes section
+-   **Care Options Pages**: Educational landing pages modeled after A Place for Mom structure:
+    -   5 care option pages: nursing-homes, assisted-living, memory-care, independent-living, home-care
+    -   URLs: `/{care-option}/massachusetts` (e.g., `/nursing-homes/massachusetts`)
+    -   Each page includes: hero section with CTAs, MA-specific cost data, services/amenities lists, top cities, facility vs in-home care comparison, FAQs, cross-links to other care options
+    -   Positioned as educational guides to help families understand care options and compare to in-home care alternatives
+    -   Navigation: "Care Options" dropdown in header with links to all 5 pages
 
 ### Backend
 

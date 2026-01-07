@@ -20,6 +20,14 @@ const careTypes = [
   { slug: "post-hospital-care", label: "Post-Hospital Care" },
 ];
 
+const careOptions = [
+  { slug: "nursing-homes", label: "Nursing Homes" },
+  { slug: "assisted-living", label: "Assisted Living" },
+  { slug: "memory-care", label: "Memory Care" },
+  { slug: "independent-living", label: "Independent Living" },
+  { slug: "home-care", label: "Home Care" },
+];
+
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -63,6 +71,23 @@ export default function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
               <a href="/#areas" data-testid="link-locations" className="text-foreground hover-elevate px-3 py-2 rounded-md transition">Locations</a>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1 text-foreground hover-elevate px-3 py-2 rounded-md transition" data-testid="link-care-options">
+                    Care Options
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56">
+                  {careOptions.map((co) => (
+                    <DropdownMenuItem key={co.slug} asChild>
+                      <Link href={`/${co.slug}/massachusetts`} data-testid={`link-${co.slug}`}>
+                        {co.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-1 text-foreground hover-elevate px-3 py-2 rounded-md transition" data-testid="link-resources">
@@ -183,6 +208,22 @@ export default function Header() {
               >
                 Locations
               </a>
+              <div className="px-3 py-2">
+                <p className="text-sm font-medium text-muted-foreground mb-2">Care Options</p>
+                <div className="flex flex-col gap-1 pl-2">
+                  {careOptions.map((co) => (
+                    <Link
+                      key={co.slug}
+                      href={`/${co.slug}/massachusetts`}
+                      className="text-foreground hover-elevate px-3 py-2 rounded-md text-sm"
+                      data-testid={`link-${co.slug}-mobile`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {co.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
               <div className="px-3 py-2">
                 <p className="text-sm font-medium text-muted-foreground mb-2">Resources</p>
                 <div className="flex flex-col gap-1 pl-2">
