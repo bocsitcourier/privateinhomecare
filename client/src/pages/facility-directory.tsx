@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useParams } from "wouter";
+import { Link, useParams, useSearch } from "wouter";
 import { Helmet } from "react-helmet";
 import Header from "@/components/Header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -196,9 +196,17 @@ function FacilityCard({ facility }: { facility: Facility }) {
 
 export default function FacilityDirectoryPage() {
   const params = useParams<{ type?: string }>();
-  const [searchQuery, setSearchQuery] = useState("");
+  const searchString = useSearch();
+  const urlParams = new URLSearchParams(searchString);
+  const cityFromUrl = urlParams.get("city") || "";
+  
+  const [searchQuery, setSearchQuery] = useState(cityFromUrl);
   const [selectedType, setSelectedType] = useState<string>(params.type || "all");
   const [selectedCounty, setSelectedCounty] = useState<string>("all");
+
+  useEffect(() => {
+    setSearchQuery(cityFromUrl);
+  }, [cityFromUrl]);
 
   const apiUrl = selectedType !== "all" 
     ? `/api/facilities?type=${selectedType}` 
