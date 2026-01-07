@@ -149,6 +149,7 @@ export interface IStorage {
   listCareTypePages(filters?: { locationId?: string; careType?: CareType; status?: string }): Promise<CareTypePage[]>;
   getCareTypePage(id: string): Promise<CareTypePage | undefined>;
   getCareTypePageBySlug(slug: string): Promise<CareTypePage | undefined>;
+  getCareTypePageByCareTypeAndCity(careType: string, citySlug: string): Promise<{ page: CareTypePage; location: MaLocation; faqs: LocationFaq[]; reviews: LocationReview[] } | undefined>;
   createCareTypePage(page: InsertCareTypePage): Promise<CareTypePage>;
   updateCareTypePage(id: string, page: UpdateCareTypePage): Promise<CareTypePage | undefined>;
   deleteCareTypePage(id: string): Promise<boolean>;
@@ -1340,6 +1341,21 @@ export class MemStorage implements IStorage {
     return Array.from(this.careTypePagesMap.values()).find(p => p.slug === slug);
   }
 
+  async getCareTypePageByCareTypeAndCity(careType: string, citySlug: string): Promise<{ page: CareTypePage; location: MaLocation; faqs: LocationFaq[]; reviews: LocationReview[] } | undefined> {
+    const location = await this.getMaLocationBySlug(citySlug);
+    if (!location) return undefined;
+    
+    const page = Array.from(this.careTypePagesMap.values()).find(
+      p => p.careType === careType && p.locationId === location.id && p.status === "published"
+    );
+    if (!page) return undefined;
+    
+    const faqs = await this.listLocationFaqs(page.id);
+    const reviews = await this.listLocationReviews(page.id);
+    
+    return { page, location, faqs, reviews };
+  }
+
   async createCareTypePage(page: InsertCareTypePage): Promise<CareTypePage> {
     const id = randomUUID();
     const now = new Date();
@@ -2222,6 +2238,27 @@ export class DbStorage implements IStorage {
   async getCareTypePageBySlug(slug: string): Promise<CareTypePage | undefined> {
     const result = await this.db.select().from(careTypePages).where(eq(careTypePages.slug, slug)).limit(1);
     return result[0];
+  }
+
+  async getCareTypePageByCareTypeAndCity(careType: string, citySlug: string): Promise<{ page: CareTypePage; location: MaLocation; faqs: LocationFaq[]; reviews: LocationReview[] } | undefined> {
+    const location = await this.getMaLocationBySlug(citySlug);
+    if (!location) return undefined;
+    
+    const pageResult = await this.db.select().from(careTypePages).where(
+      and(
+        eq(careTypePages.careType, careType),
+        eq(careTypePages.locationId, location.id),
+        eq(careTypePages.status, "published")
+      )
+    ).limit(1);
+    
+    if (pageResult.length === 0) return undefined;
+    const page = pageResult[0];
+    
+    const faqs = await this.listLocationFaqs(page.id);
+    const reviews = await this.listLocationReviews(page.id);
+    
+    return { page, location, faqs, reviews };
   }
 
   async createCareTypePage(page: InsertCareTypePage): Promise<CareTypePage> {

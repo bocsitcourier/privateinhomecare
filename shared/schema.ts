@@ -658,9 +658,28 @@ export type Referral = typeof referrals.$inferSelect;
 // Massachusetts Care Directory Schema
 // ============================================
 
-// Care types enum
-export const careTypeEnum = ["home-care", "memory-care", "assisted-living", "nursing-homes"] as const;
+// Care types enum - services offered by PrivateInHomeCareGiver
+export const careTypeEnum = [
+  "personal-care",
+  "companionship", 
+  "homemaking",
+  "dementia-care",
+  "respite-care",
+  "live-in-care",
+  "post-hospital-care"
+] as const;
 export type CareType = typeof careTypeEnum[number];
+
+// Care type display names
+export const careTypeDisplayNames: Record<CareType, string> = {
+  "personal-care": "Personal Care",
+  "companionship": "Companionship Care",
+  "homemaking": "Homemaking Services",
+  "dementia-care": "Dementia & Memory Care",
+  "respite-care": "Respite Care",
+  "live-in-care": "Live-In Care",
+  "post-hospital-care": "Post-Hospital Care"
+};
 
 // Massachusetts locations (cities/towns)
 export const maLocations = pgTable("ma_locations", {

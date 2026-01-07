@@ -1994,6 +1994,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public: Get care type page by care type slug and city slug
+  // URL pattern: /:careType/massachusetts/:citySlug-ma
+  app.get("/api/care-pages/:careType/:citySlug", async (req: Request, res: Response) => {
+    try {
+      const { careType, citySlug } = req.params;
+      const result = await storage.getCareTypePageByCareTypeAndCity(careType, citySlug);
+      
+      if (!result) {
+        return res.status(404).json({ message: "Care type page not found" });
+      }
+      
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error getting care type page:", error);
+      res.status(500).json({ message: "Failed to get care type page" });
+    }
+  });
+
   // Admin: Seed MA Locations
   app.post("/api/directory/seed-locations", requireAuth, async (req: Request, res: Response) => {
     try {

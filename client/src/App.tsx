@@ -35,6 +35,8 @@ const ResourcesPage = lazy(() => import("@/pages/resources"));
 const TermsAndConditionsPage = lazy(() => import("@/pages/terms-and-conditions"));
 const ReferAFriendPage = lazy(() => import("@/pages/refer-a-friend"));
 const DirectoryPage = lazy(() => import("@/pages/directory"));
+const CareTypeStatePage = lazy(() => import("@/pages/care-type-state"));
+const CareTypeLocationPage = lazy(() => import("@/pages/care-type-location"));
 
 // Loading fallback component
 function PageLoader() {
@@ -62,6 +64,8 @@ function Router() {
         <Route path="/application-thank-you" component={ApplicationThankYouPage} />
         <Route path="/directory" component={DirectoryPage} />
         <Route path="/locations/:citySlug" component={CityPage} />
+        <Route path="/:careType/massachusetts/:citySlug" component={CareTypeLocationPage} />
+        <Route path="/:careType/massachusetts" component={CareTypeStatePage} />
         <Route path="/privacy-policy" component={PrivacyPolicyPage} />
         <Route path="/terms-and-conditions" component={TermsAndConditionsPage} />
         <Route path="/intake" component={IntakePage} />
