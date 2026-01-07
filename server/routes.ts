@@ -964,6 +964,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Article FAQ routes
+  app.get("/api/articles/:articleId/faqs", async (req, res) => {
+    try {
+      const faqs = await storage.listArticleFaqs(req.params.articleId);
+      res.json(faqs);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/articles/:articleId/faqs", requireAuth, async (req, res) => {
+    try {
+      const faq = await storage.createArticleFaq({
+        ...req.body,
+        articleId: req.params.articleId,
+      });
+      res.status(201).json(faq);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/admin/articles/faqs/:id", requireAuth, async (req, res) => {
+    try {
+      const faq = await storage.updateArticleFaq(req.params.id, req.body);
+      if (!faq) {
+        return res.status(404).json({ error: "FAQ not found" });
+      }
+      res.json(faq);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/admin/articles/faqs/:id", requireAuth, async (req, res) => {
+    try {
+      const deleted = await storage.deleteArticleFaq(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: "FAQ not found" });
+      }
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.get("/api/admin/inquiries", requireAuth, async (req, res) => {
     try {
       const { status } = req.query;
