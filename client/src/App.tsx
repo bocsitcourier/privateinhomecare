@@ -37,6 +37,9 @@ const ReferAFriendPage = lazy(() => import("@/pages/refer-a-friend"));
 const DirectoryPage = lazy(() => import("@/pages/directory"));
 const CareTypeStatePage = lazy(() => import("@/pages/care-type-state"));
 const CareTypeLocationPage = lazy(() => import("@/pages/care-type-location"));
+const VideosPage = lazy(() => import("@/pages/videos"));
+const PodcastsPage = lazy(() => import("@/pages/podcasts"));
+const CaregiverResourcesPage = lazy(() => import("@/pages/caregiver-resources"));
 
 // Loading fallback component
 function PageLoader() {
@@ -61,6 +64,9 @@ function Router() {
         <Route path="/careers" component={CareersPage} />
         <Route path="/apply" component={ApplyPage} />
         <Route path="/resources" component={ResourcesPage} />
+        <Route path="/caregiver-resources" component={CaregiverResourcesPage} />
+        <Route path="/videos" component={VideosPage} />
+        <Route path="/podcasts" component={PodcastsPage} />
         <Route path="/application-thank-you" component={ApplicationThankYouPage} />
         <Route path="/directory" component={DirectoryPage} />
         <Route path="/locations/:citySlug" component={CityPage} />

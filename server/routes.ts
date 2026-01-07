@@ -18,6 +18,8 @@ import {
   insertHipaaAcknowledgmentSchema, updateHipaaAcknowledgmentSchema,
   insertLeadMagnetSchema,
   insertReferralSchema, updateReferralSchema,
+  insertVideoSchema, updateVideoSchema,
+  insertPodcastSchema, updatePodcastSchema,
   type PageMeta
 } from "@shared/schema";
 import DOMPurify from 'isomorphic-dompurify';
@@ -2360,6 +2362,244 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error deleting location:", error);
       res.status(500).json({ message: "Failed to delete location" });
+    }
+  });
+
+  // =============================================
+  // Videos API Routes
+  // =============================================
+  
+  // Public: List published videos
+  app.get("/api/videos", async (req: Request, res: Response) => {
+    try {
+      const { category } = req.query;
+      const videos = await storage.listVideos("published", category as string | undefined);
+      res.json(videos);
+    } catch (error: any) {
+      console.error("Error fetching videos:", error);
+      res.status(500).json({ message: "Failed to fetch videos" });
+    }
+  });
+
+  // Public: Get video by slug
+  app.get("/api/videos/:slug", async (req: Request, res: Response) => {
+    try {
+      const video = await storage.getVideoBySlug(req.params.slug);
+      if (!video || video.status !== "published") {
+        return res.status(404).json({ message: "Video not found" });
+      }
+      // Increment view count
+      await storage.incrementVideoViews(video.id);
+      res.json(video);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch video" });
+    }
+  });
+
+  // Admin: List all videos
+  app.get("/api/admin/videos", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { status, category } = req.query;
+      const videos = await storage.listVideos(status as string | undefined, category as string | undefined);
+      res.json(videos);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch videos" });
+    }
+  });
+
+  // Admin: Get video by ID
+  app.get("/api/admin/videos/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const video = await storage.getVideo(req.params.id);
+      if (!video) {
+        return res.status(404).json({ message: "Video not found" });
+      }
+      res.json(video);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch video" });
+    }
+  });
+
+  // Admin: Create video
+  app.post("/api/admin/videos", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const data = insertVideoSchema.parse(req.body);
+      const video = await storage.createVideo(data);
+      res.status(201).json(video);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Admin: Update video
+  app.patch("/api/admin/videos/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const data = updateVideoSchema.parse(req.body);
+      const video = await storage.updateVideo(req.params.id, data);
+      if (!video) {
+        return res.status(404).json({ message: "Video not found" });
+      }
+      res.json(video);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Admin: Delete video
+  app.delete("/api/admin/videos/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const deleted = await storage.deleteVideo(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Video not found" });
+      }
+      res.json({ message: "Video deleted" });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to delete video" });
+    }
+  });
+
+  // Admin: Publish video
+  app.post("/api/admin/videos/:id/publish", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const video = await storage.publishVideo(req.params.id);
+      if (!video) {
+        return res.status(404).json({ message: "Video not found" });
+      }
+      res.json(video);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to publish video" });
+    }
+  });
+
+  // Admin: Unpublish video
+  app.post("/api/admin/videos/:id/unpublish", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const video = await storage.unpublishVideo(req.params.id);
+      if (!video) {
+        return res.status(404).json({ message: "Video not found" });
+      }
+      res.json(video);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to unpublish video" });
+    }
+  });
+
+  // =============================================
+  // Podcasts API Routes
+  // =============================================
+  
+  // Public: List published podcasts
+  app.get("/api/podcasts", async (req: Request, res: Response) => {
+    try {
+      const { category } = req.query;
+      const podcasts = await storage.listPodcasts("published", category as string | undefined);
+      res.json(podcasts);
+    } catch (error: any) {
+      console.error("Error fetching podcasts:", error);
+      res.status(500).json({ message: "Failed to fetch podcasts" });
+    }
+  });
+
+  // Public: Get podcast by slug
+  app.get("/api/podcasts/:slug", async (req: Request, res: Response) => {
+    try {
+      const podcast = await storage.getPodcastBySlug(req.params.slug);
+      if (!podcast || podcast.status !== "published") {
+        return res.status(404).json({ message: "Podcast not found" });
+      }
+      // Increment play count
+      await storage.incrementPodcastPlays(podcast.id);
+      res.json(podcast);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch podcast" });
+    }
+  });
+
+  // Admin: List all podcasts
+  app.get("/api/admin/podcasts", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { status, category } = req.query;
+      const podcasts = await storage.listPodcasts(status as string | undefined, category as string | undefined);
+      res.json(podcasts);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch podcasts" });
+    }
+  });
+
+  // Admin: Get podcast by ID
+  app.get("/api/admin/podcasts/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const podcast = await storage.getPodcast(req.params.id);
+      if (!podcast) {
+        return res.status(404).json({ message: "Podcast not found" });
+      }
+      res.json(podcast);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch podcast" });
+    }
+  });
+
+  // Admin: Create podcast
+  app.post("/api/admin/podcasts", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const data = insertPodcastSchema.parse(req.body);
+      const podcast = await storage.createPodcast(data);
+      res.status(201).json(podcast);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Admin: Update podcast
+  app.patch("/api/admin/podcasts/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const data = updatePodcastSchema.parse(req.body);
+      const podcast = await storage.updatePodcast(req.params.id, data);
+      if (!podcast) {
+        return res.status(404).json({ message: "Podcast not found" });
+      }
+      res.json(podcast);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Admin: Delete podcast
+  app.delete("/api/admin/podcasts/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const deleted = await storage.deletePodcast(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Podcast not found" });
+      }
+      res.json({ message: "Podcast deleted" });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to delete podcast" });
+    }
+  });
+
+  // Admin: Publish podcast
+  app.post("/api/admin/podcasts/:id/publish", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const podcast = await storage.publishPodcast(req.params.id);
+      if (!podcast) {
+        return res.status(404).json({ message: "Podcast not found" });
+      }
+      res.json(podcast);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to publish podcast" });
+    }
+  });
+
+  // Admin: Unpublish podcast
+  app.post("/api/admin/podcasts/:id/unpublish", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const podcast = await storage.unpublishPodcast(req.params.id);
+      if (!podcast) {
+        return res.status(404).json({ message: "Podcast not found" });
+      }
+      res.json(podcast);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to unpublish podcast" });
     }
   });
 

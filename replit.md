@@ -32,13 +32,29 @@ Preferred communication style: Simple, everyday language.
     -   Graceful fallback content when no database entry exists
 -   **Careers Page**: Enhanced "Join Our Team" experience with benefits, role comparison, requirements, and multiple CTAs to the application system.
 -   **Branding**: "Communities We Serve" section (previously "Areas We Serve"), emphasis on local community engagement.
+-   **Caregiver Resources Hub**: Comprehensive resource center at `/caregiver-resources` modeled after A Place for Mom:
+    -   6 resource categories: Signs for Care, Making Decisions, Costs & Payment, Finding Care, Health Conditions, Caregiver Self-Care
+    -   Quick links grid for navigation to key pages
+    -   Featured articles section
+    -   Links to Videos and Podcasts pages
+    -   Topic cards for Health & Medical, Legal & Financial, Safety & Home
+-   **Videos Page**: Video gallery at `/videos` with:
+    -   7 categories: care-tips, caregiver-training, family-support, health-conditions, massachusetts-resources, testimonials, company-news
+    -   Support for upload, YouTube, and Vimeo embeds
+    -   Category filtering, featured videos, view counts
+    -   Responsive grid layout with video cards
+-   **Podcasts Page**: Podcast listing at `/podcasts` with:
+    -   6 categories: caregiver-stories, expert-interviews, family-conversations, health-topics, massachusetts-care, tips-and-advice
+    -   Support for upload, Spotify, Apple Podcasts, and Anchor embeds
+    -   Episode numbers, guest information, play counts
+    -   Featured episodes section
 
 ### Backend
 
 -   **Server**: Express.js with Node.js and TypeScript.
 -   **API**: RESTful API for public inquiries and admin CRUD operations (jobs, articles, inquiries, applications, referrals, page metadata).
 -   **Data Layer**: Drizzle ORM for PostgreSQL (currently using in-memory `MemStorage` due to Replit network restrictions, `DbStorage` ready for Supabase). Zod schemas for validation.
--   **Database Schema**: Includes `Users`, `RecoveryCodes`, `Jobs`, `Articles`, `ArticleFaqs` (for article-specific FAQs), `Inquiries`, `PageMetadata`, `Caregivers`, `JobApplications`, `LeadMagnets`, `IntakeForm` for health care plan assessment, directory tables (`MaLocations`, `DirectoryPages`, `LocationFaqs`, `LocationReviews`) for the Massachusetts Care Directory, and care type tables (`CareTypePages`, `LocationFaqs`, `LocationReviews`) for care-type specific location pages.
+-   **Database Schema**: Includes `Users`, `RecoveryCodes`, `Jobs`, `Articles`, `ArticleFaqs` (for article-specific FAQs), `Inquiries`, `PageMetadata`, `Caregivers`, `JobApplications`, `LeadMagnets`, `IntakeForm` for health care plan assessment, directory tables (`MaLocations`, `DirectoryPages`, `LocationFaqs`, `LocationReviews`) for the Massachusetts Care Directory, care type tables (`CareTypePages`, `LocationFaqs`, `LocationReviews`) for care-type specific location pages, and media tables (`Videos`, `Podcasts`) for educational content management.
 -   **Caregiver Resources**: Comprehensive article library with 52 SEO-optimized articles covering:
     -   Care Guides: Complete guides to in-home care, home care vs home health care, choosing agencies
     -   Dementia Care: Alzheimer's care, dementia stages, memory care strategies, sundowning

@@ -20,6 +20,8 @@ import {
   type ServiceType, type InsertServiceType,
   type LocationService, type InsertLocationService,
   type CareType,
+  type Video, type InsertVideo, type UpdateVideo,
+  type Podcast, type InsertPodcast, type UpdatePodcast,
   users,
   recoveryCodes,
   jobs,
@@ -39,7 +41,9 @@ import {
   locationFaqs,
   locationReviews,
   serviceTypes,
-  locationServices
+  locationServices,
+  videos,
+  podcasts
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { slugify, generateUniqueSlug } from "@shared/utils";
@@ -170,6 +174,28 @@ export interface IStorage {
   createServiceType(service: InsertServiceType): Promise<ServiceType>;
   
   searchLocations(query: string, careType?: CareType): Promise<{ locations: MaLocation[]; pages: CareTypePage[] }>;
+  
+  // Videos
+  listVideos(status?: string, category?: string): Promise<Video[]>;
+  getVideo(id: string): Promise<Video | undefined>;
+  getVideoBySlug(slug: string): Promise<Video | undefined>;
+  createVideo(video: InsertVideo): Promise<Video>;
+  updateVideo(id: string, video: UpdateVideo): Promise<Video | undefined>;
+  deleteVideo(id: string): Promise<boolean>;
+  publishVideo(id: string): Promise<Video | undefined>;
+  unpublishVideo(id: string): Promise<Video | undefined>;
+  incrementVideoViews(id: string): Promise<Video | undefined>;
+  
+  // Podcasts
+  listPodcasts(status?: string, category?: string): Promise<Podcast[]>;
+  getPodcast(id: string): Promise<Podcast | undefined>;
+  getPodcastBySlug(slug: string): Promise<Podcast | undefined>;
+  createPodcast(podcast: InsertPodcast): Promise<Podcast>;
+  updatePodcast(id: string, podcast: UpdatePodcast): Promise<Podcast | undefined>;
+  deletePodcast(id: string): Promise<boolean>;
+  publishPodcast(id: string): Promise<Podcast | undefined>;
+  unpublishPodcast(id: string): Promise<Podcast | undefined>;
+  incrementPodcastPlays(id: string): Promise<Podcast | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -193,6 +219,8 @@ export class MemStorage implements IStorage {
   private locationReviewsMap: Map<string, LocationReview>;
   private serviceTypesMap: Map<string, ServiceType>;
   private locationServicesMap: Map<string, LocationService>;
+  private videosMap: Map<string, Video>;
+  private podcastsMap: Map<string, Podcast>;
 
   constructor() {
     this.users = new Map();
@@ -215,6 +243,8 @@ export class MemStorage implements IStorage {
     this.locationReviewsMap = new Map();
     this.serviceTypesMap = new Map();
     this.locationServicesMap = new Map();
+    this.videosMap = new Map();
+    this.podcastsMap = new Map();
     
     this.seedDefaultData();
   }
@@ -1467,6 +1497,179 @@ export class MemStorage implements IStorage {
     if (careType) pages = pages.filter(p => p.careType === careType);
     return { locations, pages };
   }
+
+  // Videos implementation
+  async listVideos(status?: string, category?: string): Promise<Video[]> {
+    let videos = Array.from(this.videosMap.values());
+    if (status) videos = videos.filter(v => v.status === status);
+    if (category) videos = videos.filter(v => v.category === category);
+    return videos.sort((a, b) => a.sortOrder - b.sortOrder);
+  }
+
+  async getVideo(id: string): Promise<Video | undefined> {
+    return this.videosMap.get(id);
+  }
+
+  async getVideoBySlug(slug: string): Promise<Video | undefined> {
+    return Array.from(this.videosMap.values()).find(v => v.slug === slug);
+  }
+
+  async createVideo(video: InsertVideo): Promise<Video> {
+    const id = randomUUID();
+    const now = new Date();
+    const existingSlugs = Array.from(this.videosMap.values()).map(v => v.slug);
+    const slug = video.slug || generateUniqueSlug(video.title, existingSlugs);
+    const newVideo: Video = {
+      id,
+      title: video.title,
+      slug,
+      description: video.description ?? null,
+      category: video.category || "care-tips",
+      videoType: video.videoType || "upload",
+      videoUrl: video.videoUrl ?? null,
+      embedUrl: video.embedUrl ?? null,
+      thumbnailUrl: video.thumbnailUrl ?? null,
+      duration: video.duration ?? null,
+      metaTitle: video.metaTitle ?? null,
+      metaDescription: video.metaDescription ?? null,
+      keywords: video.keywords || [],
+      featured: video.featured || "no",
+      sortOrder: video.sortOrder || 0,
+      status: video.status || "draft",
+      publishedAt: null,
+      viewCount: 0,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.videosMap.set(id, newVideo);
+    return newVideo;
+  }
+
+  async updateVideo(id: string, video: UpdateVideo): Promise<Video | undefined> {
+    const existing = this.videosMap.get(id);
+    if (!existing) return undefined;
+    const updated: Video = { ...existing, ...video, updatedAt: new Date() };
+    this.videosMap.set(id, updated);
+    return updated;
+  }
+
+  async deleteVideo(id: string): Promise<boolean> {
+    return this.videosMap.delete(id);
+  }
+
+  async publishVideo(id: string): Promise<Video | undefined> {
+    const existing = this.videosMap.get(id);
+    if (!existing) return undefined;
+    const updated: Video = { ...existing, status: "published", publishedAt: new Date(), updatedAt: new Date() };
+    this.videosMap.set(id, updated);
+    return updated;
+  }
+
+  async unpublishVideo(id: string): Promise<Video | undefined> {
+    const existing = this.videosMap.get(id);
+    if (!existing) return undefined;
+    const updated: Video = { ...existing, status: "draft", publishedAt: null, updatedAt: new Date() };
+    this.videosMap.set(id, updated);
+    return updated;
+  }
+
+  async incrementVideoViews(id: string): Promise<Video | undefined> {
+    const existing = this.videosMap.get(id);
+    if (!existing) return undefined;
+    const updated: Video = { ...existing, viewCount: existing.viewCount + 1 };
+    this.videosMap.set(id, updated);
+    return updated;
+  }
+
+  // Podcasts implementation
+  async listPodcasts(status?: string, category?: string): Promise<Podcast[]> {
+    let podcasts = Array.from(this.podcastsMap.values());
+    if (status) podcasts = podcasts.filter(p => p.status === status);
+    if (category) podcasts = podcasts.filter(p => p.category === category);
+    return podcasts.sort((a, b) => a.sortOrder - b.sortOrder);
+  }
+
+  async getPodcast(id: string): Promise<Podcast | undefined> {
+    return this.podcastsMap.get(id);
+  }
+
+  async getPodcastBySlug(slug: string): Promise<Podcast | undefined> {
+    return Array.from(this.podcastsMap.values()).find(p => p.slug === slug);
+  }
+
+  async createPodcast(podcast: InsertPodcast): Promise<Podcast> {
+    const id = randomUUID();
+    const now = new Date();
+    const existingSlugs = Array.from(this.podcastsMap.values()).map(p => p.slug);
+    const slug = podcast.slug || generateUniqueSlug(podcast.title, existingSlugs);
+    const newPodcast: Podcast = {
+      id,
+      title: podcast.title,
+      slug,
+      description: podcast.description ?? null,
+      category: podcast.category || "tips-and-advice",
+      audioType: podcast.audioType || "upload",
+      audioUrl: podcast.audioUrl ?? null,
+      embedUrl: podcast.embedUrl ?? null,
+      thumbnailUrl: podcast.thumbnailUrl ?? null,
+      episodeNumber: podcast.episodeNumber ?? null,
+      seasonNumber: podcast.seasonNumber ?? null,
+      duration: podcast.duration ?? null,
+      showNotes: podcast.showNotes ?? null,
+      transcript: podcast.transcript ?? null,
+      hostName: podcast.hostName ?? null,
+      guestName: podcast.guestName ?? null,
+      guestTitle: podcast.guestTitle ?? null,
+      metaTitle: podcast.metaTitle ?? null,
+      metaDescription: podcast.metaDescription ?? null,
+      keywords: podcast.keywords || [],
+      featured: podcast.featured || "no",
+      sortOrder: podcast.sortOrder || 0,
+      status: podcast.status || "draft",
+      publishedAt: null,
+      playCount: 0,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.podcastsMap.set(id, newPodcast);
+    return newPodcast;
+  }
+
+  async updatePodcast(id: string, podcast: UpdatePodcast): Promise<Podcast | undefined> {
+    const existing = this.podcastsMap.get(id);
+    if (!existing) return undefined;
+    const updated: Podcast = { ...existing, ...podcast, updatedAt: new Date() };
+    this.podcastsMap.set(id, updated);
+    return updated;
+  }
+
+  async deletePodcast(id: string): Promise<boolean> {
+    return this.podcastsMap.delete(id);
+  }
+
+  async publishPodcast(id: string): Promise<Podcast | undefined> {
+    const existing = this.podcastsMap.get(id);
+    if (!existing) return undefined;
+    const updated: Podcast = { ...existing, status: "published", publishedAt: new Date(), updatedAt: new Date() };
+    this.podcastsMap.set(id, updated);
+    return updated;
+  }
+
+  async unpublishPodcast(id: string): Promise<Podcast | undefined> {
+    const existing = this.podcastsMap.get(id);
+    if (!existing) return undefined;
+    const updated: Podcast = { ...existing, status: "draft", publishedAt: null, updatedAt: new Date() };
+    this.podcastsMap.set(id, updated);
+    return updated;
+  }
+
+  async incrementPodcastPlays(id: string): Promise<Podcast | undefined> {
+    const existing = this.podcastsMap.get(id);
+    if (!existing) return undefined;
+    const updated: Podcast = { ...existing, playCount: existing.playCount + 1 };
+    this.podcastsMap.set(id, updated);
+    return updated;
+  }
 }
 
 export class DbStorage implements IStorage {
@@ -2361,6 +2564,118 @@ export class DbStorage implements IStorage {
     
     const pages = await pagesQuery;
     return { locations, pages };
+  }
+
+  // Videos implementation
+  async listVideos(status?: string, category?: string): Promise<Video[]> {
+    let query = this.db.select().from(videos);
+    if (status && category) {
+      query = query.where(and(eq(videos.status, status), eq(videos.category, category)));
+    } else if (status) {
+      query = query.where(eq(videos.status, status));
+    } else if (category) {
+      query = query.where(eq(videos.category, category));
+    }
+    return await query.orderBy(videos.sortOrder);
+  }
+
+  async getVideo(id: string): Promise<Video | undefined> {
+    const result = await this.db.select().from(videos).where(eq(videos.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getVideoBySlug(slug: string): Promise<Video | undefined> {
+    const result = await this.db.select().from(videos).where(eq(videos.slug, slug)).limit(1);
+    return result[0];
+  }
+
+  async createVideo(video: InsertVideo): Promise<Video> {
+    const existingVideos = await this.db.select({ slug: videos.slug }).from(videos);
+    const existingSlugs = existingVideos.map((v: { slug: string }) => v.slug);
+    const slug = video.slug || generateUniqueSlug(video.title, existingSlugs);
+    const result = await this.db.insert(videos).values({ ...video, slug }).returning();
+    return result[0];
+  }
+
+  async updateVideo(id: string, video: UpdateVideo): Promise<Video | undefined> {
+    const result = await this.db.update(videos).set({ ...video, updatedAt: new Date() }).where(eq(videos.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteVideo(id: string): Promise<boolean> {
+    const result = await this.db.delete(videos).where(eq(videos.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async publishVideo(id: string): Promise<Video | undefined> {
+    const result = await this.db.update(videos).set({ status: "published", publishedAt: new Date(), updatedAt: new Date() }).where(eq(videos.id, id)).returning();
+    return result[0];
+  }
+
+  async unpublishVideo(id: string): Promise<Video | undefined> {
+    const result = await this.db.update(videos).set({ status: "draft", publishedAt: null, updatedAt: new Date() }).where(eq(videos.id, id)).returning();
+    return result[0];
+  }
+
+  async incrementVideoViews(id: string): Promise<Video | undefined> {
+    const result = await this.db.update(videos).set({ viewCount: sql`${videos.viewCount} + 1` }).where(eq(videos.id, id)).returning();
+    return result[0];
+  }
+
+  // Podcasts implementation
+  async listPodcasts(status?: string, category?: string): Promise<Podcast[]> {
+    let query = this.db.select().from(podcasts);
+    if (status && category) {
+      query = query.where(and(eq(podcasts.status, status), eq(podcasts.category, category)));
+    } else if (status) {
+      query = query.where(eq(podcasts.status, status));
+    } else if (category) {
+      query = query.where(eq(podcasts.category, category));
+    }
+    return await query.orderBy(podcasts.sortOrder);
+  }
+
+  async getPodcast(id: string): Promise<Podcast | undefined> {
+    const result = await this.db.select().from(podcasts).where(eq(podcasts.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getPodcastBySlug(slug: string): Promise<Podcast | undefined> {
+    const result = await this.db.select().from(podcasts).where(eq(podcasts.slug, slug)).limit(1);
+    return result[0];
+  }
+
+  async createPodcast(podcast: InsertPodcast): Promise<Podcast> {
+    const existingPodcasts = await this.db.select({ slug: podcasts.slug }).from(podcasts);
+    const existingSlugs = existingPodcasts.map((p: { slug: string }) => p.slug);
+    const slug = podcast.slug || generateUniqueSlug(podcast.title, existingSlugs);
+    const result = await this.db.insert(podcasts).values({ ...podcast, slug }).returning();
+    return result[0];
+  }
+
+  async updatePodcast(id: string, podcast: UpdatePodcast): Promise<Podcast | undefined> {
+    const result = await this.db.update(podcasts).set({ ...podcast, updatedAt: new Date() }).where(eq(podcasts.id, id)).returning();
+    return result[0];
+  }
+
+  async deletePodcast(id: string): Promise<boolean> {
+    const result = await this.db.delete(podcasts).where(eq(podcasts.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async publishPodcast(id: string): Promise<Podcast | undefined> {
+    const result = await this.db.update(podcasts).set({ status: "published", publishedAt: new Date(), updatedAt: new Date() }).where(eq(podcasts.id, id)).returning();
+    return result[0];
+  }
+
+  async unpublishPodcast(id: string): Promise<Podcast | undefined> {
+    const result = await this.db.update(podcasts).set({ status: "draft", publishedAt: null, updatedAt: new Date() }).where(eq(podcasts.id, id)).returning();
+    return result[0];
+  }
+
+  async incrementPodcastPlays(id: string): Promise<Podcast | undefined> {
+    const result = await this.db.update(podcasts).set({ playCount: sql`${podcasts.playCount} + 1` }).where(eq(podcasts.id, id)).returning();
+    return result[0];
   }
 }
 

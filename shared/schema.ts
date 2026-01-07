@@ -855,3 +855,155 @@ export const insertLocationServiceSchema = createInsertSchema(locationServices).
 
 export type InsertLocationService = z.infer<typeof insertLocationServiceSchema>;
 export type LocationService = typeof locationServices.$inferSelect;
+
+// ============================================
+// Videos and Podcasts Schema
+// ============================================
+
+// Video categories for organization
+export const videoCategoryEnum = [
+  "care-tips",
+  "caregiver-training",
+  "family-support",
+  "health-conditions",
+  "massachusetts-resources",
+  "testimonials",
+  "company-news"
+] as const;
+export type VideoCategory = typeof videoCategoryEnum[number];
+
+// Podcast categories for organization
+export const podcastCategoryEnum = [
+  "caregiver-stories",
+  "expert-interviews",
+  "family-conversations",
+  "health-topics",
+  "massachusetts-care",
+  "tips-and-advice"
+] as const;
+export type PodcastCategory = typeof podcastCategoryEnum[number];
+
+// Videos table
+export const videos = pgTable("videos", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  slug: text("slug").notNull().unique(),
+  description: text("description"),
+  category: text("category").notNull().default("care-tips"),
+  
+  // Video source - can be upload or embed (YouTube, Vimeo)
+  videoType: text("video_type").notNull().default("upload"), // upload, youtube, vimeo
+  videoUrl: text("video_url"), // For uploaded videos
+  embedUrl: text("embed_url"), // For embedded videos (YouTube, Vimeo)
+  thumbnailUrl: text("thumbnail_url"),
+  
+  // Duration in seconds
+  duration: integer("duration"),
+  
+  // SEO
+  metaTitle: text("meta_title"),
+  metaDescription: text("meta_description"),
+  keywords: jsonb("keywords").$type<string[]>().default([]),
+  
+  // Organization
+  featured: text("featured").notNull().default("no"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  
+  // Status
+  status: text("status").notNull().default("draft"), // draft, published
+  publishedAt: timestamp("published_at"),
+  
+  // Tracking
+  viewCount: integer("view_count").notNull().default(0),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertVideoSchema = createInsertSchema(videos).omit({
+  id: true,
+  viewCount: true,
+  publishedAt: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  keywords: z.array(z.string()).default([]),
+  slug: z.string().optional(),
+  category: z.enum(videoCategoryEnum).default("care-tips"),
+  videoType: z.enum(["upload", "youtube", "vimeo"]).default("upload"),
+});
+
+export const updateVideoSchema = insertVideoSchema.partial();
+
+export type InsertVideo = z.infer<typeof insertVideoSchema>;
+export type UpdateVideo = z.infer<typeof updateVideoSchema>;
+export type Video = typeof videos.$inferSelect;
+
+// Podcasts table
+export const podcasts = pgTable("podcasts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  slug: text("slug").notNull().unique(),
+  description: text("description"),
+  category: text("category").notNull().default("tips-and-advice"),
+  
+  // Audio source - can be upload or embed (Spotify, Apple, etc)
+  audioType: text("audio_type").notNull().default("upload"), // upload, spotify, apple, anchor
+  audioUrl: text("audio_url"), // For uploaded audio files
+  embedUrl: text("embed_url"), // For embedded podcasts
+  thumbnailUrl: text("thumbnail_url"),
+  
+  // Episode info
+  episodeNumber: integer("episode_number"),
+  seasonNumber: integer("season_number"),
+  
+  // Duration in seconds
+  duration: integer("duration"),
+  
+  // Show notes / transcript
+  showNotes: text("show_notes"),
+  transcript: text("transcript"),
+  
+  // Guest/host info
+  hostName: text("host_name"),
+  guestName: text("guest_name"),
+  guestTitle: text("guest_title"),
+  
+  // SEO
+  metaTitle: text("meta_title"),
+  metaDescription: text("meta_description"),
+  keywords: jsonb("keywords").$type<string[]>().default([]),
+  
+  // Organization
+  featured: text("featured").notNull().default("no"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  
+  // Status
+  status: text("status").notNull().default("draft"), // draft, published
+  publishedAt: timestamp("published_at"),
+  
+  // Tracking
+  playCount: integer("play_count").notNull().default(0),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertPodcastSchema = createInsertSchema(podcasts).omit({
+  id: true,
+  playCount: true,
+  publishedAt: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  keywords: z.array(z.string()).default([]),
+  slug: z.string().optional(),
+  category: z.enum(podcastCategoryEnum).default("tips-and-advice"),
+  audioType: z.enum(["upload", "spotify", "apple", "anchor"]).default("upload"),
+});
+
+export const updatePodcastSchema = insertPodcastSchema.partial();
+
+export type InsertPodcast = z.infer<typeof insertPodcastSchema>;
+export type UpdatePodcast = z.infer<typeof updatePodcastSchema>;
+export type Podcast = typeof podcasts.$inferSelect;
