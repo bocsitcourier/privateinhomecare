@@ -2603,6 +2603,254 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===========================================
+  // FACILITIES
+  // ===========================================
+  
+  // Public: List published facilities by type
+  app.get("/api/facilities", async (req: Request, res: Response) => {
+    try {
+      const { type, city, county, featured } = req.query;
+      const facilities = await storage.listFacilities({
+        facilityType: type as string | undefined,
+        city: city as string | undefined,
+        county: county as string | undefined,
+        status: "published",
+        featured: featured as string | undefined,
+      });
+      res.json(facilities);
+    } catch (error) {
+      console.error("Error fetching facilities:", error);
+      res.status(500).json({ message: "Failed to fetch facilities" });
+    }
+  });
+
+  // Public: Search facilities
+  app.get("/api/facilities/search", async (req: Request, res: Response) => {
+    try {
+      const { q, type } = req.query;
+      if (!q || typeof q !== "string") {
+        return res.status(400).json({ message: "Search query is required" });
+      }
+      const facilities = await storage.searchFacilities(q, type as string | undefined);
+      // Only return published facilities
+      const publishedFacilities = facilities.filter((f: any) => f.status === "published");
+      res.json(publishedFacilities);
+    } catch (error) {
+      console.error("Error searching facilities:", error);
+      res.status(500).json({ message: "Failed to search facilities" });
+    }
+  });
+
+  // Public: Get facility by slug
+  app.get("/api/facilities/:slug", async (req: Request, res: Response) => {
+    try {
+      const facility = await storage.getFacilityBySlug(req.params.slug);
+      if (!facility || facility.status !== "published") {
+        return res.status(404).json({ message: "Facility not found" });
+      }
+      res.json(facility);
+    } catch (error) {
+      console.error("Error fetching facility:", error);
+      res.status(500).json({ message: "Failed to fetch facility" });
+    }
+  });
+
+  // Public: Get facility reviews (approved only)
+  app.get("/api/facilities/:slug/reviews", async (req: Request, res: Response) => {
+    try {
+      const facility = await storage.getFacilityBySlug(req.params.slug);
+      if (!facility || facility.status !== "published") {
+        return res.status(404).json({ message: "Facility not found" });
+      }
+      const reviews = await storage.listFacilityReviews(facility.id, "approved");
+      res.json(reviews);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      res.status(500).json({ message: "Failed to fetch reviews" });
+    }
+  });
+
+  // Public: Submit a facility review
+  app.post("/api/facilities/:slug/reviews", async (req: Request, res: Response) => {
+    try {
+      const facility = await storage.getFacilityBySlug(req.params.slug);
+      if (!facility || facility.status !== "published") {
+        return res.status(404).json({ message: "Facility not found" });
+      }
+      const { rating, reviewText, reviewerName, reviewerEmail, title, reviewerRelation, visitDate } = req.body;
+      if (!rating || !reviewText || !reviewerName || !reviewerEmail) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      const review = await storage.createFacilityReview({
+        facilityId: facility.id,
+        rating,
+        reviewText,
+        reviewerName,
+        reviewerEmail,
+        title,
+        reviewerRelation,
+        visitDate: visitDate ? new Date(visitDate) : null,
+      });
+      res.status(201).json(review);
+    } catch (error) {
+      console.error("Error creating review:", error);
+      res.status(500).json({ message: "Failed to submit review" });
+    }
+  });
+
+  // Admin: List all facilities
+  app.get("/api/admin/facilities", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { type, city, county, status, featured } = req.query;
+      const facilities = await storage.listFacilities({
+        facilityType: type as string | undefined,
+        city: city as string | undefined,
+        county: county as string | undefined,
+        status: status as string | undefined,
+        featured: featured as string | undefined,
+      });
+      res.json(facilities);
+    } catch (error) {
+      console.error("Error fetching facilities:", error);
+      res.status(500).json({ message: "Failed to fetch facilities" });
+    }
+  });
+
+  // Admin: Get facility by ID
+  app.get("/api/admin/facilities/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const facility = await storage.getFacility(req.params.id);
+      if (!facility) {
+        return res.status(404).json({ message: "Facility not found" });
+      }
+      res.json(facility);
+    } catch (error) {
+      console.error("Error fetching facility:", error);
+      res.status(500).json({ message: "Failed to fetch facility" });
+    }
+  });
+
+  // Admin: Create facility
+  app.post("/api/admin/facilities", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const facility = await storage.createFacility(req.body);
+      res.status(201).json(facility);
+    } catch (error: any) {
+      console.error("Error creating facility:", error);
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Admin: Update facility
+  app.patch("/api/admin/facilities/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const facility = await storage.updateFacility(req.params.id, req.body);
+      if (!facility) {
+        return res.status(404).json({ message: "Facility not found" });
+      }
+      res.json(facility);
+    } catch (error: any) {
+      console.error("Error updating facility:", error);
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Admin: Delete facility
+  app.delete("/api/admin/facilities/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const deleted = await storage.deleteFacility(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Facility not found" });
+      }
+      res.json({ message: "Facility deleted" });
+    } catch (error) {
+      console.error("Error deleting facility:", error);
+      res.status(500).json({ message: "Failed to delete facility" });
+    }
+  });
+
+  // Admin: Publish facility
+  app.post("/api/admin/facilities/:id/publish", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const facility = await storage.publishFacility(req.params.id);
+      if (!facility) {
+        return res.status(404).json({ message: "Facility not found" });
+      }
+      res.json(facility);
+    } catch (error) {
+      console.error("Error publishing facility:", error);
+      res.status(500).json({ message: "Failed to publish facility" });
+    }
+  });
+
+  // Admin: Unpublish facility
+  app.post("/api/admin/facilities/:id/unpublish", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const facility = await storage.unpublishFacility(req.params.id);
+      if (!facility) {
+        return res.status(404).json({ message: "Facility not found" });
+      }
+      res.json(facility);
+    } catch (error) {
+      console.error("Error unpublishing facility:", error);
+      res.status(500).json({ message: "Failed to unpublish facility" });
+    }
+  });
+
+  // Admin: List all reviews for a facility
+  app.get("/api/admin/facilities/:id/reviews", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const reviews = await storage.listFacilityReviews(req.params.id);
+      res.json(reviews);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      res.status(500).json({ message: "Failed to fetch reviews" });
+    }
+  });
+
+  // Admin: Approve review
+  app.post("/api/admin/facility-reviews/:id/approve", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const review = await storage.approveFacilityReview(req.params.id);
+      if (!review) {
+        return res.status(404).json({ message: "Review not found" });
+      }
+      res.json(review);
+    } catch (error) {
+      console.error("Error approving review:", error);
+      res.status(500).json({ message: "Failed to approve review" });
+    }
+  });
+
+  // Admin: Reject review
+  app.post("/api/admin/facility-reviews/:id/reject", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const review = await storage.rejectFacilityReview(req.params.id);
+      if (!review) {
+        return res.status(404).json({ message: "Review not found" });
+      }
+      res.json(review);
+    } catch (error) {
+      console.error("Error rejecting review:", error);
+      res.status(500).json({ message: "Failed to reject review" });
+    }
+  });
+
+  // Admin: Delete review
+  app.delete("/api/admin/facility-reviews/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const deleted = await storage.deleteFacilityReview(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Review not found" });
+      }
+      res.json({ message: "Review deleted" });
+    } catch (error) {
+      console.error("Error deleting review:", error);
+      res.status(500).json({ message: "Failed to delete review" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
