@@ -333,7 +333,7 @@ export default function Home() {
                 </Card>
               </Link>
 
-              <Link href="/quiz/personal-care">
+              <Link href="/quiz/personal-care-assessment">
                 <Card className="h-full hover-elevate cursor-pointer group border-primary/20 bg-primary/5" data-testid="card-explore-quiz">
                   <CardContent className="p-6 text-center">
                     <div className="inline-flex items-center justify-center w-14 h-14 bg-primary/20 rounded-full mb-4 group-hover:bg-primary/30 transition-colors">
@@ -765,7 +765,7 @@ export default function Home() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/facilities" className="text-foreground/70 hover:text-primary" data-testid="link-footer-facilities">Facility Directory</Link></li>
               <li><Link href="/caregiver-resources" className="text-foreground/70 hover:text-primary" data-testid="link-footer-resources">Care Resources</Link></li>
-              <li><Link href="/quiz/personal-care" className="text-foreground/70 hover:text-primary" data-testid="link-footer-quiz">Care Assessment</Link></li>
+              <li><Link href="/quiz/personal-care-assessment" className="text-foreground/70 hover:text-primary" data-testid="link-footer-quiz">Care Assessment</Link></li>
               <li><Link href="/videos" className="text-foreground/70 hover:text-primary" data-testid="link-footer-videos">Videos</Link></li>
               <li><Link href="/podcasts" className="text-foreground/70 hover:text-primary" data-testid="link-footer-podcasts">Podcasts</Link></li>
             </ul>

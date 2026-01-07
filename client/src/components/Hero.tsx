@@ -30,7 +30,7 @@ export default function Hero() {
                 Find Care
               </a>
               <Link 
-                href="/quiz/personal-care" 
+                href="/quiz/personal-care-assessment" 
                 data-testid="button-take-assessment"
                 className="px-6 py-3 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-lg border border-white/30 hover-elevate active-elevate-2 transition-all inline-flex items-center gap-2"
               >
@@ -41,7 +41,7 @@ export default function Hero() {
             
             <p className="mt-6 text-sm text-white/70">
               Not sure what care you need?{" "}
-              <Link href="/quiz/personal-care" className="underline hover:text-white" data-testid="link-assessment-help">
+              <Link href="/quiz/personal-care-assessment" className="underline hover:text-white" data-testid="link-assessment-help">
                 Our free assessment can help
               </Link>
             </p>
