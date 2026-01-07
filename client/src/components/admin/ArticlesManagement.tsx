@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,11 +9,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, Eye, EyeOff, X } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Plus, Edit, Trash2, Eye, EyeOff, X, HelpCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import RichTextEditor from "@/components/RichTextEditor";
 import FileUpload from "@/components/FileUpload";
-import type { Article } from "@shared/schema";
+import type { Article, ArticleFaq } from "@shared/schema";
+
+interface FaqEntry {
+  id?: string;
+  question: string;
+  answer: string;
+  displayOrder: number;
+  isNew?: boolean;
+  isDeleted?: boolean;
+}
 
 export default function ArticlesManagement() {
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
@@ -26,7 +36,31 @@ export default function ArticlesManagement() {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("Care Tips");
   const [heroImageUrl, setHeroImageUrl] = useState("");
+  const [faqs, setFaqs] = useState<FaqEntry[]>([]);
+  const [showFaqSection, setShowFaqSection] = useState(false);
   const { toast} = useToast();
+
+  const { data: articleFaqs } = useQuery<ArticleFaq[]>({
+    queryKey: ["/api/articles", editingArticle?.id, "faqs"],
+    queryFn: async () => {
+      if (!editingArticle?.id) return [];
+      const response = await fetch(`/api/articles/${editingArticle.id}/faqs`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!editingArticle?.id && dialogOpen,
+  });
+
+  useEffect(() => {
+    if (articleFaqs) {
+      setFaqs(articleFaqs.map(faq => ({
+        id: faq.id,
+        question: faq.question,
+        answer: faq.answer,
+        displayOrder: faq.displayOrder,
+      })));
+    }
+  }, [articleFaqs]);
 
   const { data: articles, isLoading } = useQuery({ 
     queryKey: ["/api/admin/articles"],
@@ -129,6 +163,7 @@ export default function ArticlesManagement() {
       setSlug(article.slug);
       setCategory(article.category || "Care Tips");
       setHeroImageUrl(article.heroImageUrl || '');
+      setShowFaqSection(true);
     } else {
       setEditingArticle(null);
       setKeywords([]);
@@ -138,8 +173,70 @@ export default function ArticlesManagement() {
       setSlug("");
       setCategory("Care Tips");
       setHeroImageUrl('');
+      setFaqs([]);
+      setShowFaqSection(false);
     }
     setDialogOpen(true);
+  };
+
+  const handleAddFaq = () => {
+    setFaqs([...faqs, {
+      question: "",
+      answer: "",
+      displayOrder: faqs.length,
+      isNew: true,
+    }]);
+  };
+
+  const handleUpdateFaq = (index: number, field: 'question' | 'answer', value: string) => {
+    const updatedFaqs = [...faqs];
+    updatedFaqs[index] = { ...updatedFaqs[index], [field]: value };
+    setFaqs(updatedFaqs);
+  };
+
+  const handleRemoveFaq = (index: number) => {
+    const faq = faqs[index];
+    if (faq.id) {
+      const updatedFaqs = [...faqs];
+      updatedFaqs[index] = { ...faq, isDeleted: true };
+      setFaqs(updatedFaqs);
+    } else {
+      setFaqs(faqs.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleMoveFaq = (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= faqs.length) return;
+    
+    const updatedFaqs = [...faqs];
+    [updatedFaqs[index], updatedFaqs[newIndex]] = [updatedFaqs[newIndex], updatedFaqs[index]];
+    updatedFaqs.forEach((faq, i) => {
+      faq.displayOrder = i;
+    });
+    setFaqs(updatedFaqs);
+  };
+
+  const saveFaqs = async (articleId: string) => {
+    for (const faq of faqs) {
+      if (faq.isDeleted && faq.id) {
+        await apiRequest("DELETE", `/api/admin/articles/faqs/${faq.id}`);
+      } else if (faq.isNew && faq.question && faq.answer) {
+        await apiRequest("POST", `/api/admin/articles/${articleId}/faqs`, {
+          question: faq.question,
+          answer: faq.answer,
+          displayOrder: faq.displayOrder,
+          isActive: 'yes',
+        });
+      } else if (faq.id && !faq.isDeleted) {
+        await apiRequest("PATCH", `/api/admin/articles/faqs/${faq.id}`, {
+          question: faq.question,
+          answer: faq.answer,
+          displayOrder: faq.displayOrder,
+        });
+      }
+    }
+    queryClient.invalidateQueries({ queryKey: ["/api/articles", articleId, "faqs"] });
   };
 
   const generateSlug = (text: string): string => {
@@ -170,7 +267,7 @@ export default function ArticlesManagement() {
     setKeywords(keywords.filter(k => k !== keyword));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = {
       title,
@@ -186,7 +283,11 @@ export default function ArticlesManagement() {
     };
 
     if (editingArticle) {
-      updateMutation.mutate({ id: editingArticle.id, data });
+      updateMutation.mutate({ id: editingArticle.id, data }, {
+        onSuccess: async () => {
+          await saveFaqs(editingArticle.id);
+        }
+      });
     } else {
       createMutation.mutate(data);
     }
@@ -307,7 +408,13 @@ export default function ArticlesManagement() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="Care Guides">Care Guides</SelectItem>
                       <SelectItem value="Care Tips">Care Tips</SelectItem>
+                      <SelectItem value="Dementia Care">Dementia Care</SelectItem>
+                      <SelectItem value="Caregiver Support">Caregiver Support</SelectItem>
+                      <SelectItem value="Safety">Safety</SelectItem>
+                      <SelectItem value="Financial Planning">Financial Planning</SelectItem>
+                      <SelectItem value="Legal Planning">Legal Planning</SelectItem>
                       <SelectItem value="Health & Wellness">Health & Wellness</SelectItem>
                       <SelectItem value="Family Resources">Family Resources</SelectItem>
                     </SelectContent>
@@ -381,6 +488,99 @@ export default function ArticlesManagement() {
                 placeholder="Write your article content..."
               />
             </div>
+
+            {editingArticle && (
+              <div className="border rounded-lg p-4">
+                <div 
+                  className="flex items-center justify-between cursor-pointer"
+                  onClick={() => setShowFaqSection(!showFaqSection)}
+                  data-testid="toggle-faq-section"
+                >
+                  <div className="flex items-center gap-2">
+                    <HelpCircle className="w-5 h-5 text-primary" />
+                    <Label className="cursor-pointer font-semibold">
+                      Frequently Asked Questions ({faqs.filter(f => !f.isDeleted).length})
+                    </Label>
+                  </div>
+                  {showFaqSection ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </div>
+                
+                {showFaqSection && (
+                  <div className="mt-4 space-y-4">
+                    {faqs.filter(faq => !faq.isDeleted).map((faq, index) => (
+                      <div key={faq.id || `new-${index}`} className="border rounded-md p-3 space-y-3 bg-muted/30">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm font-medium text-muted-foreground">FAQ #{index + 1}</span>
+                          <div className="flex gap-1">
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleMoveFaq(faqs.indexOf(faq), 'up')}
+                              disabled={index === 0}
+                              data-testid={`button-faq-up-${index}`}
+                            >
+                              <ChevronUp className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleMoveFaq(faqs.indexOf(faq), 'down')}
+                              disabled={index === faqs.filter(f => !f.isDeleted).length - 1}
+                              data-testid={`button-faq-down-${index}`}
+                            >
+                              <ChevronDown className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleRemoveFaq(faqs.indexOf(faq))}
+                              data-testid={`button-faq-remove-${index}`}
+                            >
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor={`faq-q-${index}`}>Question</Label>
+                          <Input
+                            id={`faq-q-${index}`}
+                            value={faq.question}
+                            onChange={(e) => handleUpdateFaq(faqs.indexOf(faq), 'question', e.target.value)}
+                            placeholder="Enter the question..."
+                            data-testid={`input-faq-question-${index}`}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor={`faq-a-${index}`}>Answer</Label>
+                          <Textarea
+                            id={`faq-a-${index}`}
+                            value={faq.answer}
+                            onChange={(e) => handleUpdateFaq(faqs.indexOf(faq), 'answer', e.target.value)}
+                            placeholder="Enter the answer..."
+                            rows={3}
+                            data-testid={`input-faq-answer-${index}`}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleAddFaq}
+                      className="w-full"
+                      data-testid="button-add-faq"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add FAQ
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="flex gap-3 pt-4">
               <Button type="submit" className="flex-1" disabled={createMutation.isPending || updateMutation.isPending}>
