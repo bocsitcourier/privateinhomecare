@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, LayoutDashboard, Briefcase, FileText, MessageSquare, Settings, Users, UserCog, Loader2, ClipboardList, FileCheck, Gift } from "lucide-react";
+import { AlertCircle, LayoutDashboard, Briefcase, FileText, MessageSquare, Settings, Users, UserCog, Loader2, ClipboardList, FileCheck, Gift, MapPin } from "lucide-react";
 import JobsManagement from "@/components/admin/JobsManagement";
 import ArticlesManagement from "@/components/admin/ArticlesManagement";
 import InquiriesManagement from "@/components/admin/InquiriesManagement";
@@ -17,6 +17,7 @@ import HipaaAcknowledgmentsManagement from "@/components/admin/HipaaAcknowledgme
 import AdminDashboard from "@/components/admin/AdminDashboard";
 import ApplicationsManagement from "@/components/admin/ApplicationsManagement";
 import ReferralsManagement from "@/components/admin/ReferralsManagement";
+import LocationsManagement from "@/components/admin/LocationsManagement";
 
 export default function AdminPage() {
   const [, setLocation] = useLocation();
@@ -224,14 +225,18 @@ export default function AdminPage() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList className="grid grid-cols-10 w-full max-w-6xl mb-8">
+          <TabsList className="flex flex-wrap gap-1 w-full max-w-7xl mb-8 h-auto">
             <TabsTrigger value="dashboard" data-testid="tab-dashboard">
               <LayoutDashboard className="w-4 h-4 mr-2" />
               Dashboard
             </TabsTrigger>
+            <TabsTrigger value="locations" data-testid="tab-locations">
+              <MapPin className="w-4 h-4 mr-2" />
+              Locations
+            </TabsTrigger>
             <TabsTrigger value="intake" data-testid="tab-intake">
               <ClipboardList className="w-4 h-4 mr-2" />
-              Intake Forms
+              Intake
             </TabsTrigger>
             <TabsTrigger value="hipaa" data-testid="tab-hipaa">
               <FileText className="w-4 h-4 mr-2" />
@@ -269,6 +274,10 @@ export default function AdminPage() {
 
           <TabsContent value="dashboard">
             <AdminDashboard />
+          </TabsContent>
+
+          <TabsContent value="locations">
+            <LocationsManagement />
           </TabsContent>
 
           <TabsContent value="intake">
