@@ -3332,6 +3332,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json({ message: "Quizzes already exist. Use ?force=true to reseed.", count: existingQuizzes.length });
       }
 
+      // Delete existing quizzes if force=true
+      if (req.query.force && existingQuizzes.length > 0) {
+        for (const quiz of existingQuizzes) {
+          await storage.deleteQuiz(quiz.id);
+        }
+      }
+
       const quizDefinitions = [
         {
           slug: "personal-care-assessment",
