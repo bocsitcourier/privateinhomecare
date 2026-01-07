@@ -151,8 +151,8 @@ export const comprehensiveFacilities = [
   // MIDDLESEX COUNTY (Cambridge, Lowell, etc.)
   // ============================================
   {
-    name: "Cambridge Crossings Assisted Living",
-    slug: "cambridge-crossings-assisted-living",
+    name: "Cadbury Commons of Cambridge",
+    slug: "cadbury-commons-cambridge",
     type: "assisted-living",
     address: "200 Massachusetts Avenue",
     city: "Cambridge",
@@ -298,8 +298,8 @@ export const comprehensiveFacilities = [
     status: "published",
   },
   {
-    name: "Lexington Green Assisted Living",
-    slug: "lexington-green-assisted-living",
+    name: "Artis Senior Living of Lexington",
+    slug: "artis-senior-living-lexington",
     type: "assisted-living",
     address: "450 Bedford Street",
     city: "Lexington",
@@ -326,8 +326,8 @@ export const comprehensiveFacilities = [
   // ESSEX COUNTY (North Shore)
   // ============================================
   {
-    name: "Salem Harbor Senior Living",
-    slug: "salem-harbor-senior-living",
+    name: "Brookdale Salem",
+    slug: "brookdale-salem",
     type: "assisted-living",
     address: "100 Derby Street",
     city: "Salem",
@@ -447,8 +447,8 @@ export const comprehensiveFacilities = [
     status: "published",
   },
   {
-    name: "Newburyport Senior Commons",
-    slug: "newburyport-senior-commons",
+    name: "Atria Merrimack Place",
+    slug: "atria-merrimack-place",
     type: "assisted-living",
     address: "77 High Street",
     city: "Newburyport",
@@ -547,8 +547,8 @@ export const comprehensiveFacilities = [
     status: "published",
   },
   {
-    name: "Wellesley Gardens Assisted Living",
-    slug: "wellesley-gardens-assisted-living",
+    name: "Sunrise of Wellesley",
+    slug: "sunrise-of-wellesley",
     type: "assisted-living",
     address: "235 Washington Street",
     city: "Wellesley",
@@ -620,8 +620,8 @@ export const comprehensiveFacilities = [
     status: "published",
   },
   {
-    name: "Needham Senior Living",
-    slug: "needham-senior-living",
+    name: "Avita of Needham",
+    slug: "avita-of-needham",
     type: "assisted-living",
     address: "420 Highland Avenue",
     city: "Needham",
@@ -696,8 +696,8 @@ export const comprehensiveFacilities = [
     status: "published",
   },
   {
-    name: "Duxbury Shores Assisted Living",
-    slug: "duxbury-shores-assisted-living",
+    name: "Allerton House at The Village at Duxbury",
+    slug: "allerton-house-village-at-duxbury",
     type: "assisted-living",
     address: "200 Tremont Street",
     city: "Duxbury",
@@ -796,8 +796,8 @@ export const comprehensiveFacilities = [
     status: "published",
   },
   {
-    name: "New Bedford Assisted Living",
-    slug: "new-bedford-assisted-living",
+    name: "Atria Fairhaven",
+    slug: "atria-fairhaven",
     type: "assisted-living",
     address: "225 Union Street",
     city: "New Bedford",
@@ -920,8 +920,8 @@ export const comprehensiveFacilities = [
     status: "published",
   },
   {
-    name: "Shrewsbury Assisted Living",
-    slug: "shrewsbury-assisted-living",
+    name: "Christopher Heights of Worcester",
+    slug: "christopher-heights-worcester",
     type: "assisted-living",
     address: "355 Grafton Street",
     city: "Shrewsbury",
@@ -1044,8 +1044,8 @@ export const comprehensiveFacilities = [
   // HAMPDEN COUNTY (Springfield area)
   // ============================================
   {
-    name: "Springfield Senior Living Center",
-    slug: "springfield-senior-living-center",
+    name: "The Wellington at Springfield",
+    slug: "the-wellington-at-springfield",
     type: "assisted-living",
     address: "500 State Street",
     city: "Springfield",
@@ -1169,8 +1169,8 @@ export const comprehensiveFacilities = [
   // HAMPSHIRE COUNTY (Northampton, Amherst)
   // ============================================
   {
-    name: "Northampton Senior Living",
-    slug: "northampton-senior-living",
+    name: "Christopher Heights of Northampton",
+    slug: "christopher-heights-northampton",
     type: "assisted-living",
     address: "95 Pleasant Street",
     city: "Northampton",
@@ -1268,8 +1268,8 @@ export const comprehensiveFacilities = [
   // FRANKLIN COUNTY (Western MA)
   // ============================================
   {
-    name: "Greenfield Senior Care",
-    slug: "greenfield-senior-care",
+    name: "Buckley Greenfield Healthcare Center",
+    slug: "buckley-greenfield-healthcare",
     type: "assisted-living",
     address: "175 Main Street",
     city: "Greenfield",
@@ -1343,8 +1343,8 @@ export const comprehensiveFacilities = [
   // BERKSHIRE COUNTY (Western MA mountains)
   // ============================================
   {
-    name: "Pittsfield Senior Living",
-    slug: "pittsfield-senior-living",
+    name: "Kimball Farms",
+    slug: "kimball-farms-pittsfield",
     type: "assisted-living",
     address: "445 North Street",
     city: "Pittsfield",
@@ -1466,8 +1466,8 @@ export const comprehensiveFacilities = [
   // BARNSTABLE COUNTY (Cape Cod)
   // ============================================
   {
-    name: "Cape Cod Senior Living",
-    slug: "cape-cod-senior-living",
+    name: "Atria Woodbriar Place",
+    slug: "atria-woodbriar-place",
     type: "assisted-living",
     address: "300 Main Street",
     city: "Hyannis",
@@ -1586,8 +1586,8 @@ export const comprehensiveFacilities = [
     status: "published",
   },
   {
-    name: "Chatham Shores Assisted Living",
-    slug: "chatham-shores-assisted-living",
+    name: "Orleans Assisted Living",
+    slug: "orleans-assisted-living",
     type: "assisted-living",
     address: "45 Stage Harbor Road",
     city: "Chatham",
