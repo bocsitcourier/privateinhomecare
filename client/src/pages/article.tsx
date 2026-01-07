@@ -276,16 +276,30 @@ export default function ArticlePage() {
         
         <link rel="canonical" href={canonicalUrl} />
         
+        {/* Massachusetts Geo Targeting - applied for MA-focused articles */}
+        <meta name="geo.region" content="US-MA" />
+        <meta name="geo.placename" content="Massachusetts" />
+        <meta name="geo.position" content="42.4072;-71.3824" />
+        <meta name="ICBM" content="42.4072, -71.3824" />
+        
+        {/* Article keywords - use article-specific keywords if available */}
+        {article.keywords && article.keywords.length > 0 && (
+          <meta name="keywords" content={article.keywords.join(', ')} />
+        )}
+        
         <meta property="og:title" content={article.metaTitle || article.title} />
         <meta property="og:description" content={article.metaDescription || article.excerpt || ''} />
         <meta property="og:url" content={canonicalUrl} />
         {article.heroImageUrl && <meta property="og:image" content={article.heroImageUrl} />}
         <meta property="og:type" content="article" />
         <meta property="og:site_name" content="PrivateInHomeCareGiver" />
+        <meta property="og:locale" content="en_US" />
         
-        {article.keywords && article.keywords.length > 0 && (
-          <meta name="keywords" content={article.keywords.join(', ')} />
-        )}
+        {/* Twitter Card Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={article.metaTitle || article.title} />
+        <meta name="twitter:description" content={article.metaDescription || article.excerpt || ''} />
+        {article.heroImageUrl && <meta name="twitter:image" content={article.heroImageUrl} />}
         
         {article.createdAt && <meta property="article:published_time" content={new Date(article.createdAt).toISOString()} />}
         {article.category && <meta property="article:section" content={article.category} />}

@@ -6,9 +6,22 @@ interface PageSEOProps {
   fallbackTitle?: string;
   fallbackDescription?: string;
   canonicalPath?: string;
+  includeMaGeoTargeting?: boolean;
+  geoRegion?: string;
+  geoPlacename?: string;
+  geoPosition?: string;
 }
 
-export default function PageSEO({ pageSlug, fallbackTitle, fallbackDescription, canonicalPath }: PageSEOProps) {
+export default function PageSEO({ 
+  pageSlug, 
+  fallbackTitle, 
+  fallbackDescription, 
+  canonicalPath,
+  includeMaGeoTargeting = false,
+  geoRegion = "US-MA",
+  geoPlacename = "Massachusetts",
+  geoPosition = "42.4072;-71.3824"
+}: PageSEOProps) {
   const pageMeta = usePageMeta(pageSlug);
 
   const title = pageMeta?.title || fallbackTitle || "PrivateInHomeCareGiver";
@@ -23,13 +36,32 @@ export default function PageSEO({ pageSlug, fallbackTitle, fallbackDescription, 
     ? `${baseUrl}${canonicalPath.startsWith('/') ? canonicalPath : `/${canonicalPath}`}`
     : `${baseUrl}${window.location.pathname}`;
 
+  const allKeywords = includeMaGeoTargeting ? [
+    "Massachusetts in-home care",
+    "MA home health care",
+    "Boston area caregivers",
+    "Massachusetts PCA services",
+    "MassHealth home care",
+    ...keywords
+  ] : keywords;
+
   return (
     <Helmet>
       <title>{title}</title>
       {description && <meta name="description" content={description} />}
-      {keywords.length > 0 && <meta name="keywords" content={keywords.join(', ')} />}
+      {allKeywords.length > 0 && <meta name="keywords" content={allKeywords.join(', ')} />}
       
       <link rel="canonical" href={canonicalUrl} />
+      
+      {/* Massachusetts Geo Targeting (opt-in) */}
+      {includeMaGeoTargeting && (
+        <>
+          <meta name="geo.region" content={geoRegion} />
+          <meta name="geo.placename" content={geoPlacename} />
+          <meta name="geo.position" content={geoPosition} />
+          <meta name="ICBM" content={geoPosition.replace(';', ', ')} />
+        </>
+      )}
       
       {/* Open Graph Tags */}
       <meta property="og:title" content={ogTitle} />

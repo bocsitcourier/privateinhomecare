@@ -283,11 +283,14 @@ export default function ArticlesManagement() {
     };
 
     if (editingArticle) {
-      updateMutation.mutate({ id: editingArticle.id, data }, {
-        onSuccess: async () => {
-          await saveFaqs(editingArticle.id);
-        }
-      });
+      try {
+        await updateMutation.mutateAsync({ id: editingArticle.id, data });
+        await saveFaqs(editingArticle.id);
+        setFaqs([]);
+        setDialogOpen(false);
+      } catch (err) {
+        console.error("Failed to update article:", err);
+      }
     } else {
       createMutation.mutate(data);
     }
