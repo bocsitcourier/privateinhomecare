@@ -3140,6 +3140,619 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ==========================================
+  // Quiz Lead Generation System Routes
+  // ==========================================
+
+  // Public: Get quiz by slug with questions
+  app.get("/api/quizzes/:slug", async (req: Request, res: Response) => {
+    try {
+      const quiz = await storage.getQuizWithQuestions(req.params.slug);
+      if (!quiz) {
+        return res.status(404).json({ message: "Quiz not found" });
+      }
+      if (quiz.status !== "published") {
+        return res.status(404).json({ message: "Quiz not found" });
+      }
+      res.json(quiz);
+    } catch (error) {
+      console.error("Error fetching quiz:", error);
+      res.status(500).json({ message: "Failed to fetch quiz" });
+    }
+  });
+
+  // Public: Submit quiz lead with responses
+  app.post("/api/quizzes/:slug/submit", async (req: Request, res: Response) => {
+    try {
+      const { name, email, phone, responses, captchaToken, sourcePage, referrer, utmSource, utmMedium, utmCampaign } = req.body;
+
+      // Validate required fields
+      if (!name || !email) {
+        return res.status(400).json({ message: "Name and email are required" });
+      }
+
+      // Verify CAPTCHA
+      if (process.env.RECAPTCHA_SECRET_KEY && captchaToken) {
+        try {
+          const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${captchaToken}`;
+          const captchaRes = await fetch(verifyUrl, { method: 'POST' });
+          const captchaData = await captchaRes.json();
+          if (!captchaData.success) {
+            return res.status(400).json({ message: "CAPTCHA verification failed" });
+          }
+        } catch (error) {
+          console.error("CAPTCHA verification error:", error);
+          return res.status(400).json({ message: "CAPTCHA verification failed" });
+        }
+      }
+
+      // Get quiz by slug
+      const quiz = await storage.getQuizWithQuestions(req.params.slug);
+      if (!quiz || quiz.status !== "published") {
+        return res.status(404).json({ message: "Quiz not found" });
+      }
+
+      // Calculate lead score based on responses
+      let totalScore = 0;
+      let urgencyLevel = "low";
+      
+      if (responses && Array.isArray(responses)) {
+        for (const response of responses) {
+          const question = quiz.questions.find(q => q.id === response.questionId);
+          if (question && question.options) {
+            const options = question.options as any[];
+            
+            // Handle single choice (answerValue)
+            if (response.answerValue) {
+              const selectedOption = options.find(o => o.value === response.answerValue);
+              if (selectedOption?.score) {
+                totalScore += selectedOption.score * question.scoreWeight;
+              }
+            }
+            
+            // Handle multiple choice (answerValues array)
+            if (response.answerValues && Array.isArray(response.answerValues)) {
+              for (const value of response.answerValues) {
+                const selectedOption = options.find(o => o.value === value);
+                if (selectedOption?.score) {
+                  totalScore += selectedOption.score * question.scoreWeight;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // Determine urgency level based on score
+      if (totalScore >= 30) urgencyLevel = "immediate";
+      else if (totalScore >= 20) urgencyLevel = "high";
+      else if (totalScore >= 10) urgencyLevel = "medium";
+
+      // Create lead
+      const lead = await storage.createQuizLead({
+        quizId: quiz.id,
+        name,
+        email,
+        phone: phone || undefined,
+        urgencyLevel,
+        sourcePage: sourcePage || undefined,
+        referrer: referrer || undefined,
+        utmSource: utmSource || undefined,
+        utmMedium: utmMedium || undefined,
+        utmCampaign: utmCampaign || undefined,
+        ipAddress: (req.ip || req.socket.remoteAddress || undefined) as string | undefined,
+        userAgent: req.headers['user-agent'] || undefined,
+      });
+
+      // Update lead score
+      await storage.updateQuizLead(lead.id, { leadScore: totalScore });
+
+      // Save individual responses
+      if (responses && Array.isArray(responses)) {
+        for (const response of responses) {
+          const question = quiz.questions.find(q => q.id === response.questionId);
+          let scoreContribution = 0;
+          if (question && question.options) {
+            const options = question.options as any[];
+            
+            // Handle single choice (answerValue)
+            if (response.answerValue) {
+              const selectedOption = options.find(o => o.value === response.answerValue);
+              if (selectedOption?.score) {
+                scoreContribution += selectedOption.score * question.scoreWeight;
+              }
+            }
+            
+            // Handle multiple choice (answerValues array)
+            if (response.answerValues && Array.isArray(response.answerValues)) {
+              for (const value of response.answerValues) {
+                const selectedOption = options.find(o => o.value === value);
+                if (selectedOption?.score) {
+                  scoreContribution += selectedOption.score * question.scoreWeight;
+                }
+              }
+            }
+          }
+          await storage.createQuizResponse({
+            leadId: lead.id,
+            questionId: response.questionId,
+            answerValue: response.answerValue || undefined,
+            answerValues: response.answerValues || [],
+            answerText: response.answerText || undefined,
+            scoreContribution,
+          });
+        }
+      }
+
+      // Send email notification
+      if (process.env.RESEND_API_KEY) {
+        try {
+          const emailTo = process.env.HR_EMAIL || "info@privateinhomecaregiver.com";
+          const { Resend } = await import("resend");
+          const resend = new Resend(process.env.RESEND_API_KEY);
+
+          const responsesSummary = responses && Array.isArray(responses) 
+            ? responses.map((r: any) => {
+                const q = quiz.questions.find(q => q.id === r.questionId);
+                return `${q?.questionText || 'Question'}: ${r.answerValue || r.answerText || 'No answer'}`;
+              }).join('\n')
+            : 'No responses recorded';
+
+          await resend.emails.send({
+            from: "PrivateInHomeCareGiver <onboarding@resend.dev>",
+            to: emailTo,
+            subject: `New Quiz Lead: ${quiz.title} - ${urgencyLevel.toUpperCase()} Priority`,
+            html: `
+              <h2>New Quiz Lead Received</h2>
+              <p><strong>Quiz:</strong> ${quiz.title}</p>
+              <p><strong>Priority:</strong> ${urgencyLevel.toUpperCase()}</p>
+              <p><strong>Lead Score:</strong> ${totalScore}</p>
+              <hr>
+              <h3>Contact Information</h3>
+              <p><strong>Name:</strong> ${name}</p>
+              <p><strong>Email:</strong> ${email}</p>
+              <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
+              <hr>
+              <h3>Quiz Responses</h3>
+              <pre>${responsesSummary}</pre>
+              <hr>
+              <p><a href="${process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : ''}/admin/quiz-leads">View in Admin Dashboard</a></p>
+            `,
+          });
+
+          await storage.markQuizLeadEmailSent(lead.id);
+        } catch (emailError) {
+          console.error("Failed to send quiz lead email:", emailError);
+        }
+      }
+
+      res.json({ 
+        success: true,
+        leadId: lead.id,
+        score: totalScore,
+        urgencyLevel,
+        resultTitle: quiz.resultTitle,
+        resultDescription: quiz.resultDescription,
+        ctaText: quiz.ctaText,
+        ctaUrl: quiz.ctaUrl,
+      });
+    } catch (error) {
+      console.error("Error submitting quiz:", error);
+      res.status(500).json({ message: "Failed to submit quiz" });
+    }
+  });
+
+  // Admin: List all quizzes
+  app.get("/api/admin/quizzes", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { status, category } = req.query;
+      const quizzes = await storage.listQuizzes(
+        status as string | undefined,
+        category as string | undefined
+      );
+      res.json(quizzes);
+    } catch (error) {
+      console.error("Error listing quizzes:", error);
+      res.status(500).json({ message: "Failed to list quizzes" });
+    }
+  });
+
+  // Admin: Get single quiz with questions
+  app.get("/api/admin/quizzes/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const quiz = await storage.getQuiz(req.params.id);
+      if (!quiz) {
+        return res.status(404).json({ message: "Quiz not found" });
+      }
+      const questions = await storage.listQuizQuestions(quiz.id);
+      res.json({ ...quiz, questions });
+    } catch (error) {
+      console.error("Error fetching quiz:", error);
+      res.status(500).json({ message: "Failed to fetch quiz" });
+    }
+  });
+
+  // Admin: Create quiz
+  app.post("/api/admin/quizzes", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const quiz = await storage.createQuiz(req.body);
+      res.status(201).json(quiz);
+    } catch (error) {
+      console.error("Error creating quiz:", error);
+      res.status(500).json({ message: "Failed to create quiz" });
+    }
+  });
+
+  // Admin: Update quiz
+  app.patch("/api/admin/quizzes/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const quiz = await storage.updateQuiz(req.params.id, req.body);
+      if (!quiz) {
+        return res.status(404).json({ message: "Quiz not found" });
+      }
+      res.json(quiz);
+    } catch (error) {
+      console.error("Error updating quiz:", error);
+      res.status(500).json({ message: "Failed to update quiz" });
+    }
+  });
+
+  // Admin: Delete quiz
+  app.delete("/api/admin/quizzes/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const deleted = await storage.deleteQuiz(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Quiz not found" });
+      }
+      res.json({ message: "Quiz deleted" });
+    } catch (error) {
+      console.error("Error deleting quiz:", error);
+      res.status(500).json({ message: "Failed to delete quiz" });
+    }
+  });
+
+  // Admin: Publish/unpublish quiz
+  app.post("/api/admin/quizzes/:id/publish", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const quiz = await storage.publishQuiz(req.params.id);
+      if (!quiz) {
+        return res.status(404).json({ message: "Quiz not found" });
+      }
+      res.json(quiz);
+    } catch (error) {
+      console.error("Error publishing quiz:", error);
+      res.status(500).json({ message: "Failed to publish quiz" });
+    }
+  });
+
+  app.post("/api/admin/quizzes/:id/unpublish", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const quiz = await storage.unpublishQuiz(req.params.id);
+      if (!quiz) {
+        return res.status(404).json({ message: "Quiz not found" });
+      }
+      res.json(quiz);
+    } catch (error) {
+      console.error("Error unpublishing quiz:", error);
+      res.status(500).json({ message: "Failed to unpublish quiz" });
+    }
+  });
+
+  // Admin: Quiz Questions
+  app.post("/api/admin/quizzes/:quizId/questions", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const question = await storage.createQuizQuestion({
+        ...req.body,
+        quizId: req.params.quizId,
+      });
+      res.status(201).json(question);
+    } catch (error) {
+      console.error("Error creating question:", error);
+      res.status(500).json({ message: "Failed to create question" });
+    }
+  });
+
+  app.patch("/api/admin/questions/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const question = await storage.updateQuizQuestion(req.params.id, req.body);
+      if (!question) {
+        return res.status(404).json({ message: "Question not found" });
+      }
+      res.json(question);
+    } catch (error) {
+      console.error("Error updating question:", error);
+      res.status(500).json({ message: "Failed to update question" });
+    }
+  });
+
+  app.delete("/api/admin/questions/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const deleted = await storage.deleteQuizQuestion(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Question not found" });
+      }
+      res.json({ message: "Question deleted" });
+    } catch (error) {
+      console.error("Error deleting question:", error);
+      res.status(500).json({ message: "Failed to delete question" });
+    }
+  });
+
+  // Admin: Quiz Leads
+  app.get("/api/admin/quiz-leads", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { quizId, status, startDate, endDate } = req.query;
+      const leads = await storage.listQuizLeads({
+        quizId: quizId as string | undefined,
+        status: status as string | undefined,
+        startDate: startDate ? new Date(startDate as string) : undefined,
+        endDate: endDate ? new Date(endDate as string) : undefined,
+      });
+      res.json(leads);
+    } catch (error) {
+      console.error("Error listing quiz leads:", error);
+      res.status(500).json({ message: "Failed to list quiz leads" });
+    }
+  });
+
+  app.get("/api/admin/quiz-leads/stats", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const stats = await storage.getQuizLeadStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching quiz lead stats:", error);
+      res.status(500).json({ message: "Failed to fetch stats" });
+    }
+  });
+
+  app.get("/api/admin/quiz-leads/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const lead = await storage.getQuizLeadWithResponses(req.params.id);
+      if (!lead) {
+        return res.status(404).json({ message: "Lead not found" });
+      }
+      res.json(lead);
+    } catch (error) {
+      console.error("Error fetching quiz lead:", error);
+      res.status(500).json({ message: "Failed to fetch lead" });
+    }
+  });
+
+  app.patch("/api/admin/quiz-leads/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const lead = await storage.updateQuizLead(req.params.id, req.body);
+      if (!lead) {
+        return res.status(404).json({ message: "Lead not found" });
+      }
+      res.json(lead);
+    } catch (error) {
+      console.error("Error updating quiz lead:", error);
+      res.status(500).json({ message: "Failed to update lead" });
+    }
+  });
+
+  app.delete("/api/admin/quiz-leads/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const deleted = await storage.deleteQuizLead(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Lead not found" });
+      }
+      res.json({ message: "Lead deleted" });
+    } catch (error) {
+      console.error("Error deleting quiz lead:", error);
+      res.status(500).json({ message: "Failed to delete lead" });
+    }
+  });
+
+  // Seed quiz definitions and questions
+  app.post("/api/seed/quizzes", async (req: Request, res: Response) => {
+    try {
+      const existingQuizzes = await storage.listQuizzes();
+      if (existingQuizzes.length > 0 && !req.query.force) {
+        return res.json({ message: "Quizzes already exist. Use ?force=true to reseed.", count: existingQuizzes.length });
+      }
+
+      const quizDefinitions = [
+        {
+          slug: "personal-care-assessment",
+          title: "Personal Care Needs Assessment",
+          subtitle: "Find the right level of personal care support",
+          description: "Answer a few questions to help us understand your care needs and connect you with the right caregivers.",
+          category: "service",
+          targetType: "personal-care",
+          serviceType: "personal-care",
+          status: "published",
+          resultTitle: "Your Personal Care Plan",
+          resultDescription: "Based on your responses, we've identified care options that match your needs.",
+          ctaText: "Schedule a Free Consultation",
+          ctaUrl: "/consultation",
+          metaTitle: "Personal Care Assessment Quiz | PrivateInHomeCareGiver",
+          metaDescription: "Take our free assessment to find the right personal care services for your loved one in Massachusetts.",
+          questions: [
+            { text: "What level of assistance is needed with daily activities?", options: [
+              { value: "minimal", label: "Minimal - occasional reminders", score: 1 },
+              { value: "moderate", label: "Moderate - regular hands-on help", score: 2 },
+              { value: "extensive", label: "Extensive - assistance with most activities", score: 3 },
+              { value: "complete", label: "Complete - 24/7 care needed", score: 4 }
+            ]},
+            { text: "Which personal care tasks require assistance?", type: "multiple_choice", options: [
+              { value: "bathing", label: "Bathing and grooming", score: 1 },
+              { value: "dressing", label: "Dressing", score: 1 },
+              { value: "mobility", label: "Mobility and transfers", score: 2 },
+              { value: "toileting", label: "Toileting", score: 2 },
+              { value: "feeding", label: "Eating and feeding", score: 2 }
+            ]},
+            { text: "How urgently is care needed?", options: [
+              { value: "planning", label: "Just planning ahead", score: 1 },
+              { value: "weeks", label: "Within the next few weeks", score: 2 },
+              { value: "days", label: "Within a few days", score: 3 },
+              { value: "immediately", label: "Immediately", score: 4 }
+            ]}
+          ]
+        },
+        {
+          slug: "companionship-needs-quiz",
+          title: "Companionship Care Quiz",
+          subtitle: "Find the perfect companion for your loved one",
+          description: "Help us understand your companionship needs to match you with the ideal caregiver.",
+          category: "service",
+          targetType: "companionship",
+          serviceType: "companionship",
+          status: "published",
+          resultTitle: "Your Companionship Match",
+          resultDescription: "We've identified companion caregivers who match your preferences and needs.",
+          ctaText: "View Companion Caregivers",
+          ctaUrl: "/caregivers",
+          questions: [
+            { text: "What is the primary goal for companionship care?", options: [
+              { value: "social", label: "Social interaction and conversation", score: 1 },
+              { value: "activities", label: "Engagement in hobbies and activities", score: 2 },
+              { value: "errands", label: "Help with errands and outings", score: 2 },
+              { value: "supervision", label: "Safety supervision at home", score: 3 }
+            ]},
+            { text: "How many hours per week of companionship is needed?", options: [
+              { value: "few", label: "A few hours (2-4)", score: 1 },
+              { value: "parttime", label: "Part-time (10-20 hours)", score: 2 },
+              { value: "fulltime", label: "Full-time (40+ hours)", score: 3 }
+            ]},
+            { text: "Are there any cognitive concerns?", options: [
+              { value: "none", label: "No cognitive concerns", score: 1 },
+              { value: "mild", label: "Mild forgetfulness", score: 2 },
+              { value: "moderate", label: "Moderate memory issues", score: 3 },
+              { value: "dementia", label: "Diagnosed dementia/Alzheimer's", score: 4 }
+            ]}
+          ]
+        },
+        {
+          slug: "dementia-care-assessment",
+          title: "Memory Care Assessment",
+          subtitle: "Specialized dementia care evaluation",
+          description: "Help us understand the memory care needs of your loved one.",
+          category: "service",
+          targetType: "dementia-care",
+          serviceType: "dementia-care",
+          status: "published",
+          resultTitle: "Your Memory Care Recommendation",
+          resultDescription: "Based on your answers, here are our recommendations for memory care support.",
+          ctaText: "Learn About Dementia Care",
+          ctaUrl: "/dementia-care/massachusetts",
+          questions: [
+            { text: "What stage of memory loss is your loved one experiencing?", options: [
+              { value: "early", label: "Early stage - mild forgetfulness", score: 1 },
+              { value: "middle", label: "Middle stage - needs reminders and supervision", score: 2 },
+              { value: "late", label: "Late stage - requires constant care", score: 3 }
+            ]},
+            { text: "Are there any behavioral challenges?", options: [
+              { value: "none", label: "No behavioral issues", score: 1 },
+              { value: "wandering", label: "Wandering tendencies", score: 2 },
+              { value: "agitation", label: "Occasional agitation", score: 2 },
+              { value: "significant", label: "Significant behavioral challenges", score: 3 }
+            ]},
+            { text: "Is overnight care needed?", options: [
+              { value: "no", label: "No, daytime only", score: 1 },
+              { value: "sometimes", label: "Sometimes overnight help", score: 2 },
+              { value: "yes", label: "Yes, 24-hour care needed", score: 3 }
+            ]}
+          ]
+        },
+        {
+          slug: "nursing-home-readiness",
+          title: "Nursing Home Readiness Quiz",
+          subtitle: "Is nursing home care the right choice?",
+          description: "This assessment helps determine if skilled nursing care is appropriate for your situation.",
+          category: "facility",
+          targetType: "nursing-home",
+          facilityType: "nursing-home",
+          status: "published",
+          resultTitle: "Your Care Level Assessment",
+          resultDescription: "We've analyzed your responses to help you understand your care options.",
+          ctaText: "View Nursing Homes",
+          ctaUrl: "/facilities/nursing-home",
+          questions: [
+            { text: "What medical care is currently needed?", options: [
+              { value: "minimal", label: "Minimal - occasional doctor visits", score: 1 },
+              { value: "moderate", label: "Moderate - regular medical management", score: 2 },
+              { value: "significant", label: "Significant - daily medical care", score: 3 },
+              { value: "intensive", label: "Intensive - complex medical needs", score: 4 }
+            ]},
+            { text: "Is physical or occupational therapy needed?", options: [
+              { value: "no", label: "Not currently needed", score: 1 },
+              { value: "occasional", label: "Occasional therapy sessions", score: 2 },
+              { value: "regular", label: "Regular ongoing therapy", score: 3 }
+            ]},
+            { text: "Can the person manage most daily activities independently?", options: [
+              { value: "yes", label: "Yes, mostly independent", score: 1 },
+              { value: "some", label: "Needs some assistance", score: 2 },
+              { value: "no", label: "Needs significant help", score: 3 }
+            ]}
+          ]
+        },
+        {
+          slug: "assisted-living-quiz",
+          title: "Assisted Living Assessment",
+          subtitle: "Is assisted living right for you?",
+          description: "Help us understand if assisted living is the best fit for your loved one's needs.",
+          category: "facility",
+          targetType: "assisted-living",
+          facilityType: "assisted-living",
+          status: "published",
+          resultTitle: "Your Assisted Living Options",
+          resultDescription: "Based on your responses, here are recommended assisted living considerations.",
+          ctaText: "Browse Assisted Living",
+          ctaUrl: "/facilities/assisted-living",
+          questions: [
+            { text: "What level of independence does your loved one have?", options: [
+              { value: "high", label: "Highly independent with minimal needs", score: 1 },
+              { value: "moderate", label: "Somewhat independent, needs daily support", score: 2 },
+              { value: "low", label: "Needs significant daily assistance", score: 3 }
+            ]},
+            { text: "What social environment is preferred?", options: [
+              { value: "private", label: "Prefers privacy and solitude", score: 1 },
+              { value: "mixed", label: "Balance of social and private time", score: 2 },
+              { value: "social", label: "Enjoys active social environment", score: 2 }
+            ]},
+            { text: "What amenities are most important?", type: "multiple_choice", options: [
+              { value: "meals", label: "Prepared meals", score: 1 },
+              { value: "housekeeping", label: "Housekeeping services", score: 1 },
+              { value: "transportation", label: "Transportation services", score: 1 },
+              { value: "activities", label: "Social activities and events", score: 1 },
+              { value: "healthcare", label: "On-site healthcare", score: 2 }
+            ]}
+          ]
+        }
+      ];
+
+      const createdQuizzes = [];
+      for (const quizDef of quizDefinitions) {
+        const { questions, ...quizData } = quizDef;
+        const quiz = await storage.createQuiz(quizData);
+        
+        let order = 1;
+        for (const q of questions) {
+          await storage.createQuizQuestion({
+            quizId: quiz.id,
+            questionText: q.text,
+            questionType: q.type || "single_choice",
+            options: q.options,
+            displayOrder: order++,
+            isRequired: "yes",
+            scoreWeight: 1,
+          });
+        }
+        createdQuizzes.push(quiz);
+      }
+
+      res.json({ 
+        message: `Successfully seeded ${createdQuizzes.length} quizzes`,
+        count: createdQuizzes.length,
+        quizzes: createdQuizzes.map(q => ({ slug: q.slug, title: q.title }))
+      });
+    } catch (error) {
+      console.error("Error seeding quizzes:", error);
+      res.status(500).json({ message: "Failed to seed quizzes", error: String(error) });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

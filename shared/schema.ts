@@ -1164,3 +1164,190 @@ export const updateFacilityReviewSchema = insertFacilityReviewSchema.partial();
 export type InsertFacilityReview = z.infer<typeof insertFacilityReviewSchema>;
 export type UpdateFacilityReview = z.infer<typeof updateFacilityReviewSchema>;
 export type FacilityReview = typeof facilityReviews.$inferSelect;
+
+// ==========================================
+// Quiz Lead Generation System
+// ==========================================
+
+export const quizCategoryEnum = ["service", "facility"] as const;
+export const quizQuestionTypeEnum = ["single_choice", "multiple_choice", "scale", "text"] as const;
+export const quizLeadStatusEnum = ["new", "contacted", "qualified", "converted", "closed"] as const;
+
+// Quiz definitions - metadata for each quiz
+export const quizDefinitions = pgTable("quiz_definitions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  subtitle: text("subtitle"),
+  description: text("description"),
+  category: text("category").notNull(), // "service" or "facility"
+  targetType: text("target_type").notNull(), // e.g., "personal-care", "nursing-home"
+  heroImageUrl: text("hero_image_url"),
+  
+  // Lead magnet content
+  resultTitle: text("result_title"),
+  resultDescription: text("result_description"),
+  ctaText: text("cta_text").default("Get Your Free Care Assessment"),
+  ctaUrl: text("cta_url"),
+  
+  // SEO
+  metaTitle: text("meta_title"),
+  metaDescription: text("meta_description"),
+  
+  // Status
+  status: text("status").notNull().default("draft"), // draft, published
+  sortOrder: integer("sort_order").notNull().default(0),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertQuizDefinitionSchema = createInsertSchema(quizDefinitions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  category: z.enum(quizCategoryEnum),
+  slug: z.string().optional(),
+});
+
+export const updateQuizDefinitionSchema = insertQuizDefinitionSchema.partial();
+
+export type InsertQuizDefinition = z.infer<typeof insertQuizDefinitionSchema>;
+export type UpdateQuizDefinition = z.infer<typeof updateQuizDefinitionSchema>;
+export type QuizDefinition = typeof quizDefinitions.$inferSelect;
+
+// Quiz questions - individual questions for each quiz
+export const quizQuestions = pgTable("quiz_questions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  quizId: varchar("quiz_id").notNull().references(() => quizDefinitions.id, { onDelete: "cascade" }),
+  questionText: text("question_text").notNull(),
+  questionType: text("question_type").notNull().default("single_choice"), // single_choice, multiple_choice, scale, text
+  helpText: text("help_text"),
+  options: jsonb("options").$type<{ value: string; label: string; score?: number }[]>().default([]),
+  isRequired: text("is_required").notNull().default("yes"),
+  displayOrder: integer("display_order").notNull().default(0),
+  
+  // Scoring weight for lead scoring
+  scoreWeight: integer("score_weight").notNull().default(1),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertQuizQuestionSchema = createInsertSchema(quizQuestions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  questionType: z.enum(quizQuestionTypeEnum).default("single_choice"),
+  options: z.array(z.object({
+    value: z.string(),
+    label: z.string(),
+    score: z.number().optional(),
+  })).default([]),
+});
+
+export const updateQuizQuestionSchema = insertQuizQuestionSchema.partial();
+
+export type InsertQuizQuestion = z.infer<typeof insertQuizQuestionSchema>;
+export type UpdateQuizQuestion = z.infer<typeof updateQuizQuestionSchema>;
+export type QuizQuestion = typeof quizQuestions.$inferSelect;
+
+// Quiz leads - captured leads from quiz submissions
+export const quizLeads = pgTable("quiz_leads", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  quizId: varchar("quiz_id").notNull().references(() => quizDefinitions.id),
+  
+  // Contact info (name and email required, phone optional)
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  
+  // Lead scoring
+  leadScore: integer("lead_score").notNull().default(0),
+  urgencyLevel: text("urgency_level"), // low, medium, high, immediate
+  
+  // Source tracking
+  sourcePage: text("source_page"), // URL where quiz was taken
+  referrer: text("referrer"),
+  utmSource: text("utm_source"),
+  utmMedium: text("utm_medium"),
+  utmCampaign: text("utm_campaign"),
+  
+  // Status and follow-up
+  status: text("status").notNull().default("new"), // new, contacted, qualified, converted, closed
+  assignedTo: text("assigned_to"),
+  notes: text("notes"),
+  
+  // Additional context
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  
+  // Email notification tracking
+  emailSent: text("email_sent").notNull().default("no"),
+  emailSentAt: timestamp("email_sent_at"),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertQuizLeadSchema = createInsertSchema(quizLeads).omit({
+  id: true,
+  leadScore: true,
+  status: true,
+  emailSent: true,
+  emailSentAt: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  email: z.string().email("Please enter a valid email address"),
+  phone: z.string().optional(),
+});
+
+export const updateQuizLeadSchema = createInsertSchema(quizLeads).omit({
+  id: true,
+  createdAt: true,
+}).partial();
+
+export type InsertQuizLead = z.infer<typeof insertQuizLeadSchema>;
+export type UpdateQuizLead = z.infer<typeof updateQuizLeadSchema>;
+export type QuizLead = typeof quizLeads.$inferSelect;
+
+// Quiz responses - individual answers for each lead
+export const quizResponses = pgTable("quiz_responses", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  leadId: varchar("lead_id").notNull().references(() => quizLeads.id, { onDelete: "cascade" }),
+  questionId: varchar("question_id").notNull().references(() => quizQuestions.id, { onDelete: "cascade" }),
+  
+  // Answer data
+  answerValue: text("answer_value"), // For single choice / scale
+  answerValues: jsonb("answer_values").$type<string[]>().default([]), // For multiple choice
+  answerText: text("answer_text"), // For text responses
+  
+  // Score contribution
+  scoreContribution: integer("score_contribution").notNull().default(0),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertQuizResponseSchema = createInsertSchema(quizResponses).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  answerValues: z.array(z.string()).default([]),
+});
+
+export type InsertQuizResponse = z.infer<typeof insertQuizResponseSchema>;
+export type QuizResponse = typeof quizResponses.$inferSelect;
+
+// Extended type for quiz with questions
+export type QuizWithQuestions = QuizDefinition & {
+  questions: QuizQuestion[];
+};
+
+// Extended type for lead with responses
+export type QuizLeadWithResponses = QuizLead & {
+  quiz: QuizDefinition;
+  responses: (QuizResponse & { question: QuizQuestion })[];
+};

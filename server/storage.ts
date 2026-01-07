@@ -24,6 +24,11 @@ import {
   type Podcast, type InsertPodcast, type UpdatePodcast,
   type Facility, type InsertFacility, type UpdateFacility,
   type FacilityReview, type InsertFacilityReview, type UpdateFacilityReview,
+  type QuizDefinition, type InsertQuizDefinition, type UpdateQuizDefinition,
+  type QuizQuestion, type InsertQuizQuestion, type UpdateQuizQuestion,
+  type QuizLead, type InsertQuizLead, type UpdateQuizLead,
+  type QuizResponse, type InsertQuizResponse,
+  type QuizWithQuestions, type QuizLeadWithResponses,
   users,
   recoveryCodes,
   jobs,
@@ -47,7 +52,11 @@ import {
   videos,
   podcasts,
   facilities,
-  facilityReviews
+  facilityReviews,
+  quizDefinitions,
+  quizQuestions,
+  quizLeads,
+  quizResponses
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { slugify, generateUniqueSlug } from "@shared/utils";
@@ -220,6 +229,40 @@ export interface IStorage {
   deleteFacilityReview(id: string): Promise<boolean>;
   approveFacilityReview(id: string): Promise<FacilityReview | undefined>;
   rejectFacilityReview(id: string): Promise<FacilityReview | undefined>;
+  
+  // Quiz Definitions
+  listQuizzes(status?: string, category?: string): Promise<QuizDefinition[]>;
+  getQuiz(id: string): Promise<QuizDefinition | undefined>;
+  getQuizBySlug(slug: string): Promise<QuizDefinition | undefined>;
+  getQuizWithQuestions(slug: string): Promise<QuizWithQuestions | undefined>;
+  createQuiz(quiz: InsertQuizDefinition): Promise<QuizDefinition>;
+  updateQuiz(id: string, quiz: UpdateQuizDefinition): Promise<QuizDefinition | undefined>;
+  deleteQuiz(id: string): Promise<boolean>;
+  publishQuiz(id: string): Promise<QuizDefinition | undefined>;
+  unpublishQuiz(id: string): Promise<QuizDefinition | undefined>;
+  
+  // Quiz Questions
+  listQuizQuestions(quizId: string): Promise<QuizQuestion[]>;
+  getQuizQuestion(id: string): Promise<QuizQuestion | undefined>;
+  createQuizQuestion(question: InsertQuizQuestion): Promise<QuizQuestion>;
+  updateQuizQuestion(id: string, question: UpdateQuizQuestion): Promise<QuizQuestion | undefined>;
+  deleteQuizQuestion(id: string): Promise<boolean>;
+  
+  // Quiz Leads
+  listQuizLeads(filters?: { quizId?: string; status?: string; startDate?: Date; endDate?: Date }): Promise<QuizLead[]>;
+  getQuizLead(id: string): Promise<QuizLead | undefined>;
+  getQuizLeadWithResponses(id: string): Promise<QuizLeadWithResponses | undefined>;
+  createQuizLead(lead: InsertQuizLead): Promise<QuizLead>;
+  updateQuizLead(id: string, lead: UpdateQuizLead): Promise<QuizLead | undefined>;
+  deleteQuizLead(id: string): Promise<boolean>;
+  markQuizLeadEmailSent(id: string): Promise<QuizLead | undefined>;
+  
+  // Quiz Responses
+  createQuizResponse(response: InsertQuizResponse): Promise<QuizResponse>;
+  listQuizResponsesByLead(leadId: string): Promise<QuizResponse[]>;
+  
+  // Quiz Analytics
+  getQuizLeadStats(): Promise<{ total: number; new: number; contacted: number; qualified: number; converted: number }>;
 }
 
 export class MemStorage implements IStorage {
@@ -247,6 +290,10 @@ export class MemStorage implements IStorage {
   private podcastsMap: Map<string, Podcast>;
   private facilitiesMap: Map<string, Facility>;
   private facilityReviewsMap: Map<string, FacilityReview>;
+  private quizDefinitionsMap: Map<string, QuizDefinition>;
+  private quizQuestionsMap: Map<string, QuizQuestion>;
+  private quizLeadsMap: Map<string, QuizLead>;
+  private quizResponsesMap: Map<string, QuizResponse>;
 
   constructor() {
     this.users = new Map();
@@ -273,6 +320,10 @@ export class MemStorage implements IStorage {
     this.podcastsMap = new Map();
     this.facilitiesMap = new Map();
     this.facilityReviewsMap = new Map();
+    this.quizDefinitionsMap = new Map();
+    this.quizQuestionsMap = new Map();
+    this.quizLeadsMap = new Map();
+    this.quizResponsesMap = new Map();
     
     this.seedDefaultData();
   }
@@ -1881,6 +1932,263 @@ export class MemStorage implements IStorage {
     this.facilityReviewsMap.set(id, updated);
     return updated;
   }
+
+  // Quiz Definitions
+  async listQuizzes(status?: string, category?: string): Promise<QuizDefinition[]> {
+    let quizzes = Array.from(this.quizDefinitionsMap.values());
+    if (status) quizzes = quizzes.filter(q => q.status === status);
+    if (category) quizzes = quizzes.filter(q => q.category === category);
+    return quizzes.sort((a, b) => a.sortOrder - b.sortOrder);
+  }
+
+  async getQuiz(id: string): Promise<QuizDefinition | undefined> {
+    return this.quizDefinitionsMap.get(id);
+  }
+
+  async getQuizBySlug(slug: string): Promise<QuizDefinition | undefined> {
+    return Array.from(this.quizDefinitionsMap.values()).find(q => q.slug === slug);
+  }
+
+  async getQuizWithQuestions(slug: string): Promise<QuizWithQuestions | undefined> {
+    const quiz = await this.getQuizBySlug(slug);
+    if (!quiz) return undefined;
+    const questions = Array.from(this.quizQuestionsMap.values())
+      .filter(q => q.quizId === quiz.id)
+      .sort((a, b) => a.displayOrder - b.displayOrder);
+    return { ...quiz, questions };
+  }
+
+  async createQuiz(quiz: InsertQuizDefinition): Promise<QuizDefinition> {
+    const id = randomUUID();
+    const now = new Date();
+    const existingSlugs = Array.from(this.quizDefinitionsMap.values()).map(q => q.slug);
+    const slug = quiz.slug || generateUniqueSlug(quiz.title, existingSlugs);
+    const newQuiz: QuizDefinition = {
+      id,
+      slug,
+      title: quiz.title,
+      subtitle: quiz.subtitle || null,
+      description: quiz.description || null,
+      category: quiz.category,
+      targetType: quiz.targetType,
+      heroImageUrl: quiz.heroImageUrl || null,
+      resultTitle: quiz.resultTitle || null,
+      resultDescription: quiz.resultDescription || null,
+      ctaText: quiz.ctaText || "Get Your Free Care Assessment",
+      ctaUrl: quiz.ctaUrl || null,
+      metaTitle: quiz.metaTitle || null,
+      metaDescription: quiz.metaDescription || null,
+      status: quiz.status || "draft",
+      sortOrder: quiz.sortOrder || 0,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.quizDefinitionsMap.set(id, newQuiz);
+    return newQuiz;
+  }
+
+  async updateQuiz(id: string, quiz: UpdateQuizDefinition): Promise<QuizDefinition | undefined> {
+    const existing = this.quizDefinitionsMap.get(id);
+    if (!existing) return undefined;
+    const updated: QuizDefinition = { ...existing, ...quiz, updatedAt: new Date() };
+    this.quizDefinitionsMap.set(id, updated);
+    return updated;
+  }
+
+  async deleteQuiz(id: string): Promise<boolean> {
+    // Also delete associated questions
+    Array.from(this.quizQuestionsMap.values())
+      .filter(q => q.quizId === id)
+      .forEach(q => this.quizQuestionsMap.delete(q.id));
+    return this.quizDefinitionsMap.delete(id);
+  }
+
+  async publishQuiz(id: string): Promise<QuizDefinition | undefined> {
+    const existing = this.quizDefinitionsMap.get(id);
+    if (!existing) return undefined;
+    const updated: QuizDefinition = { ...existing, status: "published", updatedAt: new Date() };
+    this.quizDefinitionsMap.set(id, updated);
+    return updated;
+  }
+
+  async unpublishQuiz(id: string): Promise<QuizDefinition | undefined> {
+    const existing = this.quizDefinitionsMap.get(id);
+    if (!existing) return undefined;
+    const updated: QuizDefinition = { ...existing, status: "draft", updatedAt: new Date() };
+    this.quizDefinitionsMap.set(id, updated);
+    return updated;
+  }
+
+  // Quiz Questions
+  async listQuizQuestions(quizId: string): Promise<QuizQuestion[]> {
+    return Array.from(this.quizQuestionsMap.values())
+      .filter(q => q.quizId === quizId)
+      .sort((a, b) => a.displayOrder - b.displayOrder);
+  }
+
+  async getQuizQuestion(id: string): Promise<QuizQuestion | undefined> {
+    return this.quizQuestionsMap.get(id);
+  }
+
+  async createQuizQuestion(question: InsertQuizQuestion): Promise<QuizQuestion> {
+    const id = randomUUID();
+    const now = new Date();
+    const newQuestion: QuizQuestion = {
+      id,
+      quizId: question.quizId,
+      questionText: question.questionText,
+      questionType: question.questionType || "single_choice",
+      helpText: question.helpText || null,
+      options: question.options || [],
+      isRequired: question.isRequired || "yes",
+      displayOrder: question.displayOrder || 0,
+      scoreWeight: question.scoreWeight || 1,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.quizQuestionsMap.set(id, newQuestion);
+    return newQuestion;
+  }
+
+  async updateQuizQuestion(id: string, question: UpdateQuizQuestion): Promise<QuizQuestion | undefined> {
+    const existing = this.quizQuestionsMap.get(id);
+    if (!existing) return undefined;
+    const updated: QuizQuestion = { ...existing, ...question, updatedAt: new Date() };
+    this.quizQuestionsMap.set(id, updated);
+    return updated;
+  }
+
+  async deleteQuizQuestion(id: string): Promise<boolean> {
+    return this.quizQuestionsMap.delete(id);
+  }
+
+  // Quiz Leads
+  async listQuizLeads(filters?: { quizId?: string; status?: string; startDate?: Date; endDate?: Date }): Promise<QuizLead[]> {
+    let leads = Array.from(this.quizLeadsMap.values());
+    if (filters?.quizId) leads = leads.filter(l => l.quizId === filters.quizId);
+    if (filters?.status) leads = leads.filter(l => l.status === filters.status);
+    if (filters?.startDate) leads = leads.filter(l => l.createdAt >= filters.startDate!);
+    if (filters?.endDate) leads = leads.filter(l => l.createdAt <= filters.endDate!);
+    return leads.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getQuizLead(id: string): Promise<QuizLead | undefined> {
+    return this.quizLeadsMap.get(id);
+  }
+
+  async getQuizLeadWithResponses(id: string): Promise<QuizLeadWithResponses | undefined> {
+    const lead = this.quizLeadsMap.get(id);
+    if (!lead) return undefined;
+    const quiz = this.quizDefinitionsMap.get(lead.quizId);
+    if (!quiz) return undefined;
+    const responses = Array.from(this.quizResponsesMap.values())
+      .filter(r => r.leadId === id)
+      .map(r => {
+        const question = this.quizQuestionsMap.get(r.questionId);
+        return { ...r, question: question! };
+      })
+      .filter(r => r.question);
+    return { ...lead, quiz, responses };
+  }
+
+  async createQuizLead(lead: InsertQuizLead): Promise<QuizLead> {
+    const id = randomUUID();
+    const now = new Date();
+    const newLead: QuizLead = {
+      id,
+      quizId: lead.quizId,
+      name: lead.name,
+      email: lead.email,
+      phone: lead.phone || null,
+      leadScore: 0,
+      urgencyLevel: lead.urgencyLevel || null,
+      sourcePage: lead.sourcePage || null,
+      referrer: lead.referrer || null,
+      utmSource: lead.utmSource || null,
+      utmMedium: lead.utmMedium || null,
+      utmCampaign: lead.utmCampaign || null,
+      status: "new",
+      assignedTo: lead.assignedTo || null,
+      notes: lead.notes || null,
+      ipAddress: lead.ipAddress || null,
+      userAgent: lead.userAgent || null,
+      emailSent: "no",
+      emailSentAt: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.quizLeadsMap.set(id, newLead);
+    return newLead;
+  }
+
+  async updateQuizLead(id: string, lead: UpdateQuizLead): Promise<QuizLead | undefined> {
+    const existing = this.quizLeadsMap.get(id);
+    if (!existing) return undefined;
+    const updated: QuizLead = { ...existing, ...lead, updatedAt: new Date() };
+    this.quizLeadsMap.set(id, updated);
+    return updated;
+  }
+
+  async deleteQuizLead(id: string): Promise<boolean> {
+    // Also delete associated responses
+    Array.from(this.quizResponsesMap.values())
+      .filter(r => r.leadId === id)
+      .forEach(r => this.quizResponsesMap.delete(r.id));
+    return this.quizLeadsMap.delete(id);
+  }
+
+  async markQuizLeadEmailSent(id: string): Promise<QuizLead | undefined> {
+    const existing = this.quizLeadsMap.get(id);
+    if (!existing) return undefined;
+    const updated: QuizLead = { ...existing, emailSent: "yes", emailSentAt: new Date(), updatedAt: new Date() };
+    this.quizLeadsMap.set(id, updated);
+    return updated;
+  }
+
+  // Quiz Responses
+  async createQuizResponse(response: InsertQuizResponse): Promise<QuizResponse> {
+    const id = randomUUID();
+    const newResponse: QuizResponse = {
+      id,
+      leadId: response.leadId,
+      questionId: response.questionId,
+      answerValue: response.answerValue || null,
+      answerValues: response.answerValues || [],
+      answerText: response.answerText || null,
+      scoreContribution: response.scoreContribution || 0,
+      createdAt: new Date(),
+    };
+    this.quizResponsesMap.set(id, newResponse);
+    
+    // Update lead score
+    const lead = this.quizLeadsMap.get(response.leadId);
+    if (lead) {
+      const updatedLead: QuizLead = { 
+        ...lead, 
+        leadScore: lead.leadScore + (response.scoreContribution || 0),
+        updatedAt: new Date()
+      };
+      this.quizLeadsMap.set(response.leadId, updatedLead);
+    }
+    
+    return newResponse;
+  }
+
+  async listQuizResponsesByLead(leadId: string): Promise<QuizResponse[]> {
+    return Array.from(this.quizResponsesMap.values()).filter(r => r.leadId === leadId);
+  }
+
+  // Quiz Analytics
+  async getQuizLeadStats(): Promise<{ total: number; new: number; contacted: number; qualified: number; converted: number }> {
+    const leads = Array.from(this.quizLeadsMap.values());
+    return {
+      total: leads.length,
+      new: leads.filter(l => l.status === "new").length,
+      contacted: leads.filter(l => l.status === "contacted").length,
+      qualified: leads.filter(l => l.status === "qualified").length,
+      converted: leads.filter(l => l.status === "converted").length,
+    };
+  }
 }
 
 export class DbStorage implements IStorage {
@@ -3005,6 +3313,174 @@ export class DbStorage implements IStorage {
   async rejectFacilityReview(id: string): Promise<FacilityReview | undefined> {
     const result = await this.db.update(facilityReviews).set({ status: "rejected", updatedAt: new Date() }).where(eq(facilityReviews.id, id)).returning();
     return result[0];
+  }
+
+  // Quiz Definitions
+  async listQuizzes(status?: string, category?: string): Promise<QuizDefinition[]> {
+    let query = this.db.select().from(quizDefinitions);
+    const conditions = [];
+    if (status) conditions.push(eq(quizDefinitions.status, status));
+    if (category) conditions.push(eq(quizDefinitions.category, category));
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+    return query.orderBy(quizDefinitions.sortOrder);
+  }
+
+  async getQuiz(id: string): Promise<QuizDefinition | undefined> {
+    const result = await this.db.select().from(quizDefinitions).where(eq(quizDefinitions.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getQuizBySlug(slug: string): Promise<QuizDefinition | undefined> {
+    const result = await this.db.select().from(quizDefinitions).where(eq(quizDefinitions.slug, slug)).limit(1);
+    return result[0];
+  }
+
+  async getQuizWithQuestions(slug: string): Promise<QuizWithQuestions | undefined> {
+    const quiz = await this.getQuizBySlug(slug);
+    if (!quiz) return undefined;
+    const questions = await this.db.select().from(quizQuestions).where(eq(quizQuestions.quizId, quiz.id)).orderBy(quizQuestions.displayOrder);
+    return { ...quiz, questions };
+  }
+
+  async createQuiz(quiz: InsertQuizDefinition): Promise<QuizDefinition> {
+    const existingSlugs = await this.db.select({ slug: quizDefinitions.slug }).from(quizDefinitions);
+    const slugList = existingSlugs.map((s: { slug: string }) => s.slug);
+    const slug = quiz.slug || generateUniqueSlug(quiz.title, slugList);
+    const result = await this.db.insert(quizDefinitions).values({ ...quiz, slug }).returning();
+    return result[0];
+  }
+
+  async updateQuiz(id: string, quiz: UpdateQuizDefinition): Promise<QuizDefinition | undefined> {
+    const result = await this.db.update(quizDefinitions).set({ ...quiz, updatedAt: new Date() }).where(eq(quizDefinitions.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteQuiz(id: string): Promise<boolean> {
+    const result = await this.db.delete(quizDefinitions).where(eq(quizDefinitions.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async publishQuiz(id: string): Promise<QuizDefinition | undefined> {
+    const result = await this.db.update(quizDefinitions).set({ status: "published", updatedAt: new Date() }).where(eq(quizDefinitions.id, id)).returning();
+    return result[0];
+  }
+
+  async unpublishQuiz(id: string): Promise<QuizDefinition | undefined> {
+    const result = await this.db.update(quizDefinitions).set({ status: "draft", updatedAt: new Date() }).where(eq(quizDefinitions.id, id)).returning();
+    return result[0];
+  }
+
+  // Quiz Questions
+  async listQuizQuestions(quizId: string): Promise<QuizQuestion[]> {
+    return this.db.select().from(quizQuestions).where(eq(quizQuestions.quizId, quizId)).orderBy(quizQuestions.displayOrder);
+  }
+
+  async getQuizQuestion(id: string): Promise<QuizQuestion | undefined> {
+    const result = await this.db.select().from(quizQuestions).where(eq(quizQuestions.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createQuizQuestion(question: InsertQuizQuestion): Promise<QuizQuestion> {
+    const result = await this.db.insert(quizQuestions).values(question).returning();
+    return result[0];
+  }
+
+  async updateQuizQuestion(id: string, question: UpdateQuizQuestion): Promise<QuizQuestion | undefined> {
+    const result = await this.db.update(quizQuestions).set({ ...question, updatedAt: new Date() }).where(eq(quizQuestions.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteQuizQuestion(id: string): Promise<boolean> {
+    const result = await this.db.delete(quizQuestions).where(eq(quizQuestions.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // Quiz Leads
+  async listQuizLeads(filters?: { quizId?: string; status?: string; startDate?: Date; endDate?: Date }): Promise<QuizLead[]> {
+    let query = this.db.select().from(quizLeads);
+    const conditions = [];
+    if (filters?.quizId) conditions.push(eq(quizLeads.quizId, filters.quizId));
+    if (filters?.status) conditions.push(eq(quizLeads.status, filters.status));
+    if (filters?.startDate) conditions.push(gte(quizLeads.createdAt, filters.startDate));
+    if (filters?.endDate) conditions.push(lte(quizLeads.createdAt, filters.endDate));
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+    return query.orderBy(desc(quizLeads.createdAt));
+  }
+
+  async getQuizLead(id: string): Promise<QuizLead | undefined> {
+    const result = await this.db.select().from(quizLeads).where(eq(quizLeads.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getQuizLeadWithResponses(id: string): Promise<QuizLeadWithResponses | undefined> {
+    const lead = await this.getQuizLead(id);
+    if (!lead) return undefined;
+    const quiz = await this.getQuiz(lead.quizId);
+    if (!quiz) return undefined;
+    const responses = await this.db.select().from(quizResponses).where(eq(quizResponses.leadId, id));
+    const questions = await this.db.select().from(quizQuestions).where(eq(quizQuestions.quizId, quiz.id));
+    const questionMap = new Map(questions.map((q: QuizQuestion) => [q.id, q]));
+    const responsesWithQuestions = responses.map((r: QuizResponse) => ({
+      ...r,
+      question: questionMap.get(r.questionId)!
+    })).filter((r: any) => r.question);
+    return { ...lead, quiz, responses: responsesWithQuestions };
+  }
+
+  async createQuizLead(lead: InsertQuizLead): Promise<QuizLead> {
+    const result = await this.db.insert(quizLeads).values(lead).returning();
+    return result[0];
+  }
+
+  async updateQuizLead(id: string, lead: UpdateQuizLead): Promise<QuizLead | undefined> {
+    const result = await this.db.update(quizLeads).set({ ...lead, updatedAt: new Date() }).where(eq(quizLeads.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteQuizLead(id: string): Promise<boolean> {
+    const result = await this.db.delete(quizLeads).where(eq(quizLeads.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async markQuizLeadEmailSent(id: string): Promise<QuizLead | undefined> {
+    const result = await this.db.update(quizLeads).set({ emailSent: "yes", emailSentAt: new Date(), updatedAt: new Date() }).where(eq(quizLeads.id, id)).returning();
+    return result[0];
+  }
+
+  // Quiz Responses
+  async createQuizResponse(response: InsertQuizResponse): Promise<QuizResponse> {
+    const result = await this.db.insert(quizResponses).values(response).returning();
+    // Update lead score
+    if (response.scoreContribution) {
+      const lead = await this.getQuizLead(response.leadId);
+      if (lead) {
+        await this.db.update(quizLeads).set({ 
+          leadScore: lead.leadScore + response.scoreContribution,
+          updatedAt: new Date()
+        }).where(eq(quizLeads.id, response.leadId));
+      }
+    }
+    return result[0];
+  }
+
+  async listQuizResponsesByLead(leadId: string): Promise<QuizResponse[]> {
+    return this.db.select().from(quizResponses).where(eq(quizResponses.leadId, leadId));
+  }
+
+  // Quiz Analytics
+  async getQuizLeadStats(): Promise<{ total: number; new: number; contacted: number; qualified: number; converted: number }> {
+    const leads = await this.db.select().from(quizLeads);
+    return {
+      total: leads.length,
+      new: leads.filter((l: QuizLead) => l.status === "new").length,
+      contacted: leads.filter((l: QuizLead) => l.status === "contacted").length,
+      qualified: leads.filter((l: QuizLead) => l.status === "qualified").length,
+      converted: leads.filter((l: QuizLead) => l.status === "converted").length,
+    };
   }
 }
 

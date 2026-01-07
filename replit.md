@@ -62,6 +62,17 @@ Preferred communication style: Simple, everyday language.
     -   Features: type/county filtering, search, ratings display, review system
     -   Admin: Full CRUD at `/admin/facilities` with status management (draft/published)
     -   Seed endpoint: `POST /api/seed/facilities` to populate with 12 real MA facilities
+-   **Quiz Lead Generation System**: Interactive assessment quizzes for lead capture:
+    -   Public routes: `/quiz/:slug` for each quiz
+    -   12 quiz types: 7 service types (personal-care, companionship, homemaking, dementia-care, respite-care, live-in-care, post-hospital-care) and 5 facility types (nursing-home, assisted-living, memory-care, independent-living, continuing-care)
+    -   Database schema: quiz_definitions, quiz_questions, quiz_leads, quiz_responses tables
+    -   Features: Step-by-step flow with progress bar, single/multiple choice questions, text responses
+    -   Lead scoring: Weighted question scores, urgency level calculation (immediate/high/medium/low)
+    -   Contact capture: Name (required), email (required), phone (optional) with CAPTCHA protection
+    -   UTM tracking: Captures source page, referrer, utm_source, utm_medium, utm_campaign
+    -   Email notifications: Automatic alerts via Resend API when leads submitted
+    -   Admin: Lead management at `/admin/quiz-leads` with stats dashboard, status tracking, notes
+    -   Seed endpoint: `POST /api/seed/quizzes` to populate quiz definitions
 
 ### Backend
 

@@ -48,6 +48,8 @@ const IndependentLivingPage = lazy(() => import("@/pages/care-options/independen
 const HomeCareOverviewPage = lazy(() => import("@/pages/care-options/home-care"));
 const FacilityDirectoryPage = lazy(() => import("@/pages/facility-directory"));
 const FacilityDetailPage = lazy(() => import("@/pages/facility-detail"));
+const QuizPage = lazy(() => import("@/pages/quiz"));
+const AdminQuizLeads = lazy(() => import("@/pages/admin/quiz-leads"));
 
 // Loading fallback component
 function PageLoader() {
@@ -94,6 +96,8 @@ function Router() {
         <Route path="/caregiver-log" component={CaregiverLogPage} />
         <Route path="/hipaa-acknowledgment" component={HipaaAcknowledgmentPage} />
         <Route path="/refer-a-friend" component={ReferAFriendPage} />
+        <Route path="/quiz/:slug" component={QuizPage} />
+        <Route path="/admin/quiz-leads" component={AdminQuizLeads} />
         <Route path="/admin/inquiries" component={AdminInquiries} />
         <Route path="/admin/applications" component={AdminApplications} />
         <Route path="/admin/referrals" component={AdminReferrals} />
