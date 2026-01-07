@@ -39,15 +39,20 @@ export default function Header() {
 
             <nav className="hidden lg:flex items-center gap-6 text-sm font-medium">
               <a href="/#about" data-testid="link-about" className="text-foreground hover-elevate px-3 py-2 rounded-md transition">About</a>
-              <Link href="/services" data-testid="link-services" className="text-foreground hover-elevate px-3 py-2 rounded-md transition">Services</Link>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1 text-foreground hover-elevate px-3 py-2 rounded-md transition" data-testid="link-care-types">
-                    Care Types
+                  <button className="flex items-center gap-1 text-foreground hover-elevate px-3 py-2 rounded-md transition" data-testid="link-services">
+                    Services
                     <ChevronDown className="w-4 h-4" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-56">
+                  <DropdownMenuItem asChild>
+                    <Link href="/services" data-testid="link-services-overview">
+                      All Services
+                    </Link>
+                  </DropdownMenuItem>
+                  <div className="h-px bg-border my-1" />
                   {careTypes.map((ct) => (
                     <DropdownMenuItem key={ct.slug} asChild>
                       <Link href={`/${ct.slug}/massachusetts`} data-testid={`link-${ct.slug}`}>
@@ -146,17 +151,17 @@ export default function Header() {
               >
                 About
               </a>
-              <Link 
-                href="/services" 
-                className="text-foreground hover-elevate px-3 py-3 rounded-md text-base" 
-                data-testid="link-services-mobile"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Services
-              </Link>
               <div className="px-3 py-2">
-                <p className="text-sm font-medium text-muted-foreground mb-2">Care Types</p>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Services</p>
                 <div className="flex flex-col gap-1 pl-2">
+                  <Link
+                    href="/services"
+                    className="text-foreground hover-elevate px-3 py-2 rounded-md text-sm font-medium"
+                    data-testid="link-services-mobile"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    All Services
+                  </Link>
                   {careTypes.map((ct) => (
                     <Link
                       key={ct.slug}
