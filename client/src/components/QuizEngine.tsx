@@ -4,18 +4,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useMutation } from "@tanstack/react-query";
+import { motion, AnimatePresence } from "framer-motion";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, ChevronLeft, ChevronRight, Loader2, Phone, Mail, User, ArrowRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Phone, Mail, User, ArrowRight } from "lucide-react";
+import QuizProgressBar from "@/components/quiz/QuizProgressBar";
+import QuizResults from "@/components/quiz/QuizResults";
 import type { QuizWithQuestions, QuizQuestion } from "@shared/schema";
 
 interface QuizEngineProps {
@@ -28,6 +30,7 @@ interface QuizResult {
   success: boolean;
   leadId: string;
   score: number;
+  maxScore?: number;
   urgencyLevel: string;
   resultTitle: string | null;
   resultDescription: string | null;
@@ -56,8 +59,29 @@ export default function QuizEngine({ quiz, onComplete, className }: QuizEnginePr
   const [responses, setResponses] = useState<Record<string, QuestionResponse>>({});
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [result, setResult] = useState<QuizResult | null>(null);
+  const [direction, setDirection] = useState(1);
 
   const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+
+  const currentScore = useMemo(() => {
+    let score = 0;
+    Object.values(responses).forEach(response => {
+      const question = quiz.questions.find(q => q.id === response.questionId);
+      if (!question) return;
+      const options = question.options as { value: string; label: string; score?: number }[];
+      
+      if (response.answerValue) {
+        const option = options.find(o => o.value === response.answerValue);
+        if (option?.score) score += option.score;
+      } else if (response.answerValues) {
+        response.answerValues.forEach(val => {
+          const option = options.find(o => o.value === val);
+          if (option?.score) score += option.score;
+        });
+      }
+    });
+    return score;
+  }, [responses, quiz.questions]);
   const totalSteps = quiz.questions.length + 2; // questions + contact form + result
   const isContactStep = currentStep === quiz.questions.length;
   const isResultStep = currentStep === quiz.questions.length + 1;
@@ -144,12 +168,14 @@ export default function QuizEngine({ quiz, onComplete, className }: QuizEnginePr
         submitMutation.mutate(data);
       })();
     } else if (currentStep < quiz.questions.length) {
+      setDirection(1);
       setCurrentStep(prev => prev + 1);
     }
   }, [currentStep, isContactStep, form, submitMutation, quiz.questions.length]);
 
   const handleBack = useCallback(() => {
     if (currentStep > 0) {
+      setDirection(-1);
       setCurrentStep(prev => prev - 1);
     }
   }, [currentStep]);
@@ -188,6 +214,22 @@ export default function QuizEngine({ quiz, onComplete, className }: QuizEnginePr
         );
 
       case "multiple_choice":
+        const handleMultiSelect = (optionValue: string, shouldSelect: boolean) => {
+          setResponses(prev => {
+            const currentResponse = prev[question.id];
+            const currentValues = currentResponse?.answerValues || [];
+            const newValues = shouldSelect
+              ? [...currentValues.filter(v => v !== optionValue), optionValue]
+              : currentValues.filter(v => v !== optionValue);
+            return {
+              ...prev,
+              [question.id]: {
+                questionId: question.id,
+                answerValues: newValues,
+              }
+            };
+          });
+        };
         return (
           <div className="space-y-3">
             {options.map((option) => {
@@ -198,17 +240,29 @@ export default function QuizEngine({ quiz, onComplete, className }: QuizEnginePr
                   className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer hover-elevate ${
                     isChecked ? "border-primary bg-primary/5" : "border-border"
                   }`}
-                  onClick={() => {
-                    const current = response?.answerValues || [];
-                    const newValues = isChecked
-                      ? current.filter(v => v !== option.value)
-                      : [...current, option.value];
-                    handleQuestionAnswer(question.id, newValues, "multiple_choice");
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleMultiSelect(option.value, !isChecked);
                   }}
                   data-testid={`option-${question.id}-${option.value}`}
                 >
-                  <Checkbox checked={isChecked} id={`${question.id}-${option.value}`} />
-                  <Label htmlFor={`${question.id}-${option.value}`} className="flex-1 cursor-pointer font-normal">
+                  <Checkbox 
+                    checked={isChecked} 
+                    id={`${question.id}-${option.value}`}
+                    onCheckedChange={(checked) => {
+                      handleMultiSelect(option.value, checked === true);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <Label 
+                    htmlFor={`${question.id}-${option.value}`} 
+                    className="flex-1 cursor-pointer font-normal"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleMultiSelect(option.value, !isChecked);
+                    }}
+                  >
                     {option.label}
                   </Label>
                 </div>
@@ -234,152 +288,151 @@ export default function QuizEngine({ quiz, onComplete, className }: QuizEnginePr
   };
 
   if (isResultStep && result) {
-    return (
-      <Card className={`max-w-2xl mx-auto ${className || ""}`}>
-        <CardContent className="pt-8 pb-8 text-center">
-          <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
-          </div>
-          <h2 className="text-2xl font-bold mb-4" data-testid="text-result-title">
-            {result.resultTitle || "Thank You!"}
-          </h2>
-          <p className="text-muted-foreground mb-6" data-testid="text-result-description">
-            {result.resultDescription || "We've received your information and will be in touch shortly to discuss your care needs."}
-          </p>
-          {result.ctaUrl && (
-            <Button asChild size="lg" data-testid="button-result-cta">
-              <a href={result.ctaUrl}>
-                {result.ctaText || "Learn More"}
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </a>
-            </Button>
-          )}
-        </CardContent>
-      </Card>
-    );
+    return <QuizResults result={result} className={className} />;
   }
 
+  const slideVariants = {
+    enter: (dir: number) => ({ x: dir > 0 ? 100 : -100, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (dir: number) => ({ x: dir > 0 ? -100 : 100, opacity: 0 }),
+  };
+
   return (
-    <Card className={`max-w-2xl mx-auto ${className || ""}`}>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-sm text-muted-foreground">
-            Step {currentStep + 1} of {totalSteps}
-          </span>
-          <span className="text-sm font-medium">
-            {Math.round(progress)}% Complete
-          </span>
-        </div>
-        <Progress value={progress} className="h-2" data-testid="progress-quiz" />
-      </CardHeader>
+    <Card className={`max-w-2xl mx-auto overflow-hidden ${className || ""}`}>
+      <div className="p-6 pb-2">
+        <QuizProgressBar 
+          current={currentStep} 
+          total={quiz.questions.length}
+          score={currentScore}
+          showScore={Object.keys(responses).length > 0}
+          stepLabel={isContactStep ? "Final Step" : `Question ${currentStep + 1} of ${quiz.questions.length}`}
+        />
+      </div>
 
-      <CardContent className="pt-6">
-        {!isContactStep && currentQuestion && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-xl font-semibold mb-2" data-testid={`text-question-${currentStep}`}>
-                {currentQuestion.questionText}
-              </h3>
-              {currentQuestion.helpText && (
-                <p className="text-sm text-muted-foreground">{currentQuestion.helpText}</p>
-              )}
-            </div>
-            {renderQuestion(currentQuestion)}
-          </div>
-        )}
-
-        {isContactStep && (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <h3 className="text-xl font-semibold mb-2">Almost Done!</h3>
-              <p className="text-muted-foreground">
-                Enter your contact information to receive your personalized care assessment.
-              </p>
-            </div>
-
-            <Form {...form}>
-              <form className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Full Name *</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                          <Input 
-                            {...field} 
-                            placeholder="Your full name" 
-                            className="pl-10"
-                            data-testid="input-name"
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email Address *</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                          <Input 
-                            {...field} 
-                            type="email" 
-                            placeholder="your@email.com" 
-                            className="pl-10"
-                            data-testid="input-email"
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Phone Number (Optional)</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                          <Input 
-                            {...field} 
-                            type="tel" 
-                            placeholder="(555) 123-4567" 
-                            className="pl-10"
-                            data-testid="input-phone"
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {siteKey && (
-                  <div className="flex justify-center pt-4">
-                    <ReCAPTCHA
-                      sitekey={siteKey}
-                      onChange={(token) => setCaptchaToken(token)}
-                      onExpired={() => setCaptchaToken(null)}
-                    />
-                  </div>
+      <CardContent className="pt-4">
+        <AnimatePresence mode="wait" custom={direction}>
+          {!isContactStep && currentQuestion && (
+            <motion.div
+              key={currentStep}
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="space-y-6"
+            >
+              <div>
+                <h3 className="text-xl font-semibold mb-2" data-testid={`text-question-${currentStep}`}>
+                  {currentQuestion.questionText}
+                </h3>
+                {currentQuestion.helpText && (
+                  <p className="text-sm text-muted-foreground">{currentQuestion.helpText}</p>
                 )}
-              </form>
-            </Form>
-          </div>
-        )}
+              </div>
+              {renderQuestion(currentQuestion)}
+            </motion.div>
+          )}
+
+          {isContactStep && (
+            <motion.div
+              key="contact-step"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-xl font-semibold mb-2">Almost Done!</h3>
+                <p className="text-muted-foreground">
+                  Enter your contact information to receive your personalized care assessment.
+                </p>
+              </div>
+
+              <Form {...form}>
+                <form className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Full Name *</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input 
+                              {...field} 
+                              placeholder="Your full name" 
+                              className="pl-10"
+                              data-testid="input-name"
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email Address *</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input 
+                              {...field} 
+                              type="email" 
+                              placeholder="your@email.com" 
+                              className="pl-10"
+                              data-testid="input-email"
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone Number (Optional)</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input 
+                              {...field} 
+                              type="tel" 
+                              placeholder="(555) 123-4567" 
+                              className="pl-10"
+                              data-testid="input-phone"
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {siteKey && (
+                    <div className="flex justify-center pt-4">
+                      <ReCAPTCHA
+                        sitekey={siteKey}
+                        onChange={(token) => setCaptchaToken(token)}
+                        onExpired={() => setCaptchaToken(null)}
+                      />
+                    </div>
+                  )}
+                </form>
+              </Form>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </CardContent>
 
       <CardFooter className="flex justify-between pt-6">
