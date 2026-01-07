@@ -3,6 +3,7 @@ import {
   type RecoveryCode, type InsertRecoveryCode,
   type Job, type InsertJob, type UpdateJob,
   type Article, type InsertArticle, type UpdateArticle,
+  type ArticleFaq, type InsertArticleFaq, type UpdateArticleFaq,
   type Inquiry, type InsertInquiry, type UpdateInquiry, type Reply,
   type PageMeta, type InsertPageMeta, type UpdatePageMeta,
   type Caregiver, type InsertCaregiver, type UpdateCaregiver,
@@ -23,6 +24,7 @@ import {
   recoveryCodes,
   jobs,
   articles,
+  articleFaqs,
   inquiries,
   pageMeta,
   caregivers,
@@ -70,6 +72,12 @@ export interface IStorage {
   deleteArticle(id: string): Promise<boolean>;
   publishArticle(id: string): Promise<Article | undefined>;
   unpublishArticle(id: string): Promise<Article | undefined>;
+  
+  listArticleFaqs(articleId: string): Promise<ArticleFaq[]>;
+  getArticleFaq(id: string): Promise<ArticleFaq | undefined>;
+  createArticleFaq(faq: InsertArticleFaq): Promise<ArticleFaq>;
+  updateArticleFaq(id: string, faq: UpdateArticleFaq): Promise<ArticleFaq | undefined>;
+  deleteArticleFaq(id: string): Promise<boolean>;
   
   listInquiries(status?: string): Promise<Inquiry[]>;
   getInquiry(id: string): Promise<Inquiry | undefined>;
@@ -168,6 +176,7 @@ export class MemStorage implements IStorage {
   private recoveryCodes: Map<string, RecoveryCode>;
   private jobs: Map<string, Job>;
   private articles: Map<string, Article>;
+  private articleFaqsMap: Map<string, ArticleFaq>;
   private inquiries: Map<string, Inquiry>;
   private pageMetas: Map<string, PageMeta>;
   private caregivers: Map<string, Caregiver>;
@@ -189,6 +198,7 @@ export class MemStorage implements IStorage {
     this.recoveryCodes = new Map();
     this.jobs = new Map();
     this.articles = new Map();
+    this.articleFaqsMap = new Map();
     this.inquiries = new Map();
     this.pageMetas = new Map();
     this.caregivers = new Map();
@@ -551,6 +561,50 @@ export class MemStorage implements IStorage {
     };
     this.articles.set(id, updated);
     return updated;
+  }
+
+  async listArticleFaqs(articleId: string): Promise<ArticleFaq[]> {
+    const faqs = Array.from(this.articleFaqsMap.values())
+      .filter(f => f.articleId === articleId && f.isActive === 'yes')
+      .sort((a, b) => a.displayOrder - b.displayOrder);
+    return faqs;
+  }
+
+  async getArticleFaq(id: string): Promise<ArticleFaq | undefined> {
+    return this.articleFaqsMap.get(id);
+  }
+
+  async createArticleFaq(faq: InsertArticleFaq): Promise<ArticleFaq> {
+    const id = randomUUID();
+    const now = new Date();
+    const newFaq: ArticleFaq = {
+      id,
+      articleId: faq.articleId,
+      question: faq.question,
+      answer: faq.answer,
+      displayOrder: faq.displayOrder ?? 0,
+      isActive: faq.isActive ?? 'yes',
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.articleFaqsMap.set(id, newFaq);
+    return newFaq;
+  }
+
+  async updateArticleFaq(id: string, faq: UpdateArticleFaq): Promise<ArticleFaq | undefined> {
+    const existing = this.articleFaqsMap.get(id);
+    if (!existing) return undefined;
+    const updated: ArticleFaq = {
+      ...existing,
+      ...faq,
+      updatedAt: new Date(),
+    };
+    this.articleFaqsMap.set(id, updated);
+    return updated;
+  }
+
+  async deleteArticleFaq(id: string): Promise<boolean> {
+    return this.articleFaqsMap.delete(id);
   }
 
   async listInquiries(status?: string): Promise<Inquiry[]> {
@@ -1603,6 +1657,39 @@ export class DbStorage implements IStorage {
       .where(eq(articles.id, id))
       .returning();
     return result[0];
+  }
+
+  async listArticleFaqs(articleId: string): Promise<ArticleFaq[]> {
+    return await this.db.select().from(articleFaqs)
+      .where(and(eq(articleFaqs.articleId, articleId), eq(articleFaqs.isActive, 'yes')))
+      .orderBy(articleFaqs.displayOrder);
+  }
+
+  async getArticleFaq(id: string): Promise<ArticleFaq | undefined> {
+    const result = await this.db.select().from(articleFaqs).where(eq(articleFaqs.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createArticleFaq(faq: InsertArticleFaq): Promise<ArticleFaq> {
+    const result = await this.db.insert(articleFaqs).values({
+      ...faq,
+      isActive: faq.isActive ?? 'yes',
+      displayOrder: faq.displayOrder ?? 0,
+    }).returning();
+    return result[0];
+  }
+
+  async updateArticleFaq(id: string, faq: UpdateArticleFaq): Promise<ArticleFaq | undefined> {
+    const result = await this.db.update(articleFaqs)
+      .set({ ...faq, updatedAt: new Date() })
+      .where(eq(articleFaqs.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteArticleFaq(id: string): Promise<boolean> {
+    const result = await this.db.delete(articleFaqs).where(eq(articleFaqs.id, id)).returning();
+    return result.length > 0;
   }
 
   async listInquiries(status?: string): Promise<Inquiry[]> {

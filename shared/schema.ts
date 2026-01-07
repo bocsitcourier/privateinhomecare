@@ -93,6 +93,29 @@ export type InsertArticle = z.infer<typeof insertArticleSchema>;
 export type UpdateArticle = z.infer<typeof updateArticleSchema>;
 export type Article = typeof articles.$inferSelect;
 
+export const articleFaqs = pgTable("article_faqs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  articleId: varchar("article_id").notNull().references(() => articles.id, { onDelete: "cascade" }),
+  question: text("question").notNull(),
+  answer: text("answer").notNull(),
+  displayOrder: integer("display_order").notNull().default(0),
+  isActive: text("is_active").notNull().default("yes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertArticleFaqSchema = createInsertSchema(articleFaqs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateArticleFaqSchema = insertArticleFaqSchema.partial();
+
+export type InsertArticleFaq = z.infer<typeof insertArticleFaqSchema>;
+export type UpdateArticleFaq = z.infer<typeof updateArticleFaqSchema>;
+export type ArticleFaq = typeof articleFaqs.$inferSelect;
+
 export const inquiries = pgTable("inquiries", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
