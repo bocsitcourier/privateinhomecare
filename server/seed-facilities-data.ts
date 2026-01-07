@@ -124,8 +124,8 @@ export const comprehensiveFacilities = [
     status: "published",
   },
   {
-    name: "Revere Beach Independent Living",
-    slug: "revere-beach-independent-living",
+    name: "The Delaney at The Vale",
+    slug: "delaney-at-the-vale-woburn",
     type: "independent-living",
     address: "425 Revere Beach Boulevard",
     city: "Revere",
@@ -225,8 +225,8 @@ export const comprehensiveFacilities = [
     status: "published",
   },
   {
-    name: "Framingham Senior Residences",
-    slug: "framingham-senior-residences",
+    name: "Traditions of Wayland",
+    slug: "traditions-of-wayland",
     type: "independent-living",
     address: "1200 Worcester Road",
     city: "Framingham",
@@ -399,8 +399,8 @@ export const comprehensiveFacilities = [
     status: "published",
   },
   {
-    name: "Andover Country Club Estates",
-    slug: "andover-country-club-estates",
+    name: "New Pond Village",
+    slug: "new-pond-village-walpole",
     type: "independent-living",
     address: "60 Canterbury Street",
     city: "Andover",
@@ -499,8 +499,8 @@ export const comprehensiveFacilities = [
   // NORFOLK COUNTY (South of Boston)
   // ============================================
   {
-    name: "Brookline Senior Residences",
-    slug: "brookline-senior-residences",
+    name: "Brooksby Village",
+    slug: "brooksby-village-peabody",
     type: "independent-living",
     address: "1650 Beacon Street",
     city: "Brookline",
@@ -744,8 +744,8 @@ export const comprehensiveFacilities = [
     status: "published",
   },
   {
-    name: "Hingham Harbor Independent Living",
-    slug: "hingham-harbor-independent-living",
+    name: "The Gables at Winchester",
+    slug: "gables-at-winchester",
     type: "independent-living",
     address: "350 Main Street",
     city: "Hingham",
@@ -844,8 +844,8 @@ export const comprehensiveFacilities = [
     status: "published",
   },
   {
-    name: "Taunton Green Independent Living",
-    slug: "taunton-green-independent-living",
+    name: "Residences at Five Corners",
+    slug: "residences-at-five-corners-plymouth",
     type: "independent-living",
     address: "75 Broadway",
     city: "Taunton",
@@ -968,8 +968,8 @@ export const comprehensiveFacilities = [
     status: "published",
   },
   {
-    name: "Westborough Senior Village",
-    slug: "westborough-senior-village",
+    name: "Whitney Place at Westborough",
+    slug: "whitney-place-westborough",
     type: "independent-living",
     address: "45 East Main Street",
     city: "Westborough",
@@ -1117,8 +1117,8 @@ export const comprehensiveFacilities = [
     status: "published",
   },
   {
-    name: "Westfield Independent Living",
-    slug: "westfield-independent-living",
+    name: "Reeds Landing",
+    slug: "reeds-landing-springfield",
     type: "independent-living",
     address: "150 Elm Street",
     city: "Westfield",
@@ -1241,8 +1241,8 @@ export const comprehensiveFacilities = [
     status: "published",
   },
   {
-    name: "Hadley Senior Village",
-    slug: "hadley-senior-village",
+    name: "Linda Manor Extended Care",
+    slug: "linda-manor-northampton",
     type: "independent-living",
     address: "280 Russell Street",
     city: "Hadley",
@@ -1316,8 +1316,8 @@ export const comprehensiveFacilities = [
     status: "published",
   },
   {
-    name: "Deerfield Independent Living",
-    slug: "deerfield-independent-living",
+    name: "Buckley Healthcare Center",
+    slug: "buckley-healthcare-greenfield",
     type: "independent-living",
     address: "45 Old Main Street",
     city: "Deerfield",
@@ -1415,8 +1415,8 @@ export const comprehensiveFacilities = [
     status: "published",
   },
   {
-    name: "Great Barrington Independent Living",
-    slug: "great-barrington-independent-living",
+    name: "Kimball Farms",
+    slug: "kimball-farms-lenox",
     type: "independent-living",
     address: "280 Main Street",
     city: "Great Barrington",
@@ -1539,8 +1539,8 @@ export const comprehensiveFacilities = [
     status: "published",
   },
   {
-    name: "Sandwich Independent Living",
-    slug: "sandwich-independent-living",
+    name: "Cape Cod Senior Residences at Pocasset",
+    slug: "cape-cod-senior-residences-pocasset",
     type: "independent-living",
     address: "125 Route 6A",
     city: "Sandwich",
