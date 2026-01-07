@@ -39,7 +39,7 @@ Preferred communication style: Simple, everyday language.
 -   **API**: RESTful API for public inquiries and admin CRUD operations (jobs, articles, inquiries, applications, referrals, page metadata).
 -   **Data Layer**: Drizzle ORM for PostgreSQL (currently using in-memory `MemStorage` due to Replit network restrictions, `DbStorage` ready for Supabase). Zod schemas for validation.
 -   **Database Schema**: Includes `Users`, `RecoveryCodes`, `Jobs`, `Articles`, `ArticleFaqs` (for article-specific FAQs), `Inquiries`, `PageMetadata`, `Caregivers`, `JobApplications`, `LeadMagnets`, `IntakeForm` for health care plan assessment, directory tables (`MaLocations`, `DirectoryPages`, `LocationFaqs`, `LocationReviews`) for the Massachusetts Care Directory, and care type tables (`CareTypePages`, `LocationFaqs`, `LocationReviews`) for care-type specific location pages.
--   **Caregiver Resources**: Comprehensive article library with 100+ SEO-optimized articles covering:
+-   **Caregiver Resources**: Comprehensive article library with 52 SEO-optimized articles covering:
     -   Care Guides: Complete guides to in-home care, home care vs home health care, choosing agencies
     -   Dementia Care: Alzheimer's care, dementia stages, memory care strategies, sundowning
     -   Caregiver Support: Burnout prevention, self-care, family dynamics, support networks
