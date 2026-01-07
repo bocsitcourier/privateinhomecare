@@ -12,6 +12,13 @@ import {
   type HipaaAcknowledgment, type InsertHipaaAcknowledgment, type UpdateHipaaAcknowledgment,
   type LeadMagnet, type InsertLeadMagnet,
   type Referral, type InsertReferral, type UpdateReferral,
+  type MaLocation, type InsertMaLocation, type UpdateMaLocation,
+  type CareTypePage, type InsertCareTypePage, type UpdateCareTypePage,
+  type LocationFaq, type InsertLocationFaq, type UpdateLocationFaq,
+  type LocationReview, type InsertLocationReview, type UpdateLocationReview,
+  type ServiceType, type InsertServiceType,
+  type LocationService, type InsertLocationService,
+  type CareType,
   users,
   recoveryCodes,
   jobs,
@@ -24,7 +31,13 @@ import {
   caregiverLogs,
   hipaaAcknowledgments,
   leadMagnets,
-  referrals
+  referrals,
+  maLocations,
+  careTypePages,
+  locationFaqs,
+  locationReviews,
+  serviceTypes,
+  locationServices
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { slugify, generateUniqueSlug } from "@shared/utils";
@@ -116,6 +129,38 @@ export interface IStorage {
   updateReferralNotes(id: string, notes: string): Promise<Referral | undefined>;
   updateReferralTracking(id: string, hoursCompleted: string): Promise<Referral | undefined>;
   issueCreditForReferral(id: string, creditedBy: string): Promise<Referral | undefined>;
+  
+  // Massachusetts Care Directory
+  listMaLocations(filters?: { county?: string; isCity?: string; isActive?: string }): Promise<MaLocation[]>;
+  getMaLocation(id: string): Promise<MaLocation | undefined>;
+  getMaLocationBySlug(slug: string): Promise<MaLocation | undefined>;
+  createMaLocation(location: InsertMaLocation): Promise<MaLocation>;
+  updateMaLocation(id: string, location: UpdateMaLocation): Promise<MaLocation | undefined>;
+  deleteMaLocation(id: string): Promise<boolean>;
+  
+  listCareTypePages(filters?: { locationId?: string; careType?: CareType; status?: string }): Promise<CareTypePage[]>;
+  getCareTypePage(id: string): Promise<CareTypePage | undefined>;
+  getCareTypePageBySlug(slug: string): Promise<CareTypePage | undefined>;
+  createCareTypePage(page: InsertCareTypePage): Promise<CareTypePage>;
+  updateCareTypePage(id: string, page: UpdateCareTypePage): Promise<CareTypePage | undefined>;
+  deleteCareTypePage(id: string): Promise<boolean>;
+  publishCareTypePage(id: string): Promise<CareTypePage | undefined>;
+  unpublishCareTypePage(id: string): Promise<CareTypePage | undefined>;
+  
+  listLocationFaqs(careTypePageId: string): Promise<LocationFaq[]>;
+  createLocationFaq(faq: InsertLocationFaq): Promise<LocationFaq>;
+  updateLocationFaq(id: string, faq: UpdateLocationFaq): Promise<LocationFaq | undefined>;
+  deleteLocationFaq(id: string): Promise<boolean>;
+  
+  listLocationReviews(careTypePageId: string): Promise<LocationReview[]>;
+  createLocationReview(review: InsertLocationReview): Promise<LocationReview>;
+  updateLocationReview(id: string, review: UpdateLocationReview): Promise<LocationReview | undefined>;
+  deleteLocationReview(id: string): Promise<boolean>;
+  
+  listServiceTypes(category?: string): Promise<ServiceType[]>;
+  createServiceType(service: InsertServiceType): Promise<ServiceType>;
+  
+  searchLocations(query: string, careType?: CareType): Promise<{ locations: MaLocation[]; pages: CareTypePage[] }>;
 }
 
 export class MemStorage implements IStorage {
@@ -132,6 +177,12 @@ export class MemStorage implements IStorage {
   private hipaaAcknowledgments: Map<string, HipaaAcknowledgment>;
   private leadMagnets: Map<string, LeadMagnet>;
   private referrals: Map<string, Referral>;
+  private maLocationsMap: Map<string, MaLocation>;
+  private careTypePagesMap: Map<string, CareTypePage>;
+  private locationFaqsMap: Map<string, LocationFaq>;
+  private locationReviewsMap: Map<string, LocationReview>;
+  private serviceTypesMap: Map<string, ServiceType>;
+  private locationServicesMap: Map<string, LocationService>;
 
   constructor() {
     this.users = new Map();
@@ -147,6 +198,12 @@ export class MemStorage implements IStorage {
     this.hipaaAcknowledgments = new Map();
     this.leadMagnets = new Map();
     this.referrals = new Map();
+    this.maLocationsMap = new Map();
+    this.careTypePagesMap = new Map();
+    this.locationFaqsMap = new Map();
+    this.locationReviewsMap = new Map();
+    this.serviceTypesMap = new Map();
+    this.locationServicesMap = new Map();
     
     this.seedDefaultData();
   }
@@ -1175,6 +1232,171 @@ export class MemStorage implements IStorage {
     this.referrals.set(id, updated);
     return updated;
   }
+
+  // MA Care Directory - MemStorage implementations
+  async listMaLocations(filters?: { county?: string; isCity?: string; isActive?: string }): Promise<MaLocation[]> {
+    let locations = Array.from(this.maLocationsMap.values());
+    if (filters?.county) locations = locations.filter(l => l.county === filters.county);
+    if (filters?.isCity) locations = locations.filter(l => l.isCity === filters.isCity);
+    if (filters?.isActive) locations = locations.filter(l => l.isActive === filters.isActive);
+    return locations.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  async getMaLocation(id: string): Promise<MaLocation | undefined> {
+    return this.maLocationsMap.get(id);
+  }
+
+  async getMaLocationBySlug(slug: string): Promise<MaLocation | undefined> {
+    return Array.from(this.maLocationsMap.values()).find(l => l.slug === slug);
+  }
+
+  async createMaLocation(location: InsertMaLocation): Promise<MaLocation> {
+    const id = randomUUID();
+    const now = new Date();
+    const newLocation: MaLocation = { id, ...location, zipCodes: location.zipCodes || [], population: location.population ?? null, latitude: location.latitude ?? null, longitude: location.longitude ?? null, createdAt: now, updatedAt: now };
+    this.maLocationsMap.set(id, newLocation);
+    return newLocation;
+  }
+
+  async updateMaLocation(id: string, location: UpdateMaLocation): Promise<MaLocation | undefined> {
+    const existing = this.maLocationsMap.get(id);
+    if (!existing) return undefined;
+    const updated: MaLocation = { ...existing, ...location, updatedAt: new Date() };
+    this.maLocationsMap.set(id, updated);
+    return updated;
+  }
+
+  async deleteMaLocation(id: string): Promise<boolean> {
+    return this.maLocationsMap.delete(id);
+  }
+
+  async listCareTypePages(filters?: { locationId?: string; careType?: CareType; status?: string }): Promise<CareTypePage[]> {
+    let pages = Array.from(this.careTypePagesMap.values());
+    if (filters?.locationId) pages = pages.filter(p => p.locationId === filters.locationId);
+    if (filters?.careType) pages = pages.filter(p => p.careType === filters.careType);
+    if (filters?.status) pages = pages.filter(p => p.status === filters.status);
+    return pages;
+  }
+
+  async getCareTypePage(id: string): Promise<CareTypePage | undefined> {
+    return this.careTypePagesMap.get(id);
+  }
+
+  async getCareTypePageBySlug(slug: string): Promise<CareTypePage | undefined> {
+    return Array.from(this.careTypePagesMap.values()).find(p => p.slug === slug);
+  }
+
+  async createCareTypePage(page: InsertCareTypePage): Promise<CareTypePage> {
+    const id = randomUUID();
+    const now = new Date();
+    const newPage: CareTypePage = { id, ...page, keywords: page.keywords || [], servicesHighlights: page.servicesHighlights || [], heroTitle: page.heroTitle ?? null, heroSubtitle: page.heroSubtitle ?? null, overviewContent: page.overviewContent ?? null, whyChooseUsContent: page.whyChooseUsContent ?? null, localInfo: page.localInfo ?? null, ctaPhone: page.ctaPhone ?? null, metaTitle: page.metaTitle ?? null, metaDescription: page.metaDescription ?? null, aiGenerated: page.aiGenerated ?? "no", lastEditedBy: page.lastEditedBy ?? null, publishedAt: null, aiGeneratedAt: null, createdAt: now, updatedAt: now };
+    this.careTypePagesMap.set(id, newPage);
+    return newPage;
+  }
+
+  async updateCareTypePage(id: string, page: UpdateCareTypePage): Promise<CareTypePage | undefined> {
+    const existing = this.careTypePagesMap.get(id);
+    if (!existing) return undefined;
+    const updated: CareTypePage = { ...existing, ...page, updatedAt: new Date() };
+    this.careTypePagesMap.set(id, updated);
+    return updated;
+  }
+
+  async deleteCareTypePage(id: string): Promise<boolean> {
+    return this.careTypePagesMap.delete(id);
+  }
+
+  async publishCareTypePage(id: string): Promise<CareTypePage | undefined> {
+    const page = this.careTypePagesMap.get(id);
+    if (!page) return undefined;
+    const updated: CareTypePage = { ...page, status: "published", publishedAt: new Date(), updatedAt: new Date() };
+    this.careTypePagesMap.set(id, updated);
+    return updated;
+  }
+
+  async unpublishCareTypePage(id: string): Promise<CareTypePage | undefined> {
+    const page = this.careTypePagesMap.get(id);
+    if (!page) return undefined;
+    const updated: CareTypePage = { ...page, status: "draft", publishedAt: null, updatedAt: new Date() };
+    this.careTypePagesMap.set(id, updated);
+    return updated;
+  }
+
+  async listLocationFaqs(careTypePageId: string): Promise<LocationFaq[]> {
+    return Array.from(this.locationFaqsMap.values()).filter(f => f.careTypePageId === careTypePageId).sort((a, b) => a.sortOrder - b.sortOrder);
+  }
+
+  async createLocationFaq(faq: InsertLocationFaq): Promise<LocationFaq> {
+    const id = randomUUID();
+    const now = new Date();
+    const newFaq: LocationFaq = { id, ...faq, createdAt: now, updatedAt: now };
+    this.locationFaqsMap.set(id, newFaq);
+    return newFaq;
+  }
+
+  async updateLocationFaq(id: string, faq: UpdateLocationFaq): Promise<LocationFaq | undefined> {
+    const existing = this.locationFaqsMap.get(id);
+    if (!existing) return undefined;
+    const updated: LocationFaq = { ...existing, ...faq, updatedAt: new Date() };
+    this.locationFaqsMap.set(id, updated);
+    return updated;
+  }
+
+  async deleteLocationFaq(id: string): Promise<boolean> {
+    return this.locationFaqsMap.delete(id);
+  }
+
+  async listLocationReviews(careTypePageId: string): Promise<LocationReview[]> {
+    return Array.from(this.locationReviewsMap.values()).filter(r => r.careTypePageId === careTypePageId);
+  }
+
+  async createLocationReview(review: InsertLocationReview): Promise<LocationReview> {
+    const id = randomUUID();
+    const now = new Date();
+    const newReview: LocationReview = { id, ...review, reviewerLocation: review.reviewerLocation ?? null, reviewDate: review.reviewDate ?? null, createdAt: now, updatedAt: now };
+    this.locationReviewsMap.set(id, newReview);
+    return newReview;
+  }
+
+  async updateLocationReview(id: string, review: UpdateLocationReview): Promise<LocationReview | undefined> {
+    const existing = this.locationReviewsMap.get(id);
+    if (!existing) return undefined;
+    const updated: LocationReview = { ...existing, ...review, updatedAt: new Date() };
+    this.locationReviewsMap.set(id, updated);
+    return updated;
+  }
+
+  async deleteLocationReview(id: string): Promise<boolean> {
+    return this.locationReviewsMap.delete(id);
+  }
+
+  async listServiceTypes(category?: string): Promise<ServiceType[]> {
+    let types = Array.from(this.serviceTypesMap.values());
+    if (category) types = types.filter(t => t.category === category);
+    return types.sort((a, b) => a.sortOrder - b.sortOrder);
+  }
+
+  async createServiceType(service: InsertServiceType): Promise<ServiceType> {
+    const id = randomUUID();
+    const now = new Date();
+    const newService: ServiceType = { id, ...service, description: service.description ?? null, createdAt: now };
+    this.serviceTypesMap.set(id, newService);
+    return newService;
+  }
+
+  async searchLocations(query: string, careType?: CareType): Promise<{ locations: MaLocation[]; pages: CareTypePage[] }> {
+    const q = query.toLowerCase();
+    const locations = Array.from(this.maLocationsMap.values()).filter(l => 
+      l.name.toLowerCase().includes(q) || 
+      l.county.toLowerCase().includes(q) ||
+      (l.zipCodes && l.zipCodes.some(z => z.includes(q)))
+    );
+    let pages = Array.from(this.careTypePagesMap.values()).filter(p => 
+      locations.some(l => l.id === p.locationId) && p.status === "published"
+    );
+    if (careType) pages = pages.filter(p => p.careType === careType);
+    return { locations, pages };
+  }
 }
 
 export class DbStorage implements IStorage {
@@ -1855,6 +2077,166 @@ export class DbStorage implements IStorage {
       .where(eq(referrals.id, id))
       .returning();
     return result[0];
+  }
+
+  // MA Care Directory - DbStorage implementations
+  async listMaLocations(filters?: { county?: string; isCity?: string; isActive?: string }): Promise<MaLocation[]> {
+    const conditions = [];
+    if (filters?.county) conditions.push(eq(maLocations.county, filters.county));
+    if (filters?.isCity) conditions.push(eq(maLocations.isCity, filters.isCity));
+    if (filters?.isActive) conditions.push(eq(maLocations.isActive, filters.isActive));
+    if (conditions.length > 0) {
+      return await this.db.select().from(maLocations).where(and(...conditions)).orderBy(maLocations.name);
+    }
+    return await this.db.select().from(maLocations).orderBy(maLocations.name);
+  }
+
+  async getMaLocation(id: string): Promise<MaLocation | undefined> {
+    const result = await this.db.select().from(maLocations).where(eq(maLocations.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getMaLocationBySlug(slug: string): Promise<MaLocation | undefined> {
+    const result = await this.db.select().from(maLocations).where(eq(maLocations.slug, slug)).limit(1);
+    return result[0];
+  }
+
+  async createMaLocation(location: InsertMaLocation): Promise<MaLocation> {
+    const result = await this.db.insert(maLocations).values(location).returning();
+    return result[0];
+  }
+
+  async updateMaLocation(id: string, location: UpdateMaLocation): Promise<MaLocation | undefined> {
+    const result = await this.db.update(maLocations).set({ ...location, updatedAt: new Date() }).where(eq(maLocations.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteMaLocation(id: string): Promise<boolean> {
+    const result = await this.db.delete(maLocations).where(eq(maLocations.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async listCareTypePages(filters?: { locationId?: string; careType?: CareType; status?: string }): Promise<CareTypePage[]> {
+    const conditions = [];
+    if (filters?.locationId) conditions.push(eq(careTypePages.locationId, filters.locationId));
+    if (filters?.careType) conditions.push(eq(careTypePages.careType, filters.careType));
+    if (filters?.status) conditions.push(eq(careTypePages.status, filters.status));
+    if (conditions.length > 0) {
+      return await this.db.select().from(careTypePages).where(and(...conditions));
+    }
+    return await this.db.select().from(careTypePages);
+  }
+
+  async getCareTypePage(id: string): Promise<CareTypePage | undefined> {
+    const result = await this.db.select().from(careTypePages).where(eq(careTypePages.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getCareTypePageBySlug(slug: string): Promise<CareTypePage | undefined> {
+    const result = await this.db.select().from(careTypePages).where(eq(careTypePages.slug, slug)).limit(1);
+    return result[0];
+  }
+
+  async createCareTypePage(page: InsertCareTypePage): Promise<CareTypePage> {
+    const result = await this.db.insert(careTypePages).values(page).returning();
+    return result[0];
+  }
+
+  async updateCareTypePage(id: string, page: UpdateCareTypePage): Promise<CareTypePage | undefined> {
+    const result = await this.db.update(careTypePages).set({ ...page, updatedAt: new Date() }).where(eq(careTypePages.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteCareTypePage(id: string): Promise<boolean> {
+    const result = await this.db.delete(careTypePages).where(eq(careTypePages.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async publishCareTypePage(id: string): Promise<CareTypePage | undefined> {
+    const result = await this.db.update(careTypePages).set({ status: "published", publishedAt: new Date(), updatedAt: new Date() }).where(eq(careTypePages.id, id)).returning();
+    return result[0];
+  }
+
+  async unpublishCareTypePage(id: string): Promise<CareTypePage | undefined> {
+    const result = await this.db.update(careTypePages).set({ status: "draft", publishedAt: null, updatedAt: new Date() }).where(eq(careTypePages.id, id)).returning();
+    return result[0];
+  }
+
+  async listLocationFaqs(careTypePageId: string): Promise<LocationFaq[]> {
+    return await this.db.select().from(locationFaqs).where(eq(locationFaqs.careTypePageId, careTypePageId)).orderBy(locationFaqs.sortOrder);
+  }
+
+  async createLocationFaq(faq: InsertLocationFaq): Promise<LocationFaq> {
+    const result = await this.db.insert(locationFaqs).values(faq).returning();
+    return result[0];
+  }
+
+  async updateLocationFaq(id: string, faq: UpdateLocationFaq): Promise<LocationFaq | undefined> {
+    const result = await this.db.update(locationFaqs).set({ ...faq, updatedAt: new Date() }).where(eq(locationFaqs.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteLocationFaq(id: string): Promise<boolean> {
+    const result = await this.db.delete(locationFaqs).where(eq(locationFaqs.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async listLocationReviews(careTypePageId: string): Promise<LocationReview[]> {
+    return await this.db.select().from(locationReviews).where(eq(locationReviews.careTypePageId, careTypePageId));
+  }
+
+  async createLocationReview(review: InsertLocationReview): Promise<LocationReview> {
+    const result = await this.db.insert(locationReviews).values(review).returning();
+    return result[0];
+  }
+
+  async updateLocationReview(id: string, review: UpdateLocationReview): Promise<LocationReview | undefined> {
+    const result = await this.db.update(locationReviews).set({ ...review, updatedAt: new Date() }).where(eq(locationReviews.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteLocationReview(id: string): Promise<boolean> {
+    const result = await this.db.delete(locationReviews).where(eq(locationReviews.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async listServiceTypes(category?: string): Promise<ServiceType[]> {
+    if (category) {
+      return await this.db.select().from(serviceTypes).where(eq(serviceTypes.category, category)).orderBy(serviceTypes.sortOrder);
+    }
+    return await this.db.select().from(serviceTypes).orderBy(serviceTypes.sortOrder);
+  }
+
+  async createServiceType(service: InsertServiceType): Promise<ServiceType> {
+    const result = await this.db.insert(serviceTypes).values(service).returning();
+    return result[0];
+  }
+
+  async searchLocations(query: string, careType?: CareType): Promise<{ locations: MaLocation[]; pages: CareTypePage[] }> {
+    const q = `%${query.toLowerCase()}%`;
+    const locations = await this.db.select().from(maLocations).where(
+      or(
+        sql`lower(${maLocations.name}) like ${q}`,
+        sql`lower(${maLocations.county}) like ${q}`
+      )
+    );
+    
+    const locationIds = locations.map((l: MaLocation) => l.id);
+    if (locationIds.length === 0) return { locations: [], pages: [] };
+    
+    let pagesQuery = this.db.select().from(careTypePages).where(
+      and(
+        sql`${careTypePages.locationId} = ANY(${locationIds})`,
+        eq(careTypePages.status, "published")
+      )
+    );
+    
+    if (careType) {
+      pagesQuery = pagesQuery.where(eq(careTypePages.careType, careType));
+    }
+    
+    const pages = await pagesQuery;
+    return { locations, pages };
   }
 }
 

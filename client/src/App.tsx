@@ -34,6 +34,7 @@ const ApplicationThankYouPage = lazy(() => import("@/pages/application-thank-you
 const ResourcesPage = lazy(() => import("@/pages/resources"));
 const TermsAndConditionsPage = lazy(() => import("@/pages/terms-and-conditions"));
 const ReferAFriendPage = lazy(() => import("@/pages/refer-a-friend"));
+const DirectoryPage = lazy(() => import("@/pages/directory"));
 
 // Loading fallback component
 function PageLoader() {
@@ -59,6 +60,7 @@ function Router() {
         <Route path="/apply" component={ApplyPage} />
         <Route path="/resources" component={ResourcesPage} />
         <Route path="/application-thank-you" component={ApplicationThankYouPage} />
+        <Route path="/directory" component={DirectoryPage} />
         <Route path="/locations/:citySlug" component={CityPage} />
         <Route path="/privacy-policy" component={PrivacyPolicyPage} />
         <Route path="/terms-and-conditions" component={TermsAndConditionsPage} />

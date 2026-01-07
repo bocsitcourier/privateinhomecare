@@ -630,3 +630,186 @@ export const updateReferralSchema = createInsertSchema(referrals).omit({
 export type InsertReferral = z.infer<typeof insertReferralSchema>;
 export type UpdateReferral = z.infer<typeof updateReferralSchema>;
 export type Referral = typeof referrals.$inferSelect;
+
+// ============================================
+// Massachusetts Care Directory Schema
+// ============================================
+
+// Care types enum
+export const careTypeEnum = ["home-care", "memory-care", "assisted-living", "nursing-homes"] as const;
+export type CareType = typeof careTypeEnum[number];
+
+// Massachusetts locations (cities/towns)
+export const maLocations = pgTable("ma_locations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  county: text("county").notNull(),
+  region: text("region"),
+  zipCodes: jsonb("zip_codes").$type<string[]>().default([]),
+  population: integer("population"),
+  isCity: text("is_city").notNull().default("no"),
+  isActive: text("is_active").notNull().default("yes"),
+  latitude: text("latitude"),
+  longitude: text("longitude"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertMaLocationSchema = createInsertSchema(maLocations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  zipCodes: z.array(z.string()).default([]),
+});
+
+export const updateMaLocationSchema = insertMaLocationSchema.partial();
+
+export type InsertMaLocation = z.infer<typeof insertMaLocationSchema>;
+export type UpdateMaLocation = z.infer<typeof updateMaLocationSchema>;
+export type MaLocation = typeof maLocations.$inferSelect;
+
+// Care type pages (content for each location + care type combination)
+export const careTypePages = pgTable("care_type_pages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  locationId: varchar("location_id").notNull().references(() => maLocations.id),
+  careType: text("care_type").notNull(), // home-care, memory-care, assisted-living, nursing-homes
+  slug: text("slug").notNull().unique(), // e.g., "home-care-boston-ma"
+  
+  // SEO fields
+  metaTitle: text("meta_title"),
+  metaDescription: text("meta_description"),
+  keywords: jsonb("keywords").$type<string[]>().default([]),
+  
+  // Content sections
+  heroTitle: text("hero_title"),
+  heroSubtitle: text("hero_subtitle"),
+  overviewContent: text("overview_content"),
+  whyChooseUsContent: text("why_choose_us_content"),
+  servicesHighlights: jsonb("services_highlights").$type<string[]>().default([]),
+  
+  // Additional content
+  localInfo: text("local_info"),
+  ctaPhone: text("cta_phone"),
+  ctaFormEnabled: text("cta_form_enabled").notNull().default("yes"),
+  
+  // Status
+  status: text("status").notNull().default("draft"), // draft, published
+  publishedAt: timestamp("published_at"),
+  
+  // AI content tracking
+  aiGenerated: text("ai_generated").notNull().default("no"),
+  aiGeneratedAt: timestamp("ai_generated_at"),
+  lastEditedBy: text("last_edited_by"),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertCareTypePageSchema = createInsertSchema(careTypePages).omit({
+  id: true,
+  publishedAt: true,
+  aiGeneratedAt: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  keywords: z.array(z.string()).default([]),
+  servicesHighlights: z.array(z.string()).default([]),
+  careType: z.enum(careTypeEnum),
+});
+
+export const updateCareTypePageSchema = insertCareTypePageSchema.partial();
+
+export type InsertCareTypePage = z.infer<typeof insertCareTypePageSchema>;
+export type UpdateCareTypePage = z.infer<typeof updateCareTypePageSchema>;
+export type CareTypePage = typeof careTypePages.$inferSelect;
+
+// Location FAQs
+export const locationFaqs = pgTable("location_faqs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  careTypePageId: varchar("care_type_page_id").notNull().references(() => careTypePages.id),
+  question: text("question").notNull(),
+  answer: text("answer").notNull(),
+  sortOrder: integer("sort_order").notNull().default(0),
+  isActive: text("is_active").notNull().default("yes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertLocationFaqSchema = createInsertSchema(locationFaqs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateLocationFaqSchema = insertLocationFaqSchema.partial();
+
+export type InsertLocationFaq = z.infer<typeof insertLocationFaqSchema>;
+export type UpdateLocationFaq = z.infer<typeof updateLocationFaqSchema>;
+export type LocationFaq = typeof locationFaqs.$inferSelect;
+
+// Location reviews/testimonials
+export const locationReviews = pgTable("location_reviews", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  careTypePageId: varchar("care_type_page_id").notNull().references(() => careTypePages.id),
+  reviewerName: text("reviewer_name").notNull(),
+  reviewerLocation: text("reviewer_location"),
+  rating: integer("rating").notNull().default(5), // 1-5 stars
+  reviewText: text("review_text").notNull(),
+  reviewDate: text("review_date"),
+  isVerified: text("is_verified").notNull().default("no"),
+  isActive: text("is_active").notNull().default("yes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertLocationReviewSchema = createInsertSchema(locationReviews).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateLocationReviewSchema = insertLocationReviewSchema.partial();
+
+export type InsertLocationReview = z.infer<typeof insertLocationReviewSchema>;
+export type UpdateLocationReview = z.infer<typeof updateLocationReviewSchema>;
+export type LocationReview = typeof locationReviews.$inferSelect;
+
+// Service types for filtering
+export const serviceTypes = pgTable("service_types", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  description: text("description"),
+  category: text("category").notNull(), // care-type, service, administrative
+  isActive: text("is_active").notNull().default("yes"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertServiceTypeSchema = createInsertSchema(serviceTypes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertServiceType = z.infer<typeof insertServiceTypeSchema>;
+export type ServiceType = typeof serviceTypes.$inferSelect;
+
+// Location services mapping (which services are available at each location)
+export const locationServices = pgTable("location_services", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  careTypePageId: varchar("care_type_page_id").notNull().references(() => careTypePages.id),
+  serviceTypeId: varchar("service_type_id").notNull().references(() => serviceTypes.id),
+  isAvailable: text("is_available").notNull().default("yes"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertLocationServiceSchema = createInsertSchema(locationServices).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertLocationService = z.infer<typeof insertLocationServiceSchema>;
+export type LocationService = typeof locationServices.$inferSelect;

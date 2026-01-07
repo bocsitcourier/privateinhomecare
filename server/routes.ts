@@ -1859,6 +1859,395 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ==========================================
+  // MA CARE DIRECTORY ROUTES
+  // ==========================================
+
+  // Public: List MA Locations with optional filters
+  app.get("/api/directory/locations", async (req: Request, res: Response) => {
+    try {
+      const { county, isCity, isActive, region } = req.query;
+      const filters: { county?: string; isCity?: string; isActive?: string } = {};
+      if (county && typeof county === 'string') filters.county = county;
+      if (isCity && typeof isCity === 'string') filters.isCity = isCity;
+      if (isActive && typeof isActive === 'string') filters.isActive = isActive;
+      
+      let locations = await storage.listMaLocations(filters);
+      
+      // Additional region filter (not in storage)
+      if (region && typeof region === 'string') {
+        locations = locations.filter(l => l.region === region);
+      }
+      
+      res.json(locations);
+    } catch (error: any) {
+      console.error("Error listing locations:", error);
+      res.status(500).json({ message: "Failed to list locations" });
+    }
+  });
+
+  // Public: Get MA Location by slug
+  app.get("/api/directory/locations/:slug", async (req: Request, res: Response) => {
+    try {
+      const { slug } = req.params;
+      const location = await storage.getMaLocationBySlug(slug);
+      if (!location) {
+        return res.status(404).json({ message: "Location not found" });
+      }
+      res.json(location);
+    } catch (error: any) {
+      console.error("Error getting location:", error);
+      res.status(500).json({ message: "Failed to get location" });
+    }
+  });
+
+  // Public: List care type pages with optional filters
+  app.get("/api/directory/pages", async (req: Request, res: Response) => {
+    try {
+      const { locationId, careType, status } = req.query;
+      const filters: { locationId?: string; careType?: any; status?: string } = {};
+      if (locationId && typeof locationId === 'string') filters.locationId = locationId;
+      if (careType && typeof careType === 'string') filters.careType = careType;
+      if (status && typeof status === 'string') filters.status = status;
+      
+      const pages = await storage.listCareTypePages(filters);
+      res.json(pages);
+    } catch (error: any) {
+      console.error("Error listing care type pages:", error);
+      res.status(500).json({ message: "Failed to list care type pages" });
+    }
+  });
+
+  // Public: Get care type page by slug
+  app.get("/api/directory/pages/:slug", async (req: Request, res: Response) => {
+    try {
+      const { slug } = req.params;
+      const page = await storage.getCareTypePageBySlug(slug);
+      if (!page) {
+        return res.status(404).json({ message: "Care type page not found" });
+      }
+      
+      // Also fetch FAQs and reviews for this page
+      const faqs = await storage.listLocationFaqs(page.id);
+      const reviews = await storage.listLocationReviews(page.id);
+      
+      // Get the location details
+      const location = await storage.getMaLocation(page.locationId);
+      
+      res.json({ ...page, faqs, reviews, location });
+    } catch (error: any) {
+      console.error("Error getting care type page:", error);
+      res.status(500).json({ message: "Failed to get care type page" });
+    }
+  });
+
+  // Public: Search locations
+  app.get("/api/directory/search", async (req: Request, res: Response) => {
+    try {
+      const { q, careType } = req.query;
+      if (!q || typeof q !== 'string') {
+        return res.status(400).json({ message: "Search query required" });
+      }
+      
+      const results = await storage.searchLocations(q, careType as any);
+      res.json(results);
+    } catch (error: any) {
+      console.error("Error searching locations:", error);
+      res.status(500).json({ message: "Failed to search locations" });
+    }
+  });
+
+  // Public: Get all counties for filtering
+  app.get("/api/directory/counties", async (req: Request, res: Response) => {
+    try {
+      const locations = await storage.listMaLocations();
+      const counties = Array.from(new Set(locations.map(l => l.county))).sort();
+      res.json(counties);
+    } catch (error: any) {
+      console.error("Error getting counties:", error);
+      res.status(500).json({ message: "Failed to get counties" });
+    }
+  });
+
+  // Public: Get all regions for filtering
+  app.get("/api/directory/regions", async (req: Request, res: Response) => {
+    try {
+      const locations = await storage.listMaLocations();
+      const regions = Array.from(new Set(locations.map(l => l.region).filter((r): r is string => Boolean(r)))).sort();
+      res.json(regions);
+    } catch (error: any) {
+      console.error("Error getting regions:", error);
+      res.status(500).json({ message: "Failed to get regions" });
+    }
+  });
+
+  // Public: Get service types by category
+  app.get("/api/directory/services", async (req: Request, res: Response) => {
+    try {
+      const { category } = req.query;
+      const services = await storage.listServiceTypes(category as string);
+      res.json(services);
+    } catch (error: any) {
+      console.error("Error listing services:", error);
+      res.status(500).json({ message: "Failed to list services" });
+    }
+  });
+
+  // Admin: Seed MA Locations
+  app.post("/api/directory/seed-locations", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { maLocationSeeds, serviceTypes } = await import("./seeds/ma-locations");
+      
+      let locationsCreated = 0;
+      let servicesCreated = 0;
+      
+      // Seed locations
+      for (const location of maLocationSeeds) {
+        const existing = await storage.getMaLocationBySlug(location.slug);
+        if (!existing) {
+          await storage.createMaLocation({
+            name: location.name,
+            slug: location.slug,
+            county: location.county,
+            region: location.region,
+            zipCodes: location.zipCodes,
+            population: location.population,
+            isCity: location.isCity,
+            isActive: "yes"
+          });
+          locationsCreated++;
+        }
+      }
+      
+      // Seed service types
+      for (const service of serviceTypes) {
+        try {
+          await storage.createServiceType({
+            name: service.name,
+            slug: service.slug,
+            category: service.category,
+            sortOrder: service.sortOrder
+          });
+          servicesCreated++;
+        } catch (e) {
+          // Skip if already exists
+        }
+      }
+      
+      res.json({ 
+        message: "Seed completed", 
+        locationsCreated, 
+        servicesCreated,
+        totalLocations: maLocationSeeds.length 
+      });
+    } catch (error: any) {
+      console.error("Error seeding locations:", error);
+      res.status(500).json({ message: "Failed to seed locations", error: error.message });
+    }
+  });
+
+  // Admin: Create care type page
+  app.post("/api/directory/pages", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const pageData = req.body;
+      const page = await storage.createCareTypePage(pageData);
+      res.status(201).json(page);
+    } catch (error: any) {
+      console.error("Error creating care type page:", error);
+      res.status(500).json({ message: "Failed to create care type page" });
+    }
+  });
+
+  // Admin: Update care type page
+  app.patch("/api/directory/pages/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const pageData = req.body;
+      const page = await storage.updateCareTypePage(id, pageData);
+      if (!page) {
+        return res.status(404).json({ message: "Care type page not found" });
+      }
+      res.json(page);
+    } catch (error: any) {
+      console.error("Error updating care type page:", error);
+      res.status(500).json({ message: "Failed to update care type page" });
+    }
+  });
+
+  // Admin: Delete care type page
+  app.delete("/api/directory/pages/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteCareTypePage(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Care type page not found" });
+      }
+      res.json({ message: "Care type page deleted" });
+    } catch (error: any) {
+      console.error("Error deleting care type page:", error);
+      res.status(500).json({ message: "Failed to delete care type page" });
+    }
+  });
+
+  // Admin: Publish care type page
+  app.post("/api/directory/pages/:id/publish", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const page = await storage.publishCareTypePage(id);
+      if (!page) {
+        return res.status(404).json({ message: "Care type page not found" });
+      }
+      res.json(page);
+    } catch (error: any) {
+      console.error("Error publishing care type page:", error);
+      res.status(500).json({ message: "Failed to publish care type page" });
+    }
+  });
+
+  // Admin: Unpublish care type page
+  app.post("/api/directory/pages/:id/unpublish", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const page = await storage.unpublishCareTypePage(id);
+      if (!page) {
+        return res.status(404).json({ message: "Care type page not found" });
+      }
+      res.json(page);
+    } catch (error: any) {
+      console.error("Error unpublishing care type page:", error);
+      res.status(500).json({ message: "Failed to unpublish care type page" });
+    }
+  });
+
+  // Admin: Create location FAQ
+  app.post("/api/directory/faqs", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const faqData = req.body;
+      const faq = await storage.createLocationFaq(faqData);
+      res.status(201).json(faq);
+    } catch (error: any) {
+      console.error("Error creating FAQ:", error);
+      res.status(500).json({ message: "Failed to create FAQ" });
+    }
+  });
+
+  // Admin: Update location FAQ
+  app.patch("/api/directory/faqs/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const faqData = req.body;
+      const faq = await storage.updateLocationFaq(id, faqData);
+      if (!faq) {
+        return res.status(404).json({ message: "FAQ not found" });
+      }
+      res.json(faq);
+    } catch (error: any) {
+      console.error("Error updating FAQ:", error);
+      res.status(500).json({ message: "Failed to update FAQ" });
+    }
+  });
+
+  // Admin: Delete location FAQ
+  app.delete("/api/directory/faqs/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteLocationFaq(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "FAQ not found" });
+      }
+      res.json({ message: "FAQ deleted" });
+    } catch (error: any) {
+      console.error("Error deleting FAQ:", error);
+      res.status(500).json({ message: "Failed to delete FAQ" });
+    }
+  });
+
+  // Admin: Create location review
+  app.post("/api/directory/reviews", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const reviewData = req.body;
+      const review = await storage.createLocationReview(reviewData);
+      res.status(201).json(review);
+    } catch (error: any) {
+      console.error("Error creating review:", error);
+      res.status(500).json({ message: "Failed to create review" });
+    }
+  });
+
+  // Admin: Update location review
+  app.patch("/api/directory/reviews/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const reviewData = req.body;
+      const review = await storage.updateLocationReview(id, reviewData);
+      if (!review) {
+        return res.status(404).json({ message: "Review not found" });
+      }
+      res.json(review);
+    } catch (error: any) {
+      console.error("Error updating review:", error);
+      res.status(500).json({ message: "Failed to update review" });
+    }
+  });
+
+  // Admin: Delete location review
+  app.delete("/api/directory/reviews/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteLocationReview(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Review not found" });
+      }
+      res.json({ message: "Review deleted" });
+    } catch (error: any) {
+      console.error("Error deleting review:", error);
+      res.status(500).json({ message: "Failed to delete review" });
+    }
+  });
+
+  // Admin: Create MA location
+  app.post("/api/directory/locations", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const locationData = req.body;
+      const location = await storage.createMaLocation(locationData);
+      res.status(201).json(location);
+    } catch (error: any) {
+      console.error("Error creating location:", error);
+      res.status(500).json({ message: "Failed to create location" });
+    }
+  });
+
+  // Admin: Update MA location
+  app.patch("/api/directory/locations/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const locationData = req.body;
+      const location = await storage.updateMaLocation(id, locationData);
+      if (!location) {
+        return res.status(404).json({ message: "Location not found" });
+      }
+      res.json(location);
+    } catch (error: any) {
+      console.error("Error updating location:", error);
+      res.status(500).json({ message: "Failed to update location" });
+    }
+  });
+
+  // Admin: Delete MA location
+  app.delete("/api/directory/locations/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteMaLocation(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Location not found" });
+      }
+      res.json({ message: "Location deleted" });
+    } catch (error: any) {
+      console.error("Error deleting location:", error);
+      res.status(500).json({ message: "Failed to delete location" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

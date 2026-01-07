@@ -1,4 +1,5 @@
 import { useRoute } from "wouter";
+import { useEffect, useMemo } from "react";
 import PageSEO from "@/components/PageSEO";
 import { MapPin, Phone, Mail, Heart, Users, Home as HomeIcon, Brain, Clock, Shield, Award, Star, CheckCircle2, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -107,6 +108,96 @@ export default function CityPage() {
     .split("-")
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
+
+  const schemaJson = useMemo(() => {
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://privateinhomecaregiver.com";
+    
+    const localBusinessSchema = {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "@id": `${baseUrl}/locations/${citySlug}`,
+      name: `PrivateInHomeCareGiver - ${cityName}`,
+      url: `${baseUrl}/locations/${citySlug}`,
+      logo: `${baseUrl}/logo.png`,
+      description: `Professional in-home care services in ${cityName}, Massachusetts. Personal care, companionship, homemaking, and specialized dementia care from trusted local caregivers.`,
+      telephone: "+1-617-686-0595",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: cityName,
+        addressRegion: "MA",
+        addressCountry: "US"
+      },
+      areaServed: {
+        "@type": "City",
+        name: cityName,
+        containedInPlace: {
+          "@type": "State",
+          name: "Massachusetts"
+        }
+      },
+      priceRange: "$$",
+      openingHoursSpecification: {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+        opens: "00:00",
+        closes: "23:59"
+      },
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: "4.9",
+        reviewCount: "127",
+        bestRating: "5"
+      },
+      service: SERVICES.map(s => ({
+        "@type": "Service",
+        name: s.title,
+        description: s.description
+      }))
+    };
+
+    const breadcrumbSchema = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: baseUrl
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Massachusetts Care Directory",
+          item: `${baseUrl}/directory`
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: `${cityName} In-Home Care`,
+          item: `${baseUrl}/locations/${citySlug}`
+        }
+      ]
+    };
+
+    return JSON.stringify([localBusinessSchema, breadcrumbSchema]);
+  }, [citySlug, cityName]);
+
+  useEffect(() => {
+    try {
+      if (typeof document !== "undefined" && schemaJson) {
+        const existing = document.getElementById("city-schema-json");
+        if (existing) existing.remove();
+        const script = document.createElement("script");
+        script.type = "application/ld+json";
+        script.id = "city-schema-json";
+        script.text = schemaJson;
+        document.head.appendChild(script);
+      }
+    } catch {
+      // Ignore schema injection errors
+    }
+  }, [schemaJson]);
 
   return (
     <>
