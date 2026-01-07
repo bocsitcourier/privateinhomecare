@@ -2678,16 +2678,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!facility || facility.status !== "published") {
         return res.status(404).json({ message: "Facility not found" });
       }
-      const { rating, reviewText, reviewerName, reviewerEmail, title, reviewerRelation, visitDate } = req.body;
-      if (!rating || !reviewText || !reviewerName || !reviewerEmail) {
+      const { rating, content, reviewerName, title, reviewerRelation, visitDate } = req.body;
+      if (!rating || !content || !reviewerName) {
         return res.status(400).json({ message: "Missing required fields" });
       }
       const review = await storage.createFacilityReview({
         facilityId: facility.id,
         rating,
-        reviewText,
+        content,
         reviewerName,
-        reviewerEmail,
         title,
         reviewerRelation,
         visitDate: visitDate ? new Date(visitDate) : null,
