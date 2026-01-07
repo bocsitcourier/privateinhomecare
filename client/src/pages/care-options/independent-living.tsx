@@ -168,19 +168,28 @@ export default function IndependentLivingPage() {
 
                 <div>
                   <h2 className="text-2xl font-bold text-foreground mb-4">Top Cities in MA</h2>
-                  <div className="grid grid-cols-2 gap-4 mb-8">
+                  <div className="grid grid-cols-2 gap-4 mb-6">
                     {topCities.map((city) => (
-                      <Card key={city.name} className="hover-elevate">
-                        <CardContent className="p-4 flex items-center gap-3">
-                          <MapPin className="h-5 w-5 text-primary" />
-                          <div>
-                            <p className="font-medium text-foreground">{city.name}</p>
-                            <p className="text-sm text-muted-foreground">{city.count}+ communities</p>
-                          </div>
-                        </CardContent>
-                      </Card>
+                      <Link key={city.name} href={`/facilities/independent-living?city=${encodeURIComponent(city.name)}`}>
+                        <Card className="hover-elevate cursor-pointer h-full">
+                          <CardContent className="p-4 flex items-center gap-3">
+                            <MapPin className="h-5 w-5 text-primary" />
+                            <div>
+                              <p className="font-medium text-foreground">{city.name}</p>
+                              <p className="text-sm text-muted-foreground">{city.count}+ communities</p>
+                            </div>
+                            <ArrowRight className="h-4 w-4 text-muted-foreground ml-auto" />
+                          </CardContent>
+                        </Card>
+                      </Link>
                     ))}
                   </div>
+                  <Button asChild variant="outline" className="w-full mb-8" data-testid="button-browse-facilities">
+                    <Link href="/facilities/independent-living">
+                      <Building2 className="mr-2 h-4 w-4" />
+                      Browse All Independent Living Communities
+                    </Link>
+                  </Button>
 
                   <Card className="bg-primary/5 border-primary/20">
                     <CardContent className="p-6">
