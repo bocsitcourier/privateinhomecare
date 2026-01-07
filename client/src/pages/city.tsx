@@ -1,11 +1,23 @@
 import { useRoute } from "wouter";
 import { useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import PageSEO from "@/components/PageSEO";
 import { MapPin, Phone, Mail, Heart, Users, Home as HomeIcon, Brain, Clock, Shield, Award, Star, CheckCircle2, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
+
+interface LocationData {
+  id: string;
+  name: string;
+  slug: string;
+  county: string;
+  region: string | null;
+  zipCodes: string[];
+  population: number | null;
+  isCity: string;
+}
 
 const SERVICES = [
   { 
@@ -109,32 +121,48 @@ export default function CityPage() {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
+  const { data: locationData } = useQuery<LocationData>({
+    queryKey: ["/api/directory/locations", citySlug],
+    queryFn: async () => {
+      const res = await fetch(`/api/directory/locations/${citySlug}`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: !!citySlug,
+  });
+
   const schemaJson = useMemo(() => {
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://privateinhomecaregiver.com";
+    const zipCode = locationData?.zipCodes?.[0] || "";
+    const county = locationData?.county || "";
     
     const localBusinessSchema = {
       "@context": "https://schema.org",
-      "@type": "LocalBusiness",
+      "@type": "HomeHealthCareService",
       "@id": `${baseUrl}/locations/${citySlug}`,
       name: `PrivateInHomeCareGiver - ${cityName}`,
       url: `${baseUrl}/locations/${citySlug}`,
       logo: `${baseUrl}/logo.png`,
+      image: `${baseUrl}/logo.png`,
       description: `Professional in-home care services in ${cityName}, Massachusetts. Personal care, companionship, homemaking, and specialized dementia care from trusted local caregivers.`,
       telephone: "+1-617-686-0595",
       address: {
         "@type": "PostalAddress",
         addressLocality: cityName,
         addressRegion: "MA",
+        postalCode: zipCode,
         addressCountry: "US"
       },
-      areaServed: {
-        "@type": "City",
-        name: cityName,
-        containedInPlace: {
-          "@type": "State",
-          name: "Massachusetts"
+      areaServed: [
+        {
+          "@type": "City",
+          name: cityName,
+          containedInPlace: {
+            "@type": "AdministrativeArea",
+            name: county ? `${county} County` : "Massachusetts"
+          }
         }
-      },
+      ],
       priceRange: "$$",
       openingHoursSpecification: {
         "@type": "OpeningHoursSpecification",
@@ -148,11 +176,18 @@ export default function CityPage() {
         reviewCount: "127",
         bestRating: "5"
       },
-      service: SERVICES.map(s => ({
-        "@type": "Service",
-        name: s.title,
-        description: s.description
-      }))
+      hasOfferCatalog: {
+        "@type": "OfferCatalog",
+        name: "In-Home Care Services",
+        itemListElement: SERVICES.map(s => ({
+          "@type": "Offer",
+          itemOffered: {
+            "@type": "Service",
+            name: s.title,
+            description: s.description
+          }
+        }))
+      }
     };
 
     const breadcrumbSchema = {
@@ -181,7 +216,7 @@ export default function CityPage() {
     };
 
     return JSON.stringify([localBusinessSchema, breadcrumbSchema]);
-  }, [citySlug, cityName]);
+  }, [citySlug, cityName, locationData]);
 
   useEffect(() => {
     try {
