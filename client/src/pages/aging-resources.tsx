@@ -35,11 +35,13 @@ import {
 import { Link } from "wouter";
 
 import heroImage from "@assets/Comfort_and_Independence_Aging_in_Place_in_Massachusetts_1767894946697.png";
-import homeCareImage from "@assets/A_Comprehensive_Guide_on_How_to_Find_a_Reliable_Private_Pay_PC_1767894946697.png";
-import nutritionImage from "@assets/Find_the_best_private_caregiver_near_Andover,_MA_1767894946697.png";
-import housingImage from "@assets/expert-private-inhome-caregivers-lexington-ma_1767894946697.png";
-import communityImage from "@assets/Dedicated_private_in-home_caregiver_providing_support_for_seni_1767894946697.png";
+import homeCareImage from "@assets/non-medical-caregiver-options-in-greater-boston-ma_1767895133875.png";
+import nutritionImage from "@assets/non-medical-caregiver-cost-in-newton-ma-2026_1767895133875.png";
+import housingImage from "@assets/non-medical-caregiver-options-wellesley-ma_1767895133875.png";
+import communityImage from "@assets/private-inhome-caregiver-non-medical-caregiver-services-cape-c_1767895133875.png";
 import supportImage from "@assets/vetting-trusted-in-home-caregivers-agencies-massachusetts-priv_1767894946697.png";
+import mobilityImage from "@assets/hire-non-medical-caregiver-marlborough-ma_1767895133875.png";
+import medicationImage from "@assets/non-medical-caregiver-providers-plymouth-ma_1767895133875.png";
 
 const emergencyResources = [
   {
@@ -653,6 +655,76 @@ export default function AgingResourcesPage() {
                       </CardContent>
                     </Card>
                   ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="py-16 bg-muted/30">
+            <div className="container mx-auto px-4">
+              <div className="max-w-6xl mx-auto">
+                <div className="grid lg:grid-cols-2 gap-8 items-center mb-10">
+                  <div className="rounded-lg overflow-hidden shadow-lg">
+                    <img 
+                      src={mobilityImage} 
+                      alt="Caregiver helping senior with mobility"
+                      className="w-full h-64 object-cover"
+                    />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold text-foreground mb-4">
+                      Mobility & Independence Support
+                    </h2>
+                    <p className="text-muted-foreground mb-4">
+                      Massachusetts offers numerous programs to help seniors maintain their independence and mobility, 
+                      including personal care assistance, adaptive equipment, and transportation services.
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                      <Button asChild>
+                        <Link href="/personal-care/massachusetts">Personal Care Services</Link>
+                      </Button>
+                      <Button asChild variant="outline">
+                        <a href="https://www.mass.gov/topics/accessible-transportation" target="_blank" rel="noopener noreferrer">
+                          Transportation <ExternalLink className="ml-1 h-4 w-4" />
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="py-16">
+            <div className="container mx-auto px-4">
+              <div className="max-w-6xl mx-auto">
+                <div className="grid lg:grid-cols-2 gap-8 items-center mb-10">
+                  <div className="order-2 lg:order-1">
+                    <h2 className="text-3xl font-bold text-foreground mb-4">
+                      Medication & Health Management
+                    </h2>
+                    <p className="text-muted-foreground mb-4">
+                      Access prescription assistance programs, medication management support, and health resources 
+                      designed specifically for Massachusetts seniors.
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                      <Button asChild variant="outline">
+                        <a href="https://www.mass.gov/prescription-advantage" target="_blank" rel="noopener noreferrer">
+                          Prescription Advantage <ExternalLink className="ml-1 h-4 w-4" />
+                        </a>
+                      </Button>
+                      <Button asChild variant="outline">
+                        <Link href="/consultation">Schedule Consultation</Link>
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="rounded-lg overflow-hidden shadow-lg order-1 lg:order-2">
+                    <img 
+                      src={medicationImage} 
+                      alt="Caregiver helping with medication management"
+                      className="w-full h-64 object-cover"
+                    />
+                  </div>
                 </div>
               </div>
             </div>

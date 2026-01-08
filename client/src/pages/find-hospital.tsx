@@ -30,7 +30,7 @@ import {
 import { Link } from "wouter";
 
 import heroImage from "@assets/Compassionate_Hospice_PCA_in_Greater_Boston,_End-of-Life_Care__1767894946697.png";
-import recoveryImage from "@assets/Comfort_and_Independence_Aging_in_Place_in_Massachusetts_1767894946697.png";
+import recoveryImage from "@assets/non-medical-caregiver-cost-cambridge-ma_1767895133875.png";
 
 interface Hospital {
   name: string;
