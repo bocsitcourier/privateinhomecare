@@ -28,12 +28,12 @@ const costData = {
 };
 
 const topCities = [
-  { name: "Boston", count: 45 },
-  { name: "Worcester", count: 28 },
-  { name: "Springfield", count: 22 },
-  { name: "Cambridge", count: 18 },
-  { name: "Lowell", count: 15 },
-  { name: "Brockton", count: 14 }
+  { name: "Boston", count: 1 },
+  { name: "Worcester", count: 1 },
+  { name: "Brockton", count: 1 },
+  { name: "Lowell", count: 1 },
+  { name: "Fall River", count: 1 },
+  { name: "Quincy", count: 1 }
 ];
 
 const faqs = [
