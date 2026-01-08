@@ -10,7 +10,7 @@ import PageSEO from "@/components/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Heart, Users, Home as HomeIcon, Brain, Phone, Mail, MapPin, ArrowRight, Clock, DollarSign, Building2, BookOpen, ClipboardCheck, Play, Mic, Shield, Hospital } from "lucide-react";
+import { Heart, Users, Home as HomeIcon, Brain, Phone, Mail, MapPin, ArrowRight, Clock, DollarSign, Building2, BookOpen, ClipboardCheck, Play, Mic, Shield, Hospital, Leaf } from "lucide-react";
 import type { Article, Job } from "@shared/schema";
 import caregiverImage from "@assets/compassionate inhome care_1760033982348.webp";
 import careCoordinatorImage from "@assets/Private inhome care in MA_1760035857926.png";
@@ -100,6 +100,13 @@ const SERVICES = [
     short: "Recovery support after discharge.", 
     full: "Post-hospital transitional care helps ensure a smooth recovery at home with medication management, wound care, and rehabilitation support.",
     icon: <Hospital className="w-6 h-6 text-primary" />
+  },
+  { 
+    key: "hospice-palliative-care", 
+    title: "Hospice & Palliative Care", 
+    short: "Comfort-focused end-of-life support.", 
+    full: "Compassionate support for individuals and families during end-of-life care, focusing on comfort, dignity, pain management, and quality of life.",
+    icon: <Leaf className="w-6 h-6 text-primary" />
   },
 ];
 

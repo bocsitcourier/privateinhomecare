@@ -17,7 +17,7 @@ Preferred communication style: Simple, everyday language.
 -   **Framework**: React with TypeScript, Vite, Wouter for routing.
 -   **Design**: Single-page application (SPA) using shadcn/ui (Radix UI + Tailwind CSS) with a focus on trust, warmth, and accessibility. Mobile-first responsive design.
 -   **State Management**: TanStack Query for server state.
--   **Key Features**: Public homepage, articles, consultation page with CAPTCHA, services page, admin dashboard, Google reCAPTCHA, form validation with `react-hook-form` and Zod, floating action buttons (green "Get in touch" and red "Find a job").
+-   **Key Features**: Public homepage with 8 service cards (including Hospice & Palliative Care), articles, consultation page with CAPTCHA, services page, admin dashboard, Google reCAPTCHA, form validation with `react-hook-form` and Zod, floating action buttons (green "Get in touch" and red "Find a job").
 -   **Navigation**: Header with purple "Contact Us" button, navigation links include About, Services, Locations (links to Communities section), Articles, Find Caregivers, and Careers. Mobile menu includes all navigation links.
 -   **SEO**: Comprehensive SEO with database-driven metadata, dynamic sitemap generation, `robots.txt`, enhanced 404 page, canonical URLs, structured data (JSON-LD including SiteNavigationElement for Google search sitelinks, Article schema, FAQPage schema), Open Graph tags, Twitter Card support, Massachusetts geo targeting (geo.region, geo.placename, geo.position, ICBM meta tags), and custom favicon with MA location keywords. Performance optimized with resource hints.
 -   **PWA**: Progressive Web App support with service worker for offline capabilities and secure caching.
