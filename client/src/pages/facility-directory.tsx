@@ -28,7 +28,9 @@ import {
   Brain,
   Home as HomeIcon,
   ShieldCheck,
-  Leaf
+  Leaf,
+  Stethoscope,
+  Activity
 } from "lucide-react";
 
 import type { Facility } from "@shared/schema";
@@ -75,6 +77,13 @@ const FACILITY_TYPES = [
     description: "Compassionate end-of-life and comfort care",
     icon: Leaf,
     color: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400"
+  },
+  { 
+    key: "hospital", 
+    title: "Hospitals", 
+    description: "Acute care hospitals and medical centers",
+    icon: Stethoscope,
+    color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
   },
 ];
 

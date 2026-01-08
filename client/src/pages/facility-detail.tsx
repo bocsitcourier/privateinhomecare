@@ -25,7 +25,10 @@ import {
   Clock,
   Award,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Leaf,
+  Stethoscope,
+  Activity
 } from "lucide-react";
 
 import type { Facility, FacilityReview } from "@shared/schema";
@@ -36,6 +39,14 @@ const FACILITY_TYPES = [
   { key: "memory-care", title: "Memory Care", icon: Brain },
   { key: "independent-living", title: "Independent Living", icon: Users },
   { key: "continuing-care", title: "Continuing Care", icon: HomeIcon },
+  { key: "hospice", title: "Hospice & Palliative Care", icon: Leaf },
+  { key: "hospital", title: "Hospital", icon: Stethoscope },
+  { key: "academic-medical-center", title: "Academic Medical Center", icon: Activity },
+  { key: "community-hospital", title: "Community Hospital", icon: Building2 },
+  { key: "specialty-hospital", title: "Specialty Hospital", icon: Heart },
+  { key: "rehabilitation", title: "Rehabilitation Hospital", icon: Users },
+  { key: "critical-access-hospital", title: "Critical Access Hospital", icon: Building2 },
+  { key: "childrens-hospital", title: "Children's Hospital", icon: Heart },
 ];
 
 function RatingStars({ rating, size = "default" }: { rating: number; size?: "default" | "large" }) {

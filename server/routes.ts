@@ -43,6 +43,7 @@ import {
   sanitizeErrors
 } from "./api-hardening";
 import { comprehensiveFacilities } from "./seed-facilities-data";
+import { hospitalSeedData } from "./seed-hospitals-data";
 
 declare module 'express-session' {
   interface SessionData {
@@ -2872,7 +2873,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const facilitiesForStorage = comprehensiveFacilities.map((f) => ({
         name: f.name,
         slug: f.slug,
-        facilityType: f.type,
+        facilityType: f.type as "nursing-home" | "assisted-living" | "memory-care" | "independent-living" | "continuing-care" | "hospice",
         address: f.address,
         city: f.city,
         state: f.state,
@@ -2885,7 +2886,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         shortDescription: f.overview,
         services: f.services || [],
         amenities: f.amenities || [],
-        specializations: f.specializations,
+        specializations: f.specializations || [],
         totalBeds: f.capacity,
         yearEstablished: f.yearEstablished,
         licenseNumber: f.licenseNumber,
@@ -2893,15 +2894,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         staffRating: f.staffRating?.toString(),
         facilityRating: f.facilityRating?.toString(),
         careRating: f.careRating?.toString(),
-        reviewCount: f.reviewCount,
         priceMin: f.priceRangeMin,
         priceMax: f.priceRangeMax,
-        acceptsMedicare: f.acceptsMedicare ? "yes" : "no",
-        acceptsMedicaid: f.acceptsMedicaid ? "yes" : "no",
+        acceptsMedicare: (f.acceptsMedicare ? "yes" : "no") as "yes" | "no" | "unknown",
+        acceptsMedicaid: (f.acceptsMedicaid ? "yes" : "no") as "yes" | "no" | "unknown",
         acceptsPrivatePay: f.acceptsPrivatePay ? "yes" : "no",
         acceptsLongTermInsurance: f.acceptsLongTermInsurance ? "yes" : "no",
         status: f.status,
         featured: "no",
+        keywords: [] as string[],
+        certifications: [] as string[],
+        galleryImages: [] as string[],
       }));
 
       const created = [];
@@ -2917,6 +2920,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error seeding facilities:", error);
       res.status(500).json({ message: "Failed to seed facilities" });
+    }
+  });
+
+  // Seed endpoint for Massachusetts hospitals
+  app.post("/api/seed/hospitals", async (req: Request, res: Response) => {
+    try {
+      const force = req.query.force === "true";
+      const existing = await storage.listFacilities({ facilityType: "hospital" });
+      
+      if (existing.length > 0 && !force) {
+        return res.json({ message: `${existing.length} hospitals already seeded. Use ?force=true to reseed.` });
+      }
+
+      // Delete existing hospitals if force mode
+      if (force && existing.length > 0) {
+        for (const hospital of existing) {
+          await storage.deleteFacility(hospital.id);
+        }
+      }
+
+      // Map hospital data to facility format
+      const hospitalsForStorage = hospitalSeedData.map((h) => ({
+        name: h.name,
+        slug: h.slug,
+        facilityType: h.facilityType as "hospital",
+        address: h.address,
+        city: h.city,
+        state: h.state,
+        zipCode: h.zipCode,
+        county: h.county,
+        phone: h.phone,
+        website: h.website,
+        description: h.description,
+        shortDescription: h.shortDescription,
+        services: h.services || [],
+        amenities: h.amenities || [],
+        specializations: h.specializations || [],
+        totalBeds: h.totalBeds,
+        overallRating: h.overallRating?.toString(),
+        status: h.status || "published",
+        featured: "no",
+        sortOrder: h.sortOrder,
+        keywords: [] as string[],
+        certifications: [] as string[],
+        galleryImages: [] as string[],
+        acceptsMedicare: "yes" as const,
+        acceptsMedicaid: "yes" as const,
+      }));
+
+      const created = [];
+      for (const hospitalData of hospitalsForStorage) {
+        const hospital = await storage.createFacility(hospitalData);
+        created.push(hospital);
+      }
+
+      res.json({ 
+        message: `Successfully seeded ${created.length} Massachusetts hospitals`,
+        count: created.length 
+      });
+    } catch (error) {
+      console.error("Error seeding hospitals:", error);
+      res.status(500).json({ message: "Failed to seed hospitals" });
     }
   });
 

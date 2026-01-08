@@ -1016,6 +1016,7 @@ export const facilityTypeEnum = [
   "independent-living",
   "continuing-care",
   "hospice",
+  "hospital",
 ] as const;
 
 // Facilities table for senior care facility directory
