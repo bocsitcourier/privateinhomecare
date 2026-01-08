@@ -124,6 +124,17 @@ export default function Header() {
                       Podcasts
                     </Link>
                   </DropdownMenuItem>
+                  <div className="h-px bg-border my-1" />
+                  <DropdownMenuItem asChild>
+                    <Link href="/aging-resources" data-testid="link-aging-resources">
+                      Aging Resources
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/find-hospital" data-testid="link-find-hospital">
+                      Find a Hospital
+                    </Link>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               <Link href="/caregivers" data-testid="link-find-caregivers" className="text-foreground hover-elevate px-3 py-2 rounded-md transition">
@@ -274,6 +285,22 @@ export default function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Podcasts
+                  </Link>
+                  <Link
+                    href="/aging-resources"
+                    className="text-foreground hover-elevate px-3 py-2 rounded-md text-sm"
+                    data-testid="link-aging-resources-mobile"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Aging Resources
+                  </Link>
+                  <Link
+                    href="/find-hospital"
+                    className="text-foreground hover-elevate px-3 py-2 rounded-md text-sm"
+                    data-testid="link-find-hospital-mobile"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Find a Hospital
                   </Link>
                 </div>
               </div>

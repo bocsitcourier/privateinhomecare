@@ -51,6 +51,8 @@ const FacilityDirectoryPage = lazy(() => import("@/pages/facility-directory"));
 const FacilityDetailPage = lazy(() => import("@/pages/facility-detail"));
 const QuizPage = lazy(() => import("@/pages/quiz"));
 const AdminQuizLeads = lazy(() => import("@/pages/admin/quiz-leads"));
+const AgingResourcesPage = lazy(() => import("@/pages/aging-resources"));
+const FindHospitalPage = lazy(() => import("@/pages/find-hospital"));
 
 // Loading fallback component
 function PageLoader() {
@@ -78,6 +80,8 @@ function Router() {
         <Route path="/caregiver-resources" component={CaregiverResourcesPage} />
         <Route path="/videos" component={VideosPage} />
         <Route path="/podcasts" component={PodcastsPage} />
+        <Route path="/aging-resources" component={AgingResourcesPage} />
+        <Route path="/find-hospital" component={FindHospitalPage} />
         <Route path="/application-thank-you" component={ApplicationThankYouPage} />
         <Route path="/directory" component={DirectoryPage} />
         <Route path="/locations/:citySlug" component={CityPage} />
