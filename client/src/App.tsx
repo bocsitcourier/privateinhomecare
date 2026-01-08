@@ -46,6 +46,7 @@ const AssistedLivingPage = lazy(() => import("@/pages/care-options/assisted-livi
 const MemoryCarePage = lazy(() => import("@/pages/care-options/memory-care"));
 const IndependentLivingPage = lazy(() => import("@/pages/care-options/independent-living"));
 const HomeCareOverviewPage = lazy(() => import("@/pages/care-options/home-care"));
+const HospicePalliativeCarePage = lazy(() => import("@/pages/care-options/hospice-palliative-care"));
 const FacilityDirectoryPage = lazy(() => import("@/pages/facility-directory"));
 const FacilityDetailPage = lazy(() => import("@/pages/facility-detail"));
 const QuizPage = lazy(() => import("@/pages/quiz"));
@@ -85,6 +86,7 @@ function Router() {
         <Route path="/memory-care/massachusetts" component={MemoryCarePage} />
         <Route path="/independent-living/massachusetts" component={IndependentLivingPage} />
         <Route path="/home-care/massachusetts" component={HomeCareOverviewPage} />
+        <Route path="/hospice-palliative-care/massachusetts" component={HospicePalliativeCarePage} />
         <Route path="/facilities" component={FacilityDirectoryPage} />
         <Route path="/facilities/:type" component={FacilityDirectoryPage} />
         <Route path="/facility/:slug" component={FacilityDetailPage} />

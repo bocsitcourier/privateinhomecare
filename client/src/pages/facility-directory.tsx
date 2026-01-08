@@ -27,7 +27,8 @@ import {
   Heart,
   Brain,
   Home as HomeIcon,
-  ShieldCheck
+  ShieldCheck,
+  Leaf
 } from "lucide-react";
 
 import type { Facility } from "@shared/schema";
@@ -67,6 +68,13 @@ const FACILITY_TYPES = [
     description: "Full spectrum of care as needs change",
     icon: HomeIcon,
     color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+  },
+  { 
+    key: "hospice", 
+    title: "Hospice & Palliative Care", 
+    description: "Compassionate end-of-life and comfort care",
+    icon: Leaf,
+    color: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400"
   },
 ];
 

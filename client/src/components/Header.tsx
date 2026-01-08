@@ -18,6 +18,7 @@ const careTypes = [
   { slug: "respite-care", label: "Respite Care" },
   { slug: "live-in-care", label: "Live-In Care" },
   { slug: "post-hospital-care", label: "Post-Hospital Care" },
+  { slug: "hospice-palliative-care", label: "Hospice & Palliative Care" },
 ];
 
 const careOptions = [
@@ -26,6 +27,7 @@ const careOptions = [
   { slug: "memory-care", label: "Memory Care" },
   { slug: "independent-living", label: "Independent Living" },
   { slug: "home-care", label: "Home Care" },
+  { slug: "hospice-palliative-care", label: "Hospice & Palliative Care" },
 ];
 
 export default function Header() {

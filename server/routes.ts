@@ -3757,6 +3757,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
               { value: "unsure", label: "Need guidance on options", score: 1 }
             ]}
           ]
+        },
+        {
+          slug: "hospice-palliative-care-assessment",
+          title: "Hospice & Palliative Care Assessment",
+          subtitle: "Compassionate end-of-life care guidance",
+          description: "This assessment helps you understand hospice and palliative care options for your loved one.",
+          category: "facility",
+          targetType: "hospice",
+          facilityType: "hospice",
+          status: "published",
+          resultTitle: "Your Care Guidance",
+          resultDescription: "Based on your responses, here are recommendations for comfort-focused care.",
+          ctaText: "Find Hospice Providers",
+          ctaUrl: "/facilities/hospice",
+          metaTitle: "Hospice & Palliative Care Assessment | PrivateInHomeCareGiver",
+          metaDescription: "Get guidance on hospice and palliative care options for your loved one in Massachusetts.",
+          questions: [
+            { text: "What is the current health situation?", options: [
+              { value: "serious", label: "Serious illness with ongoing treatment", score: 1 },
+              { value: "declining", label: "Declining health despite treatment", score: 2 },
+              { value: "terminal", label: "Terminal diagnosis received", score: 3 },
+              { value: "end-of-life", label: "End-of-life care needed", score: 4 }
+            ]},
+            { text: "What type of care is most needed?", type: "multiple_choice", options: [
+              { value: "pain", label: "Pain and symptom management", score: 2 },
+              { value: "emotional", label: "Emotional and spiritual support", score: 1 },
+              { value: "family", label: "Family caregiver respite", score: 1 },
+              { value: "planning", label: "End-of-life planning assistance", score: 2 },
+              { value: "daily", label: "Daily personal care assistance", score: 2 }
+            ]},
+            { text: "Where would care ideally be provided?", options: [
+              { value: "home", label: "At home with family", score: 2 },
+              { value: "facility", label: "In a hospice facility", score: 2 },
+              { value: "nursing", label: "In current nursing home", score: 2 },
+              { value: "unsure", label: "Unsure - need guidance", score: 1 }
+            ]},
+            { text: "How soon is care needed?", options: [
+              { value: "immediately", label: "Immediately", score: 4 },
+              { value: "days", label: "Within a few days", score: 3 },
+              { value: "weeks", label: "Within a few weeks", score: 2 },
+              { value: "planning", label: "Planning ahead", score: 1 }
+            ]}
+          ]
         }
       ];
 
