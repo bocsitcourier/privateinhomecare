@@ -305,6 +305,7 @@ export default function Home() {
             {SERVICES.map((service) => (
               <ServiceCard
                 key={service.key}
+                serviceKey={service.key}
                 title={service.title}
                 short={service.short}
                 full={service.full}
