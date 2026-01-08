@@ -1,5 +1,5 @@
 import PageSEO from "@/components/PageSEO";
-import { Heart, Users, Home as HomeIcon, Brain, Clock, Shield, Award, CheckCircle2, Phone, Mail, Hospital, ClipboardList, ArrowRight } from "lucide-react";
+import { Heart, Users, Home as HomeIcon, Brain, Clock, Shield, Award, CheckCircle2, Phone, Mail, Hospital, ClipboardList, ArrowRight, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
@@ -109,6 +109,21 @@ const SERVICES = [
       "Physical therapy support",
       "Fall prevention",
       "Regular health status updates"
+    ]
+  },
+  {
+    key: "hospice-palliative-care",
+    title: "Hospice & Palliative Care Support",
+    icon: <Leaf className="w-12 h-12 text-primary" />,
+    description: "Compassionate support for individuals and families during end-of-life care, focusing on comfort, dignity, and quality of life.",
+    quizSlug: "hospice-palliative-care-assessment",
+    features: [
+      "Comfort-focused personal care",
+      "Pain and symptom management support",
+      "Emotional and spiritual support",
+      "Family caregiver respite",
+      "Coordination with hospice teams",
+      "24/7 availability for families"
     ]
   }
 ];
