@@ -29,6 +29,9 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 
+import heroImage from "@assets/Compassionate_Hospice_PCA_in_Greater_Boston,_End-of-Life_Care__1767894946697.png";
+import recoveryImage from "@assets/Comfort_and_Independence_Aging_in_Place_in_Massachusetts_1767894946697.png";
+
 interface Hospital {
   name: string;
   address: string;
@@ -146,9 +149,17 @@ export default function FindHospitalPage() {
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-1">
-          <section className="bg-gradient-to-br from-primary/10 via-secondary/5 to-background py-16 md:py-20">
-            <div className="container mx-auto px-4">
-              <div className="max-w-4xl mx-auto text-center">
+          <section className="relative py-16 md:py-20">
+            <div className="absolute inset-0 z-0">
+              <img 
+                src={heroImage} 
+                alt="Healthcare in Massachusetts"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/85 to-background/70" />
+            </div>
+            <div className="container mx-auto px-4 relative z-10">
+              <div className="max-w-2xl">
                 <Badge variant="secondary" className="mb-4" data-testid="badge-page-type">
                   Hospital Directory
                 </Badge>
@@ -159,7 +170,7 @@ export default function FindHospitalPage() {
                   Complete directory of {hospitals.length} hospitals across all 14 Massachusetts counties. 
                   Search by location, type, or emergency services.
                 </p>
-                <div className="flex items-center justify-center gap-2 text-destructive font-medium">
+                <div className="flex items-center gap-2 text-destructive font-medium bg-destructive/10 p-3 rounded-lg inline-flex">
                   <AlertCircle className="h-5 w-5" />
                   <span>For medical emergencies, call 911</span>
                 </div>
@@ -329,22 +340,33 @@ export default function FindHospitalPage() {
 
           <section className="py-16 bg-primary/5">
             <div className="container mx-auto px-4">
-              <div className="max-w-4xl mx-auto text-center">
-                <h2 className="text-2xl font-bold text-foreground mb-4">
-                  Recovering at Home?
-                </h2>
-                <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                  After a hospital stay, many patients benefit from in-home care support. 
-                  Our personal care assistants can help with recovery, medication reminders, 
-                  and daily activities while you heal in the comfort of your home.
-                </p>
-                <div className="flex flex-wrap justify-center gap-4">
-                  <Button asChild size="lg" data-testid="button-post-hospital">
-                    <Link href="/post-hospital-care/massachusetts">Post-Hospital Care</Link>
-                  </Button>
-                  <Button asChild variant="outline" size="lg" data-testid="button-consultation">
-                    <Link href="/consultation">Request a Consultation</Link>
-                  </Button>
+              <div className="max-w-5xl mx-auto">
+                <div className="grid md:grid-cols-2 gap-8 items-center">
+                  <div className="rounded-lg overflow-hidden shadow-lg">
+                    <img 
+                      src={recoveryImage} 
+                      alt="Recovering at home with in-home care support"
+                      className="w-full h-64 object-cover"
+                    />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-foreground mb-4">
+                      Recovering at Home?
+                    </h2>
+                    <p className="text-muted-foreground mb-6">
+                      After a hospital stay, many patients benefit from in-home care support. 
+                      Our personal care assistants can help with recovery, medication reminders, 
+                      and daily activities while you heal in the comfort of your home.
+                    </p>
+                    <div className="flex flex-wrap gap-4">
+                      <Button asChild size="lg" data-testid="button-post-hospital">
+                        <Link href="/post-hospital-care/massachusetts">Post-Hospital Care</Link>
+                      </Button>
+                      <Button asChild variant="outline" size="lg" data-testid="button-consultation">
+                        <Link href="/consultation">Request a Consultation</Link>
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
