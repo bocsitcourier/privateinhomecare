@@ -495,13 +495,30 @@ function FacilityFormDialog({ open, onClose, facility }: FacilityFormDialogProps
     website: facility?.website || "",
     email: facility?.email || "",
     description: facility?.description || "",
+    shortDescription: facility?.shortDescription || "",
     services: facility?.services?.join(", ") || "",
     amenities: facility?.amenities?.join(", ") || "",
+    specializations: facility?.specializations?.join(", ") || "",
     totalBeds: facility?.totalBeds?.toString() || "",
+    certifiedBeds: facility?.certifiedBeds?.toString() || "",
+    priceRangeMin: facility?.priceRangeMin?.toString() || "",
+    priceRangeMax: facility?.priceRangeMax?.toString() || "",
+    pricingNotes: facility?.pricingNotes || "",
+    overallRating: facility?.overallRating || "",
+    reviewCount: facility?.reviewCount?.toString() || "0",
     licenseNumber: facility?.licenseNumber || "",
+    licensedBy: facility?.licensedBy || "",
+    certifications: facility?.certifications?.join(", ") || "",
+    healthInspectionRating: facility?.healthInspectionRating || "",
+    staffingRating: facility?.staffingRating || "",
+    qualityRating: facility?.qualityRating || "",
     acceptsMedicaid: facility?.acceptsMedicaid || "unknown",
     acceptsMedicare: facility?.acceptsMedicare || "unknown",
+    metaTitle: facility?.metaTitle || "",
+    metaDescription: facility?.metaDescription || "",
+    keywords: facility?.keywords?.join(", ") || "",
     featured: facility?.featured || "no",
+    sortOrder: facility?.sortOrder?.toString() || "0",
     status: facility?.status || "draft",
   });
 
@@ -549,7 +566,16 @@ function FacilityFormDialog({ open, onClose, facility }: FacilityFormDialogProps
       ...formData,
       services: formData.services ? formData.services.split(",").map(s => s.trim()).filter(Boolean) : [],
       amenities: formData.amenities ? formData.amenities.split(",").map(s => s.trim()).filter(Boolean) : [],
+      specializations: formData.specializations ? formData.specializations.split(",").map(s => s.trim()).filter(Boolean) : [],
+      certifications: formData.certifications ? formData.certifications.split(",").map(s => s.trim()).filter(Boolean) : [],
+      keywords: formData.keywords ? formData.keywords.split(",").map(s => s.trim()).filter(Boolean) : [],
       totalBeds: formData.totalBeds ? parseInt(formData.totalBeds) : null,
+      certifiedBeds: formData.certifiedBeds ? parseInt(formData.certifiedBeds) : null,
+      priceRangeMin: formData.priceRangeMin ? parseInt(formData.priceRangeMin) : null,
+      priceRangeMax: formData.priceRangeMax ? parseInt(formData.priceRangeMax) : null,
+      reviewCount: formData.reviewCount ? parseInt(formData.reviewCount) : 0,
+      sortOrder: formData.sortOrder ? parseInt(formData.sortOrder) : 0,
+      overallRating: formData.overallRating || null,
     };
 
     if (isEditing) {
@@ -565,231 +591,514 @@ function FacilityFormDialog({ open, onClose, facility }: FacilityFormDialogProps
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Facility" : "Add New Facility"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <Label htmlFor="name">Facility Name *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-                data-testid="input-facility-name"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="facilityType">Facility Type *</Label>
-              <Select
-                value={formData.facilityType}
-                onValueChange={(value) => setFormData({ ...formData, facilityType: value })}
-              >
-                <SelectTrigger data-testid="select-facility-type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="nursing-home">Nursing Home</SelectItem>
-                  <SelectItem value="assisted-living">Assisted Living</SelectItem>
-                  <SelectItem value="memory-care">Memory Care</SelectItem>
-                  <SelectItem value="independent-living">Independent Living</SelectItem>
-                  <SelectItem value="continuing-care">Continuing Care</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="status">Status</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value) => setFormData({ ...formData, status: value })}
-              >
-                <SelectTrigger data-testid="select-facility-status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="col-span-2">
-              <Label htmlFor="address">Street Address *</Label>
-              <Input
-                id="address"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                required
-                data-testid="input-facility-address"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="city">City *</Label>
-              <Input
-                id="city"
-                value={formData.city}
-                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                required
-                data-testid="input-facility-city"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="zipCode">Zip Code *</Label>
-              <Input
-                id="zipCode"
-                value={formData.zipCode}
-                onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
-                required
-                data-testid="input-facility-zipcode"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="county">County</Label>
-              <Input
-                id="county"
-                value={formData.county}
-                onChange={(e) => setFormData({ ...formData, county: e.target.value })}
-                data-testid="input-facility-county"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="phone">Phone</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                data-testid="input-facility-phone"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="website">Website</Label>
-              <Input
-                id="website"
-                value={formData.website}
-                onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                data-testid="input-facility-website"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                data-testid="input-facility-email"
-              />
-            </div>
-
-            <div className="col-span-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={3}
-                data-testid="input-facility-description"
-              />
-            </div>
-
-            <div className="col-span-2">
-              <Label htmlFor="services">Services (comma-separated)</Label>
-              <Input
-                id="services"
-                value={formData.services}
-                onChange={(e) => setFormData({ ...formData, services: e.target.value })}
-                placeholder="e.g., 24-Hour Nursing, Physical Therapy, Memory Care"
-                data-testid="input-facility-services"
-              />
-            </div>
-
-            <div className="col-span-2">
-              <Label htmlFor="amenities">Amenities (comma-separated)</Label>
-              <Input
-                id="amenities"
-                value={formData.amenities}
-                onChange={(e) => setFormData({ ...formData, amenities: e.target.value })}
-                placeholder="e.g., Private Rooms, Garden, Library, Gym"
-                data-testid="input-facility-amenities"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="totalBeds">Total Beds</Label>
-              <Input
-                id="totalBeds"
-                type="number"
-                value={formData.totalBeds}
-                onChange={(e) => setFormData({ ...formData, totalBeds: e.target.value })}
-                data-testid="input-facility-beds"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="licenseNumber">License Number</Label>
-              <Input
-                id="licenseNumber"
-                value={formData.licenseNumber}
-                onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
-                data-testid="input-facility-license"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="acceptsMedicaid">Medicaid</Label>
-              <Select
-                value={formData.acceptsMedicaid}
-                onValueChange={(value) => setFormData({ ...formData, acceptsMedicaid: value })}
-              >
-                <SelectTrigger data-testid="select-medicaid">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="yes">Yes</SelectItem>
-                  <SelectItem value="no">No</SelectItem>
-                  <SelectItem value="unknown">Unknown</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="acceptsMedicare">Medicare</Label>
-              <Select
-                value={formData.acceptsMedicare}
-                onValueChange={(value) => setFormData({ ...formData, acceptsMedicare: value })}
-              >
-                <SelectTrigger data-testid="select-medicare">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="yes">Yes</SelectItem>
-                  <SelectItem value="no">No</SelectItem>
-                  <SelectItem value="unknown">Unknown</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-center gap-4 col-span-2">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={formData.featured === "yes"}
-                  onChange={(e) => setFormData({ ...formData, featured: e.target.checked ? "yes" : "no" })}
-                  data-testid="checkbox-featured"
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic Information */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold border-b pb-2">Basic Information</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <Label htmlFor="name">Facility Name *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                  data-testid="input-facility-name"
                 />
-                Featured
-              </label>
+              </div>
+
+              <div>
+                <Label htmlFor="facilityType">Facility Type *</Label>
+                <Select
+                  value={formData.facilityType}
+                  onValueChange={(value) => setFormData({ ...formData, facilityType: value })}
+                >
+                  <SelectTrigger data-testid="select-facility-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="nursing-home">Nursing Home</SelectItem>
+                    <SelectItem value="assisted-living">Assisted Living</SelectItem>
+                    <SelectItem value="memory-care">Memory Care</SelectItem>
+                    <SelectItem value="independent-living">Independent Living</SelectItem>
+                    <SelectItem value="continuing-care">Continuing Care</SelectItem>
+                    <SelectItem value="hospice">Hospice</SelectItem>
+                    <SelectItem value="hospital">Hospital</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="status">Status</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) => setFormData({ ...formData, status: value })}
+                >
+                  <SelectTrigger data-testid="select-facility-status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="published">Published</SelectItem>
+                    <SelectItem value="archived">Archived</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="col-span-2">
+                <Label htmlFor="shortDescription">Short Description</Label>
+                <Input
+                  id="shortDescription"
+                  value={formData.shortDescription}
+                  onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
+                  placeholder="Brief one-line description"
+                  data-testid="input-facility-short-desc"
+                />
+              </div>
+
+              <div className="col-span-2">
+                <Label htmlFor="description">Full Description</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={4}
+                  data-testid="input-facility-description"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
+          {/* Location Information */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold border-b pb-2">Location</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <Label htmlFor="address">Street Address *</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  required
+                  data-testid="input-facility-address"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="city">City *</Label>
+                <Input
+                  id="city"
+                  value={formData.city}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  required
+                  data-testid="input-facility-city"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="zipCode">Zip Code</Label>
+                <Input
+                  id="zipCode"
+                  value={formData.zipCode}
+                  onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
+                  data-testid="input-facility-zipcode"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="county">County</Label>
+                <Input
+                  id="county"
+                  value={formData.county}
+                  onChange={(e) => setFormData({ ...formData, county: e.target.value })}
+                  data-testid="input-facility-county"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="state">State</Label>
+                <Input
+                  id="state"
+                  value={formData.state}
+                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                  data-testid="input-facility-state"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Contact Information */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold border-b pb-2">Contact</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="phone">Phone</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  data-testid="input-facility-phone"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  data-testid="input-facility-email"
+                />
+              </div>
+
+              <div className="col-span-2">
+                <Label htmlFor="website">Website</Label>
+                <Input
+                  id="website"
+                  value={formData.website}
+                  onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                  placeholder="https://..."
+                  data-testid="input-facility-website"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Services & Amenities */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold border-b pb-2">Services & Amenities</h3>
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <Label htmlFor="services">Services (comma-separated)</Label>
+                <Input
+                  id="services"
+                  value={formData.services}
+                  onChange={(e) => setFormData({ ...formData, services: e.target.value })}
+                  placeholder="e.g., 24-Hour Nursing, Physical Therapy, Memory Care"
+                  data-testid="input-facility-services"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="amenities">Amenities (comma-separated)</Label>
+                <Input
+                  id="amenities"
+                  value={formData.amenities}
+                  onChange={(e) => setFormData({ ...formData, amenities: e.target.value })}
+                  placeholder="e.g., Private Rooms, Garden, Library, Gym"
+                  data-testid="input-facility-amenities"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="specializations">Specializations (comma-separated)</Label>
+                <Input
+                  id="specializations"
+                  value={formData.specializations}
+                  onChange={(e) => setFormData({ ...formData, specializations: e.target.value })}
+                  placeholder="e.g., Alzheimer's, Parkinson's, Post-surgical"
+                  data-testid="input-facility-specializations"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Capacity & Pricing */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold border-b pb-2">Capacity & Pricing</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="totalBeds">Total Beds</Label>
+                <Input
+                  id="totalBeds"
+                  type="number"
+                  value={formData.totalBeds}
+                  onChange={(e) => setFormData({ ...formData, totalBeds: e.target.value })}
+                  data-testid="input-facility-beds"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="certifiedBeds">Certified Beds</Label>
+                <Input
+                  id="certifiedBeds"
+                  type="number"
+                  value={formData.certifiedBeds}
+                  onChange={(e) => setFormData({ ...formData, certifiedBeds: e.target.value })}
+                  data-testid="input-facility-certified-beds"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="priceRangeMin">Price Min ($/month)</Label>
+                <Input
+                  id="priceRangeMin"
+                  type="number"
+                  value={formData.priceRangeMin}
+                  onChange={(e) => setFormData({ ...formData, priceRangeMin: e.target.value })}
+                  placeholder="e.g., 3500"
+                  data-testid="input-facility-price-min"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="priceRangeMax">Price Max ($/month)</Label>
+                <Input
+                  id="priceRangeMax"
+                  type="number"
+                  value={formData.priceRangeMax}
+                  onChange={(e) => setFormData({ ...formData, priceRangeMax: e.target.value })}
+                  placeholder="e.g., 8000"
+                  data-testid="input-facility-price-max"
+                />
+              </div>
+
+              <div className="col-span-2">
+                <Label htmlFor="pricingNotes">Pricing Notes</Label>
+                <Input
+                  id="pricingNotes"
+                  value={formData.pricingNotes}
+                  onChange={(e) => setFormData({ ...formData, pricingNotes: e.target.value })}
+                  placeholder="e.g., Varies by care level, Contact for details"
+                  data-testid="input-facility-pricing-notes"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Ratings & Reviews */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold border-b pb-2">Ratings & Quality</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="overallRating">Overall Rating (1-5)</Label>
+                <Input
+                  id="overallRating"
+                  value={formData.overallRating}
+                  onChange={(e) => setFormData({ ...formData, overallRating: e.target.value })}
+                  placeholder="e.g., 4.5"
+                  data-testid="input-facility-rating"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="reviewCount">Review Count</Label>
+                <Input
+                  id="reviewCount"
+                  type="number"
+                  value={formData.reviewCount}
+                  onChange={(e) => setFormData({ ...formData, reviewCount: e.target.value })}
+                  data-testid="input-facility-review-count"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="healthInspectionRating">Health Inspection Rating</Label>
+                <Select
+                  value={formData.healthInspectionRating}
+                  onValueChange={(value) => setFormData({ ...formData, healthInspectionRating: value })}
+                >
+                  <SelectTrigger data-testid="select-health-rating">
+                    <SelectValue placeholder="Select rating" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Not rated</SelectItem>
+                    <SelectItem value="1">1 - Much below average</SelectItem>
+                    <SelectItem value="2">2 - Below average</SelectItem>
+                    <SelectItem value="3">3 - Average</SelectItem>
+                    <SelectItem value="4">4 - Above average</SelectItem>
+                    <SelectItem value="5">5 - Much above average</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="staffingRating">Staffing Rating</Label>
+                <Select
+                  value={formData.staffingRating}
+                  onValueChange={(value) => setFormData({ ...formData, staffingRating: value })}
+                >
+                  <SelectTrigger data-testid="select-staffing-rating">
+                    <SelectValue placeholder="Select rating" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Not rated</SelectItem>
+                    <SelectItem value="1">1 - Much below average</SelectItem>
+                    <SelectItem value="2">2 - Below average</SelectItem>
+                    <SelectItem value="3">3 - Average</SelectItem>
+                    <SelectItem value="4">4 - Above average</SelectItem>
+                    <SelectItem value="5">5 - Much above average</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="qualityRating">Quality Rating</Label>
+                <Select
+                  value={formData.qualityRating}
+                  onValueChange={(value) => setFormData({ ...formData, qualityRating: value })}
+                >
+                  <SelectTrigger data-testid="select-quality-rating">
+                    <SelectValue placeholder="Select rating" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Not rated</SelectItem>
+                    <SelectItem value="1">1 - Much below average</SelectItem>
+                    <SelectItem value="2">2 - Below average</SelectItem>
+                    <SelectItem value="3">3 - Average</SelectItem>
+                    <SelectItem value="4">4 - Above average</SelectItem>
+                    <SelectItem value="5">5 - Much above average</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          {/* Insurance & Licensing */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold border-b pb-2">Insurance & Licensing</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="acceptsMedicaid">Accepts Medicaid (MassHealth)</Label>
+                <Select
+                  value={formData.acceptsMedicaid}
+                  onValueChange={(value) => setFormData({ ...formData, acceptsMedicaid: value })}
+                >
+                  <SelectTrigger data-testid="select-medicaid">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="yes">Yes</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                    <SelectItem value="unknown">Unknown</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="acceptsMedicare">Accepts Medicare</Label>
+                <Select
+                  value={formData.acceptsMedicare}
+                  onValueChange={(value) => setFormData({ ...formData, acceptsMedicare: value })}
+                >
+                  <SelectTrigger data-testid="select-medicare">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="yes">Yes</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                    <SelectItem value="unknown">Unknown</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="licensedBy">Licensed By</Label>
+                <Input
+                  id="licensedBy"
+                  value={formData.licensedBy}
+                  onChange={(e) => setFormData({ ...formData, licensedBy: e.target.value })}
+                  placeholder="e.g., MA DPH"
+                  data-testid="input-facility-licensed-by"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="licenseNumber">License Number</Label>
+                <Input
+                  id="licenseNumber"
+                  value={formData.licenseNumber}
+                  onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
+                  data-testid="input-facility-license"
+                />
+              </div>
+
+              <div className="col-span-2">
+                <Label htmlFor="certifications">Certifications (comma-separated)</Label>
+                <Input
+                  id="certifications"
+                  value={formData.certifications}
+                  onChange={(e) => setFormData({ ...formData, certifications: e.target.value })}
+                  placeholder="e.g., Joint Commission, Medicare Certified"
+                  data-testid="input-facility-certifications"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* SEO Settings */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold border-b pb-2">SEO Settings</h3>
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <Label htmlFor="metaTitle">Meta Title</Label>
+                <Input
+                  id="metaTitle"
+                  value={formData.metaTitle}
+                  onChange={(e) => setFormData({ ...formData, metaTitle: e.target.value })}
+                  placeholder="Custom page title for search engines"
+                  data-testid="input-facility-meta-title"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="metaDescription">Meta Description</Label>
+                <Textarea
+                  id="metaDescription"
+                  value={formData.metaDescription}
+                  onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })}
+                  rows={2}
+                  placeholder="Custom description for search engines (150-160 chars)"
+                  data-testid="input-facility-meta-desc"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="keywords">Keywords (comma-separated)</Label>
+                <Input
+                  id="keywords"
+                  value={formData.keywords}
+                  onChange={(e) => setFormData({ ...formData, keywords: e.target.value })}
+                  placeholder="e.g., nursing home Boston, senior care MA"
+                  data-testid="input-facility-keywords"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Display Settings */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold border-b pb-2">Display Settings</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="sortOrder">Sort Order</Label>
+                <Input
+                  id="sortOrder"
+                  type="number"
+                  value={formData.sortOrder}
+                  onChange={(e) => setFormData({ ...formData, sortOrder: e.target.value })}
+                  placeholder="0 = default"
+                  data-testid="input-facility-sort-order"
+                />
+              </div>
+
+              <div className="flex items-center pt-6">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.featured === "yes"}
+                    onChange={(e) => setFormData({ ...formData, featured: e.target.checked ? "yes" : "no" })}
+                    data-testid="checkbox-featured"
+                    className="h-4 w-4"
+                  />
+                  <span>Featured Facility</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4 border-t">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
