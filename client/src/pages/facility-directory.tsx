@@ -39,7 +39,7 @@ import {
 import type { Facility } from "@shared/schema";
 import { getFacilityTypeImage } from "@/constants/facilityTypeMedia";
 import { useGeolocation, calculateDistance } from "@/hooks/use-geolocation";
-import { getCityCoordinates } from "@/constants/massachusettsCities";
+import { getCityCoordinates, MA_CITY_COORDINATES } from "@/constants/massachusettsCities";
 
 const FACILITY_TYPES = [
   { 
@@ -246,6 +246,8 @@ export default function FacilityDirectoryPage() {
   const [selectedType, setSelectedType] = useState<string>(params.type || "all");
   const [selectedCounty, setSelectedCounty] = useState<string>("all");
   const [sortByDistance, setSortByDistance] = useState(false);
+  const [manualCity, setManualCity] = useState<string>("");
+  const [showCitySelector, setShowCitySelector] = useState(false);
 
   const { 
     latitude, 
@@ -258,7 +260,10 @@ export default function FacilityDirectoryPage() {
     isSupported 
   } = useGeolocation();
 
-  const hasLocation = latitude !== null && longitude !== null;
+  const manualCityCoords = manualCity ? getCityCoordinates(manualCity) : null;
+  const userLat = latitude ?? manualCityCoords?.lat ?? null;
+  const userLng = longitude ?? manualCityCoords?.lng ?? null;
+  const hasLocation = userLat !== null && userLng !== null;
 
   useEffect(() => {
     setSearchQuery(cityFromUrl);
@@ -291,11 +296,11 @@ export default function FacilityDirectoryPage() {
       return matchesSearch && matchesType && matchesCounty;
     });
 
-    if (hasLocation && latitude && longitude) {
+    if (hasLocation && userLat && userLng) {
       result = result.map(facility => {
         const cityCoords = getCityCoordinates(facility.city);
         if (cityCoords) {
-          const distance = calculateDistance(latitude, longitude, cityCoords.lat, cityCoords.lng);
+          const distance = calculateDistance(userLat, userLng, cityCoords.lat, cityCoords.lng);
           return { ...facility, distance };
         }
         return { ...facility, distance: null };
@@ -314,7 +319,7 @@ export default function FacilityDirectoryPage() {
     }
 
     return result;
-  }, [facilities, searchQuery, selectedType, selectedCounty, hasLocation, latitude, longitude, sortByDistance]);
+  }, [facilities, searchQuery, selectedType, selectedCounty, hasLocation, userLat, userLng, sortByDistance]);
 
   const typeInfo = selectedType !== "all" 
     ? FACILITY_TYPES.find(t => t.key === selectedType)
@@ -442,34 +447,91 @@ export default function FacilityDirectoryPage() {
                 </div>
                 
                 <div className="flex flex-wrap items-center gap-2">
-                  {isSupported && !hasLocation && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={requestLocation}
-                      disabled={locationLoading}
-                      data-testid="button-find-near-me"
-                    >
-                      {locationLoading ? (
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      ) : (
-                        <Navigation className="w-4 h-4 mr-2" />
-                      )}
-                      {locationLoading ? "Finding location..." : "Find Near Me"}
-                    </Button>
+                  {!hasLocation && !showCitySelector && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={requestLocation}
+                        disabled={locationLoading}
+                        data-testid="button-find-near-me"
+                      >
+                        {locationLoading ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Navigation className="w-4 h-4 mr-2" />
+                        )}
+                        {locationLoading ? "Finding location..." : "Find Near Me"}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowCitySelector(true)}
+                        data-testid="button-select-city"
+                      >
+                        <MapPin className="w-4 h-4 mr-2" />
+                        Select City
+                      </Button>
+                    </>
+                  )}
+
+                  {showCitySelector && !hasLocation && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm text-muted-foreground">Popular cities:</span>
+                      {["Boston", "Worcester", "Springfield", "Cambridge", "Lowell", "Quincy", "Plymouth"].map(city => (
+                        <Button
+                          key={city}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setManualCity(city);
+                            setSortByDistance(true);
+                            setShowCitySelector(false);
+                          }}
+                          data-testid={`button-city-${city.toLowerCase()}`}
+                        >
+                          {city}
+                        </Button>
+                      ))}
+                      <Select 
+                        value={manualCity} 
+                        onValueChange={(city) => {
+                          setManualCity(city);
+                          setSortByDistance(true);
+                          setShowCitySelector(false);
+                        }}
+                      >
+                        <SelectTrigger className="w-36" data-testid="select-city-location">
+                          <SelectValue placeholder="More cities..." />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {Object.keys(MA_CITY_COORDINATES).sort().map(city => (
+                            <SelectItem key={city} value={city}>{city}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setShowCitySelector(false)}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
                   )}
                   
                   {hasLocation && (
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary" className="flex items-center gap-1">
                         <Navigation className="w-3 h-3" />
-                        Location enabled - sorted by distance
+                        {manualCity ? `Near ${manualCity}` : "Using your location"} - sorted by distance
                       </Badge>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => {
                           clearLocation();
+                          setManualCity("");
                           setSortByDistance(false);
                         }}
                         data-testid="button-clear-location"
@@ -479,14 +541,18 @@ export default function FacilityDirectoryPage() {
                     </div>
                   )}
                   
-                  {locationError && !permissionDenied && (
-                    <p className="text-sm text-destructive">{locationError}</p>
-                  )}
-                  
-                  {permissionDenied && (
-                    <p className="text-sm text-muted-foreground">
-                      Location access denied. Enable it in your browser settings to use "Find Near Me".
-                    </p>
+                  {locationError && !hasLocation && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm text-destructive">{locationError}</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowCitySelector(true)}
+                      >
+                        <MapPin className="w-4 h-4 mr-2" />
+                        Select City Instead
+                      </Button>
+                    </div>
                   )}
                 </div>
               </div>
