@@ -30,11 +30,16 @@ import {
   ShieldCheck,
   Leaf,
   Stethoscope,
-  Activity
+  Activity,
+  Navigation,
+  X,
+  Loader2
 } from "lucide-react";
 
 import type { Facility } from "@shared/schema";
 import { getFacilityTypeImage } from "@/constants/facilityTypeMedia";
+import { useGeolocation, calculateDistance } from "@/hooks/use-geolocation";
+import { getCityCoordinates } from "@/constants/massachusettsCities";
 
 const FACILITY_TYPES = [
   { 
@@ -94,7 +99,12 @@ const MA_COUNTIES = [
   "Plymouth", "Suffolk", "Worcester"
 ];
 
-function FacilityCard({ facility }: { facility: Facility }) {
+interface FacilityCardProps {
+  facility: Facility;
+  distance?: number | null;
+}
+
+function FacilityCard({ facility, distance }: FacilityCardProps) {
   const typeInfo = FACILITY_TYPES.find(t => t.key === facility.facilityType);
   const Icon = typeInfo?.icon || Building2;
   const fallbackImage = getFacilityTypeImage(facility.facilityType);
@@ -121,9 +131,17 @@ function FacilityCard({ facility }: { facility: Facility }) {
                     {facility.name}
                   </h3>
                 </Link>
-                <div className="flex items-center text-sm text-muted-foreground mt-1">
-                  <MapPin className="w-3.5 h-3.5 mr-1" />
-                  {facility.city}, {facility.state} {facility.zipCode}
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1 flex-wrap">
+                  <span className="flex items-center">
+                    <MapPin className="w-3.5 h-3.5 mr-1" />
+                    {facility.city}, {facility.state} {facility.zipCode}
+                  </span>
+                  {distance !== null && distance !== undefined && (
+                    <Badge variant="secondary" className="text-xs">
+                      <Navigation className="w-3 h-3 mr-1" />
+                      {distance.toFixed(1)} mi away
+                    </Badge>
+                  )}
                 </div>
               </div>
               <Badge className={typeInfo?.color || "bg-gray-100"}>
@@ -214,6 +232,10 @@ function FacilityCard({ facility }: { facility: Facility }) {
   );
 }
 
+interface FacilityWithDistance extends Facility {
+  distance?: number | null;
+}
+
 export default function FacilityDirectoryPage() {
   const params = useParams<{ type?: string }>();
   const searchString = useSearch();
@@ -223,10 +245,30 @@ export default function FacilityDirectoryPage() {
   const [searchQuery, setSearchQuery] = useState(cityFromUrl);
   const [selectedType, setSelectedType] = useState<string>(params.type || "all");
   const [selectedCounty, setSelectedCounty] = useState<string>("all");
+  const [sortByDistance, setSortByDistance] = useState(false);
+
+  const { 
+    latitude, 
+    longitude, 
+    loading: locationLoading, 
+    error: locationError,
+    permissionDenied,
+    requestLocation, 
+    clearLocation,
+    isSupported 
+  } = useGeolocation();
+
+  const hasLocation = latitude !== null && longitude !== null;
 
   useEffect(() => {
     setSearchQuery(cityFromUrl);
   }, [cityFromUrl]);
+
+  useEffect(() => {
+    if (hasLocation) {
+      setSortByDistance(true);
+    }
+  }, [hasLocation]);
 
   const apiUrl = selectedType !== "all" 
     ? `/api/facilities?type=${selectedType}` 
@@ -237,7 +279,7 @@ export default function FacilityDirectoryPage() {
   });
 
   const filteredFacilities = useMemo(() => {
-    return facilities.filter(facility => {
+    let result: FacilityWithDistance[] = facilities.filter(facility => {
       const matchesSearch = !searchQuery || 
         facility.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         facility.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -248,7 +290,31 @@ export default function FacilityDirectoryPage() {
       
       return matchesSearch && matchesType && matchesCounty;
     });
-  }, [facilities, searchQuery, selectedType, selectedCounty]);
+
+    if (hasLocation && latitude && longitude) {
+      result = result.map(facility => {
+        const cityCoords = getCityCoordinates(facility.city);
+        if (cityCoords) {
+          const distance = calculateDistance(latitude, longitude, cityCoords.lat, cityCoords.lng);
+          return { ...facility, distance };
+        }
+        return { ...facility, distance: null };
+      });
+
+      if (sortByDistance) {
+        result.sort((a, b) => {
+          const distA = a.distance ?? null;
+          const distB = b.distance ?? null;
+          if (distA === null && distB === null) return 0;
+          if (distA === null) return 1;
+          if (distB === null) return -1;
+          return distA - distB;
+        });
+      }
+    }
+
+    return result;
+  }, [facilities, searchQuery, selectedType, selectedCounty, hasLocation, latitude, longitude, sortByDistance]);
 
   const typeInfo = selectedType !== "all" 
     ? FACILITY_TYPES.find(t => t.key === selectedType)
@@ -350,28 +416,79 @@ export default function FacilityDirectoryPage() {
             </div>
 
             <Card className="p-4">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search by name, city, or address..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9"
-                    data-testid="input-search"
-                  />
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by name, city, or address..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9"
+                      data-testid="input-search"
+                    />
+                  </div>
+                  <Select value={selectedCounty} onValueChange={setSelectedCounty}>
+                    <SelectTrigger className="w-full sm:w-48" data-testid="select-county">
+                      <SelectValue placeholder="All Counties" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Counties</SelectItem>
+                      {MA_COUNTIES.map(county => (
+                        <SelectItem key={county} value={county}>{county} County</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <Select value={selectedCounty} onValueChange={setSelectedCounty}>
-                  <SelectTrigger className="w-full sm:w-48" data-testid="select-county">
-                    <SelectValue placeholder="All Counties" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Counties</SelectItem>
-                    {MA_COUNTIES.map(county => (
-                      <SelectItem key={county} value={county}>{county} County</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                
+                <div className="flex flex-wrap items-center gap-2">
+                  {isSupported && !hasLocation && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={requestLocation}
+                      disabled={locationLoading}
+                      data-testid="button-find-near-me"
+                    >
+                      {locationLoading ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Navigation className="w-4 h-4 mr-2" />
+                      )}
+                      {locationLoading ? "Finding location..." : "Find Near Me"}
+                    </Button>
+                  )}
+                  
+                  {hasLocation && (
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="flex items-center gap-1">
+                        <Navigation className="w-3 h-3" />
+                        Location enabled - sorted by distance
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          clearLocation();
+                          setSortByDistance(false);
+                        }}
+                        data-testid="button-clear-location"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {locationError && !permissionDenied && (
+                    <p className="text-sm text-destructive">{locationError}</p>
+                  )}
+                  
+                  {permissionDenied && (
+                    <p className="text-sm text-muted-foreground">
+                      Location access denied. Enable it in your browser settings to use "Find Near Me".
+                    </p>
+                  )}
+                </div>
               </div>
             </Card>
           </div>
@@ -409,7 +526,7 @@ export default function FacilityDirectoryPage() {
             ) : (
               <div className="grid gap-4">
                 {filteredFacilities.map(facility => (
-                  <FacilityCard key={facility.id} facility={facility} />
+                  <FacilityCard key={facility.id} facility={facility} distance={facility.distance} />
                 ))}
               </div>
             )}
