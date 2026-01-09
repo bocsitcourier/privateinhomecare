@@ -37,7 +37,6 @@ import {
 } from "lucide-react";
 
 import type { Facility } from "@shared/schema";
-import { getFacilityTypeImage } from "@/constants/facilityTypeMedia";
 import { useGeolocation, calculateDistance } from "@/hooks/use-geolocation";
 import { getCityCoordinates, MA_CITY_COORDINATES } from "@/constants/massachusettsCities";
 
@@ -107,125 +106,110 @@ interface FacilityCardProps {
 function FacilityCard({ facility, distance }: FacilityCardProps) {
   const typeInfo = FACILITY_TYPES.find(t => t.key === facility.facilityType);
   const Icon = typeInfo?.icon || Building2;
-  const fallbackImage = getFacilityTypeImage(facility.facilityType);
-  const imageUrl = facility.heroImageUrl || fallbackImage.thumbnail;
-  const imageAlt = facility.heroImageUrl ? facility.name : fallbackImage.alt;
 
   return (
     <Card className="hover-elevate transition-all">
-      <CardContent className="p-0">
-        <div className="flex flex-col sm:flex-row">
-          <div className="w-full sm:w-48 h-40 sm:h-auto flex-shrink-0">
-            <img 
-              src={imageUrl} 
-              alt={imageAlt}
-              className="w-full h-full object-cover rounded-t-lg sm:rounded-l-lg sm:rounded-tr-none"
-              data-testid={`img-facility-${facility.id}`}
-            />
-          </div>
-          <div className="flex-1 p-4">
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <div>
-                <Link href={`/facility/${facility.slug}`}>
-                  <h3 className="font-semibold text-lg hover:text-primary transition-colors cursor-pointer" data-testid={`link-facility-${facility.id}`}>
-                    {facility.name}
-                  </h3>
-                </Link>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1 flex-wrap">
-                  <span className="flex items-center">
-                    <MapPin className="w-3.5 h-3.5 mr-1" />
-                    {facility.city}, {facility.state} {facility.zipCode}
-                  </span>
-                  {distance !== null && distance !== undefined && (
-                    <Badge variant="secondary" className="text-xs">
-                      <Navigation className="w-3 h-3 mr-1" />
-                      {distance.toFixed(1)} mi away
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              <Badge className={typeInfo?.color || "bg-gray-100"}>
-                <Icon className="w-3 h-3 mr-1" />
-                {typeInfo?.title || facility.facilityType}
-              </Badge>
-            </div>
-
-            {facility.shortDescription && (
-              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                {facility.shortDescription}
-              </p>
-            )}
-
-            <div className="flex flex-wrap gap-3 text-sm">
-              {facility.overallRating && (
-                <div className="flex items-center">
-                  <Star className="w-4 h-4 text-amber-500 mr-1" />
-                  <span className="font-medium">{facility.overallRating}</span>
-                  {facility.reviewCount > 0 && (
-                    <span className="text-muted-foreground ml-1">({facility.reviewCount})</span>
-                  )}
-                </div>
-              )}
-              {facility.totalBeds && (
-                <div className="flex items-center text-muted-foreground">
-                  <Users className="w-4 h-4 mr-1" />
-                  <span>{facility.totalBeds} beds</span>
-                </div>
-              )}
-              {(facility.priceRangeMin || facility.priceRangeMax) && (
-                <div className="flex items-center text-muted-foreground">
-                  <DollarSign className="w-4 h-4 mr-1" />
-                  <span>
-                    {facility.priceRangeMin && facility.priceRangeMax
-                      ? `$${facility.priceRangeMin.toLocaleString()} - $${facility.priceRangeMax.toLocaleString()}/mo`
-                      : facility.priceRangeMin
-                        ? `From $${facility.priceRangeMin.toLocaleString()}/mo`
-                        : `Up to $${facility.priceRangeMax?.toLocaleString()}/mo`}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <div className="flex flex-wrap gap-2 mt-3">
-              {facility.acceptsMedicare === "yes" && (
-                <Badge variant="outline" className="text-xs">
-                  <ShieldCheck className="w-3 h-3 mr-1" />
-                  Medicare
-                </Badge>
-              )}
-              {facility.acceptsMedicaid === "yes" && (
-                <Badge variant="outline" className="text-xs">
-                  <ShieldCheck className="w-3 h-3 mr-1" />
-                  MassHealth
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <div>
+            <Link href={`/facility/${facility.slug}`}>
+              <h3 className="font-semibold text-lg hover:text-primary transition-colors cursor-pointer" data-testid={`link-facility-${facility.id}`}>
+                {facility.name}
+              </h3>
+            </Link>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1 flex-wrap">
+              <span className="flex items-center">
+                <MapPin className="w-3.5 h-3.5 mr-1" />
+                {facility.city}, {facility.state} {facility.zipCode}
+              </span>
+              {distance !== null && distance !== undefined && (
+                <Badge variant="secondary" className="text-xs">
+                  <Navigation className="w-3 h-3 mr-1" />
+                  {distance.toFixed(1)} mi away
                 </Badge>
               )}
             </div>
-
-            <div className="flex gap-2 mt-4">
-              {facility.phone && (
-                <Button variant="outline" size="sm" asChild>
-                  <a href={`tel:${facility.phone}`} data-testid={`button-call-${facility.id}`}>
-                    <Phone className="w-4 h-4 mr-1" />
-                    Call
-                  </a>
-                </Button>
-              )}
-              {facility.website && (
-                <Button variant="outline" size="sm" asChild>
-                  <a href={facility.website} target="_blank" rel="noopener noreferrer" data-testid={`link-website-${facility.id}`}>
-                    <Globe className="w-4 h-4 mr-1" />
-                    Website
-                  </a>
-                </Button>
-              )}
-              <Button variant="default" size="sm" asChild className="ml-auto">
-                <Link href={`/facility/${facility.slug}`} data-testid={`button-details-${facility.id}`}>
-                  View Details
-                  <ChevronRight className="w-4 h-4 ml-1" />
-                </Link>
-              </Button>
-            </div>
           </div>
+          <Badge className={typeInfo?.color || "bg-gray-100"}>
+            <Icon className="w-3 h-3 mr-1" />
+            {typeInfo?.title || facility.facilityType}
+          </Badge>
+        </div>
+
+        {facility.shortDescription && (
+          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+            {facility.shortDescription}
+          </p>
+        )}
+
+        <div className="flex flex-wrap gap-3 text-sm">
+          {facility.overallRating && (
+            <div className="flex items-center">
+              <Star className="w-4 h-4 text-amber-500 mr-1" />
+              <span className="font-medium">{facility.overallRating}</span>
+              {facility.reviewCount > 0 && (
+                <span className="text-muted-foreground ml-1">({facility.reviewCount})</span>
+              )}
+            </div>
+          )}
+          {facility.totalBeds && (
+            <div className="flex items-center text-muted-foreground">
+              <Users className="w-4 h-4 mr-1" />
+              <span>{facility.totalBeds} beds</span>
+            </div>
+          )}
+          {(facility.priceRangeMin || facility.priceRangeMax) && (
+            <div className="flex items-center text-muted-foreground">
+              <DollarSign className="w-4 h-4 mr-1" />
+              <span>
+                {facility.priceRangeMin && facility.priceRangeMax
+                  ? `$${facility.priceRangeMin.toLocaleString()} - $${facility.priceRangeMax.toLocaleString()}/mo`
+                  : facility.priceRangeMin
+                    ? `From $${facility.priceRangeMin.toLocaleString()}/mo`
+                    : `Up to $${facility.priceRangeMax?.toLocaleString()}/mo`}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-wrap gap-2 mt-3">
+          {facility.acceptsMedicare === "yes" && (
+            <Badge variant="outline" className="text-xs">
+              <ShieldCheck className="w-3 h-3 mr-1" />
+              Medicare
+            </Badge>
+          )}
+          {facility.acceptsMedicaid === "yes" && (
+            <Badge variant="outline" className="text-xs">
+              <ShieldCheck className="w-3 h-3 mr-1" />
+              MassHealth
+            </Badge>
+          )}
+        </div>
+
+        <div className="flex gap-2 mt-4">
+          {facility.phone && (
+            <Button variant="outline" size="sm" asChild>
+              <a href={`tel:${facility.phone}`} data-testid={`button-call-${facility.id}`}>
+                <Phone className="w-4 h-4 mr-1" />
+                Call
+              </a>
+            </Button>
+          )}
+          {facility.website && (
+            <Button variant="outline" size="sm" asChild>
+              <a href={facility.website} target="_blank" rel="noopener noreferrer" data-testid={`link-website-${facility.id}`}>
+                <Globe className="w-4 h-4 mr-1" />
+                Website
+              </a>
+            </Button>
+          )}
+          <Button variant="default" size="sm" asChild className="ml-auto">
+            <Link href={`/facility/${facility.slug}`} data-testid={`button-details-${facility.id}`}>
+              View Details
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Link>
+          </Button>
         </div>
       </CardContent>
     </Card>
