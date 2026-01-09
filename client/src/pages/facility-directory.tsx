@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 
 import type { Facility } from "@shared/schema";
+import { getFacilityTypeImage } from "@/constants/facilityTypeMedia";
 
 const FACILITY_TYPES = [
   { 
@@ -96,20 +97,22 @@ const MA_COUNTIES = [
 function FacilityCard({ facility }: { facility: Facility }) {
   const typeInfo = FACILITY_TYPES.find(t => t.key === facility.facilityType);
   const Icon = typeInfo?.icon || Building2;
+  const fallbackImage = getFacilityTypeImage(facility.facilityType);
+  const imageUrl = facility.heroImageUrl || fallbackImage.thumbnail;
+  const imageAlt = facility.heroImageUrl ? facility.name : fallbackImage.alt;
 
   return (
     <Card className="hover-elevate transition-all">
       <CardContent className="p-0">
         <div className="flex flex-col sm:flex-row">
-          {facility.heroImageUrl && (
-            <div className="w-full sm:w-48 h-40 sm:h-auto flex-shrink-0">
-              <img 
-                src={facility.heroImageUrl} 
-                alt={facility.name}
-                className="w-full h-full object-cover rounded-t-lg sm:rounded-l-lg sm:rounded-tr-none"
-              />
-            </div>
-          )}
+          <div className="w-full sm:w-48 h-40 sm:h-auto flex-shrink-0">
+            <img 
+              src={imageUrl} 
+              alt={imageAlt}
+              className="w-full h-full object-cover rounded-t-lg sm:rounded-l-lg sm:rounded-tr-none"
+              data-testid={`img-facility-${facility.id}`}
+            />
+          </div>
           <div className="flex-1 p-4">
             <div className="flex items-start justify-between gap-2 mb-2">
               <div>

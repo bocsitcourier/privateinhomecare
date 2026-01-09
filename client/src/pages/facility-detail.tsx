@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 
 import type { Facility, FacilityReview } from "@shared/schema";
+import { getFacilityTypeImage } from "@/constants/facilityTypeMedia";
 
 const FACILITY_TYPES = [
   { key: "nursing-home", title: "Nursing Home", icon: Building2 },
@@ -231,16 +232,15 @@ export default function FacilityDetailPage() {
           </div>
         </div>
 
-        {facility.heroImageUrl && (
-          <div className="h-64 md:h-80 relative">
-            <img 
-              src={facility.heroImageUrl} 
-              alt={facility.name}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          </div>
-        )}
+        <div className="h-64 md:h-80 relative">
+          <img 
+            src={facility.heroImageUrl || getFacilityTypeImage(facility.facilityType).hero}
+            alt={facility.heroImageUrl ? facility.name : getFacilityTypeImage(facility.facilityType).alt}
+            className="w-full h-full object-cover"
+            data-testid="img-facility-hero"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        </div>
 
         <section className="py-8">
           <div className="container max-w-4xl mx-auto px-4">
