@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
 import { Link } from "wouter";
+import { getCareTypeImage } from "@/constants/careTypeMedia";
 
 const SERVICES = [
   {
@@ -209,10 +210,23 @@ export default function ServicesPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            {SERVICES.map((service) => (
-              <Card key={service.key} className="hover-elevate" data-testid={`card-service-${service.key}`}>
+            {SERVICES.map((service) => {
+              const careImage = getCareTypeImage(service.key);
+              return (
+              <Card key={service.key} className="hover-elevate overflow-hidden" data-testid={`card-service-${service.key}`}>
+                <div className="relative h-48 w-full">
+                  <img 
+                    src={careImage.thumbnail} 
+                    alt={careImage.alt}
+                    className="w-full h-full object-cover"
+                    data-testid={`img-service-${service.key}`}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-4 left-4">
+                    {service.icon}
+                  </div>
+                </div>
                 <CardContent className="p-8">
-                  <div className="mb-4">{service.icon}</div>
                   <h3 className="text-2xl font-bold mb-3">{service.title}</h3>
                   <p className="text-muted-foreground mb-6">{service.description}</p>
                   <ul className="space-y-3 mb-6">
@@ -239,7 +253,8 @@ export default function ServicesPage() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
           </div>
         </section>
 

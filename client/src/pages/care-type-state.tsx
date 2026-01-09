@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import type { MaLocation } from "@shared/schema";
 import { careTypeDisplayNames, careTypeEnum, type CareType } from "@shared/schema";
+import { getCareTypeImage } from "@/constants/careTypeMedia";
 
 const CARE_TYPE_QUIZ_SLUGS: Record<string, string> = {
   "personal-care": "personal-care-assessment",
@@ -167,14 +168,23 @@ export default function CareTypeStatePage() {
       </div>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 via-background to-accent/10 py-12 md:py-20">
-        <div className="container mx-auto px-4">
+      <section className="relative py-12 md:py-20 overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src={getCareTypeImage(careTypeSlug || "personal-care").hero}
+            alt={getCareTypeImage(careTypeSlug || "personal-care").alt}
+            className="w-full h-full object-cover"
+            data-testid="img-hero"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40" />
+        </div>
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl">
-            <Badge className="mb-4">{careTypeDisplay}</Badge>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4" data-testid="text-title">
+            <Badge className="mb-4 bg-primary/90">{careTypeDisplay}</Badge>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white" data-testid="text-title">
               {careTypeInfo.headline}
             </h1>
-            <p className="text-xl text-muted-foreground mb-8">
+            <p className="text-xl text-white/90 mb-8">
               {careTypeInfo.description}
             </p>
             <div className="flex flex-wrap gap-4">
@@ -184,7 +194,7 @@ export default function CareTypeStatePage() {
                   Get Free Consultation
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
+              <Button asChild size="lg" variant="outline" className="bg-white/10 text-white border-white/30 hover:bg-white/20">
                 <a href="tel:+1-617-686-0595">
                   Call (617) 686-0595
                 </a>

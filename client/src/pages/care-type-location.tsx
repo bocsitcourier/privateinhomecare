@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import type { CareTypePage, MaLocation, LocationFaq, LocationReview } from "@shared/schema";
 import { careTypeDisplayNames, careTypeEnum } from "@shared/schema";
+import { getCareTypeImage } from "@/constants/careTypeMedia";
 
 interface CareTypePageData {
   page: CareTypePage;
@@ -257,14 +258,23 @@ export default function CareTypeLocationPage() {
       </div>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 via-background to-accent/10 py-12 md:py-20">
-        <div className="container mx-auto px-4">
+      <section className="relative py-12 md:py-20 overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src={getCareTypeImage(careTypeSlug || "personal-care").hero}
+            alt={getCareTypeImage(careTypeSlug || "personal-care").alt}
+            className="w-full h-full object-cover"
+            data-testid="img-hero"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40" />
+        </div>
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl">
-            <Badge className="mb-4" data-testid="badge-care-type">{careTypeDisplay}</Badge>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4" data-testid="text-title">
+            <Badge className="mb-4 bg-primary/90" data-testid="badge-care-type">{careTypeDisplay}</Badge>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white" data-testid="text-title">
               {page?.heroTitle || `${careTypeDisplay} in ${cityName}, Massachusetts`}
             </h1>
-            <p className="text-xl text-muted-foreground mb-8" data-testid="text-subtitle">
+            <p className="text-xl text-white/90 mb-8" data-testid="text-subtitle">
               {page?.heroSubtitle || `Trusted, compassionate ${careTypeDisplay?.toLowerCase()} services for seniors and families in ${cityName} and ${county} County.`}
             </p>
             <div className="flex flex-wrap gap-4">
@@ -275,7 +285,7 @@ export default function CareTypeLocationPage() {
                 </Button>
               </Link>
               <a href="tel:+1-617-686-0595">
-                <Button size="lg" variant="outline" data-testid="button-cta-call">
+                <Button size="lg" variant="outline" className="bg-white/10 text-white border-white/30 hover:bg-white/20" data-testid="button-cta-call">
                   Call (617) 686-0595
                 </Button>
               </a>
