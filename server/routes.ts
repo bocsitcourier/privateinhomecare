@@ -3062,7 +3062,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Seed endpoint for facility FAQs
+  // Seed endpoint for facility FAQs - generates personalized FAQs using actual facility data
   app.post("/api/seed/facility-faqs", async (req: Request, res: Response) => {
     try {
       const force = req.query.force === "true";
@@ -3078,72 +3078,153 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // FAQ templates for each facility type
-      const faqTemplates: Record<string, Array<{ question: string; answer: string; category: string }>> = {
-        "nursing-home": [
-          { category: "Admissions", question: "What is the admission process for this nursing home?", answer: "The admission process typically begins with an initial assessment by our clinical team. This includes evaluating medical needs, creating a care plan, and reviewing insurance coverage. We encourage families to schedule a tour and meet with our admissions coordinator to discuss specific needs and answer any questions." },
-          { category: "Care", question: "What level of medical care is provided?", answer: "Our nursing home provides 24/7 skilled nursing care, including medication management, wound care, IV therapy, physical therapy, occupational therapy, and speech therapy. We have licensed nurses on staff around the clock and physicians available for regular rounds and emergencies." },
-          { category: "Costs", question: "How much does it cost to stay at this facility?", answer: "Costs vary based on the level of care required and room type. We accept Medicare for short-term rehabilitation stays, MassHealth (Medicaid) for long-term care, and private pay. Our admissions team can provide a detailed cost estimate based on your specific situation." },
-          { category: "Visiting", question: "What are the visiting hours?", answer: "We welcome visitors and encourage family involvement in residents' care. General visiting hours are from 9 AM to 8 PM daily, though we can accommodate special circumstances. We ask visitors to check in at the front desk and follow any current health and safety protocols." },
-          { category: "Care", question: "Do you offer memory care or dementia services?", answer: "Yes, we provide specialized memory care programming for residents with Alzheimer's disease and other forms of dementia. Our staff receives ongoing training in dementia care, and we offer structured activities, secure environments, and personalized care plans to support cognitive health." },
-          { category: "Activities", question: "What activities and programs are available?", answer: "We offer a full calendar of activities including exercise classes, arts and crafts, music therapy, social events, religious services, and outings. Our activities department creates personalized programming to match residents' interests and abilities." },
-        ],
-        "assisted-living": [
-          { category: "Admissions", question: "Who is a good candidate for assisted living?", answer: "Assisted living is ideal for seniors who need help with daily activities like bathing, dressing, medication management, or meal preparation, but don't require 24-hour skilled nursing care. Residents maintain their independence while receiving the support they need." },
-          { category: "Care", question: "What services are included in assisted living?", answer: "Our assisted living services typically include assistance with activities of daily living, medication management, meals and housekeeping, transportation, wellness programs, and 24-hour staff availability. Additional services may be available for an extra fee." },
-          { category: "Costs", question: "What are the costs for assisted living?", answer: "Assisted living costs vary based on apartment size and level of care needed. Monthly fees typically cover room, meals, housekeeping, activities, and basic care services. We recommend scheduling a consultation to discuss your specific needs and receive a personalized cost estimate." },
-          { category: "Living", question: "Can residents personalize their apartments?", answer: "Yes! We encourage residents to bring personal furniture, photos, and decorations to make their apartment feel like home. Each apartment includes essential furnishings, but residents are welcome to add their own touches." },
-          { category: "Dining", question: "What dining options are available?", answer: "We offer restaurant-style dining with nutritious, chef-prepared meals. Our dining program accommodates dietary restrictions and preferences. Residents typically enjoy three meals daily plus snacks in our welcoming dining room." },
-          { category: "Activities", question: "What social and recreational activities do you offer?", answer: "We provide a robust activities calendar including fitness classes, educational seminars, cultural outings, social events, and hobby groups. Our goal is to promote wellness, social engagement, and lifelong learning for every resident." },
-        ],
-        "memory-care": [
-          { category: "Care", question: "How is memory care different from other senior living options?", answer: "Memory care is specifically designed for individuals with Alzheimer's disease and other forms of dementia. We provide secure environments, specialized staff training, structured routines, and therapeutic programming tailored to cognitive needs. Our approach focuses on dignity, safety, and quality of life." },
-          { category: "Safety", question: "How do you ensure resident safety?", answer: "Our memory care community features secured entrances and exits, 24-hour supervision, emergency call systems, and motion-sensor monitoring. Staff members are trained in dementia care and understand how to support residents with wandering behaviors and other safety concerns." },
-          { category: "Care", question: "What therapies and activities are available?", answer: "We offer evidence-based therapies including reminiscence therapy, music therapy, art therapy, sensory stimulation, and physical exercise programs. Activities are designed to maintain cognitive function, reduce anxiety, and provide meaningful engagement throughout the day." },
-          { category: "Family", question: "How can families stay involved in their loved one's care?", answer: "We strongly encourage family involvement. Regular care conferences, open visiting hours, family events, and communication updates keep you connected. Our staff works closely with families to understand each resident's history, preferences, and needs." },
-          { category: "Costs", question: "What does memory care cost?", answer: "Memory care costs are generally higher than standard assisted living due to the specialized staffing and security requirements. Pricing varies based on individual care needs. We can provide detailed cost information during a consultation." },
-          { category: "Staff", question: "What training do your staff members receive?", answer: "All our memory care staff receive specialized training in dementia care, including understanding disease progression, communication techniques, behavior management, and person-centered care approaches. We maintain higher staff-to-resident ratios than traditional senior living." },
-        ],
-        "independent-living": [
-          { category: "Lifestyle", question: "What is independent living?", answer: "Independent living communities are designed for active seniors who want maintenance-free living with access to amenities, social activities, and optional services. Residents live in their own apartments and enjoy community dining, activities, and services while maintaining their independence." },
-          { category: "Services", question: "What services are included in the monthly fee?", answer: "Monthly fees typically include apartment rental, utilities, housekeeping, meals (often 1-2 per day), access to amenities like fitness centers and pools, transportation services, and a full calendar of activities and events." },
-          { category: "Costs", question: "What are the costs for independent living?", answer: "Independent living costs vary based on apartment size and community amenities. Unlike some senior living options, independent living is typically private pay and is not covered by Medicare or Medicaid. We can provide pricing information based on your preferred apartment style." },
-          { category: "Activities", question: "What activities and amenities are available?", answer: "Our community offers a wide range of amenities including fitness centers, libraries, game rooms, gardens, and common areas. We host daily activities, classes, outings, and social events. Many residents also form clubs based on shared interests." },
-          { category: "Care", question: "What happens if I need more care in the future?", answer: "Many of our residents start in independent living and transition to higher levels of care as needed. We can arrange for in-home care services, or assist with moving to assisted living or memory care if we offer those options on our campus." },
-          { category: "Dining", question: "What are the dining options?", answer: "We offer restaurant-style dining with varied menus prepared by professional chefs. Most communities include one or two meals per day in the monthly fee, with flexible dining times to accommodate different schedules." },
-        ],
-        "continuing-care": [
-          { category: "Overview", question: "What is a continuing care retirement community (CCRC)?", answer: "A CCRC offers a full continuum of care on one campus, including independent living, assisted living, memory care, and skilled nursing. Residents can transition between levels of care as needs change, without leaving the community they call home." },
-          { category: "Costs", question: "How does CCRC pricing work?", answer: "CCRCs typically require an entrance fee plus monthly fees. Various contract types are available, including life care contracts that lock in care costs, and fee-for-service contracts where care costs increase with the level of care. Our team can explain the options in detail." },
-          { category: "Care", question: "What levels of care are available?", answer: "Our CCRC offers independent living for active seniors, assisted living for those needing daily assistance, memory care for residents with cognitive challenges, and skilled nursing for those requiring medical care or rehabilitation." },
-          { category: "Future", question: "How do I know a CCRC is right for me?", answer: "CCRCs are ideal for people who want long-term security and the peace of mind that comes from knowing care will be available when needed. They're particularly attractive to couples with different health needs and to those who want to plan ahead for potential future care requirements." },
-          { category: "Healthcare", question: "Is healthcare included in CCRC contracts?", answer: "Healthcare inclusion depends on your contract type. Life care contracts include unlimited access to higher levels of care at little to no additional cost. Modified and fee-for-service contracts may include some care services but charge more for extended or higher-level care." },
-          { category: "Waitlist", question: "Is there a waitlist to join?", answer: "Many CCRCs have waitlists, especially for popular floor plans. We encourage interested individuals to apply early. Being on the waitlist doesn't obligate you to move, but it does secure your place when you're ready." },
-        ],
-        "hospice": [
-          { category: "Care", question: "What is hospice care?", answer: "Hospice care is specialized end-of-life care focused on comfort, dignity, and quality of life rather than curative treatment. Our interdisciplinary team provides pain management, symptom control, emotional support, and spiritual care for patients and their families." },
-          { category: "Eligibility", question: "Who is eligible for hospice care?", answer: "Patients are typically eligible for hospice when a physician certifies a life expectancy of six months or less if the illness runs its normal course. Hospice care can be received at home, in a nursing facility, or in a dedicated hospice facility." },
-          { category: "Costs", question: "How is hospice care paid for?", answer: "Medicare, Medicaid, and most private insurance plans cover hospice care with little to no out-of-pocket costs for patients. Coverage includes medications related to the terminal diagnosis, medical equipment, nursing visits, and other hospice services." },
-          { category: "Family", question: "What support is available for families?", answer: "We provide comprehensive family support including caregiver training, respite care, counseling services, and bereavement support for up to 13 months after a loved one's passing. Our social workers and chaplains are available to help families navigate this difficult time." },
-          { category: "Location", question: "Where is hospice care provided?", answer: "Hospice care can be provided wherever the patient calls home - in their own residence, in a family member's home, in an assisted living community, or in a nursing facility. Some patients receive care in dedicated inpatient hospice facilities for symptom management." },
-          { category: "Services", question: "What services does your hospice provide?", answer: "Our services include pain and symptom management, nursing care, home health aide services, social work, chaplain services, volunteer support, medical equipment and supplies, medications related to the terminal diagnosis, and bereavement services for families." },
-        ],
-        "hospital": [
-          { category: "Services", question: "What medical services does this hospital provide?", answer: "Our hospital offers comprehensive medical services including emergency care, surgery, diagnostic imaging, laboratory services, inpatient and outpatient care, and specialized programs. Please visit our website or call for information about specific departments and services." },
-          { category: "Emergency", question: "What should I know about your emergency department?", answer: "Our emergency department is open 24/7 and staffed by board-certified emergency physicians and nurses. We're equipped to handle medical emergencies from minor injuries to life-threatening conditions. Call 911 for true emergencies or come directly to our ER." },
-          { category: "Insurance", question: "What insurance do you accept?", answer: "We accept most major insurance plans, Medicare, and MassHealth (Medicaid). Our patient financial services team can help verify your coverage and discuss payment options. Please bring your insurance card when you visit." },
-          { category: "Visiting", question: "What are your visiting hours?", answer: "Visiting hours and policies vary by department. Generally, we welcome visitors during daytime hours while ensuring patients receive the rest they need. Please check with the specific unit for current visiting guidelines and any visitor restrictions." },
-          { category: "Quality", question: "What quality measures does this hospital track?", answer: "We track numerous quality and safety measures including patient outcomes, infection rates, patient satisfaction, and adherence to best practices. Many of our programs are nationally recognized, and we participate in quality reporting programs required by Medicare." },
-          { category: "Appointments", question: "How do I schedule an appointment or procedure?", answer: "You can schedule appointments by calling our main number or the specific department. Many services also allow online scheduling through our patient portal. Your primary care physician can also refer you for specialty consultations and procedures." },
-        ],
+      // Helper function to generate personalized FAQs based on actual facility data
+      const generatePersonalizedFaqs = (facility: any) => {
+        const name = facility.name;
+        const city = facility.city || "Massachusetts";
+        const address = facility.address ? `${facility.address}, ${city}, MA` : `${city}, MA`;
+        const phone = facility.phone || "our main phone number";
+        const type = facility.facilityType;
+        const beds = facility.totalBeds;
+        const rating = facility.overallRating;
+        const services = facility.services?.length > 0 ? facility.services.slice(0, 5).join(", ") : null;
+        const amenities = facility.amenities?.length > 0 ? facility.amenities.slice(0, 5).join(", ") : null;
+        const acceptsMedicare = facility.acceptsMedicare === "yes";
+        const acceptsMedicaid = facility.acceptsMedicaid === "yes";
+        
+        const typeLabels: Record<string, string> = {
+          "nursing-home": "nursing home",
+          "assisted-living": "assisted living community",
+          "memory-care": "memory care community",
+          "independent-living": "independent living community",
+          "continuing-care": "continuing care retirement community",
+          "hospice": "hospice provider",
+          "hospital": "hospital"
+        };
+        const typeLabel = typeLabels[type] || "care facility";
+        
+        const faqs: Array<{ question: string; answer: string; category: string }> = [];
+        
+        // Location FAQ
+        faqs.push({
+          category: "Location",
+          question: `Where is ${name} located?`,
+          answer: `${name} is located at ${address}. We serve seniors and families throughout ${city} and the surrounding Massachusetts communities. For directions or to schedule a visit, please call ${phone}.`
+        });
+        
+        // Contact FAQ
+        faqs.push({
+          category: "Contact",
+          question: `How do I contact ${name}?`,
+          answer: `You can reach ${name} by calling ${phone}${facility.website ? ` or visiting our website at ${facility.website}` : ""}. Our team is available to answer your questions about our services, schedule tours, and discuss your care needs.`
+        });
+        
+        // Insurance FAQ - personalized based on actual data
+        if (acceptsMedicare || acceptsMedicaid) {
+          const insuranceTypes = [];
+          if (acceptsMedicare) insuranceTypes.push("Medicare");
+          if (acceptsMedicaid) insuranceTypes.push("MassHealth (Medicaid)");
+          faqs.push({
+            category: "Insurance",
+            question: `Does ${name} accept Medicare or MassHealth?`,
+            answer: `Yes, ${name} accepts ${insuranceTypes.join(" and ")} for eligible services. We also accept most private insurance plans and private pay. Please contact our admissions team to verify coverage for your specific situation and discuss payment options.`
+          });
+        } else {
+          faqs.push({
+            category: "Insurance",
+            question: `What payment options does ${name} accept?`,
+            answer: `${name} accepts various payment options including private pay and private insurance. Please contact our admissions team to discuss coverage options and verify your specific insurance plan. We can work with you to find the best payment solution for your care needs.`
+          });
+        }
+        
+        // Capacity FAQ - if we have bed data
+        if (beds && beds > 0) {
+          faqs.push({
+            category: "Capacity",
+            question: `How many beds does ${name} have?`,
+            answer: `${name} has ${beds} beds available for residents. Our ${typeLabel} is designed to provide personalized care in a comfortable environment. Availability may vary, so please contact us to inquire about current openings.`
+          });
+        }
+        
+        // Rating FAQ - if we have rating data
+        if (rating) {
+          faqs.push({
+            category: "Quality",
+            question: `What is the quality rating for ${name}?`,
+            answer: `${name} has an overall rating of ${rating} out of 5 stars. We are committed to providing high-quality care and continuously improving our services. Our ratings reflect our dedication to resident satisfaction and care excellence.`
+          });
+        }
+        
+        // Services FAQ - if we have services data
+        if (services) {
+          faqs.push({
+            category: "Services",
+            question: `What services does ${name} offer?`,
+            answer: `${name} offers a range of services including ${services}, and more. Our ${typeLabel} is designed to meet the diverse needs of our residents. Contact us for a complete list of services available.`
+          });
+        }
+        
+        // Amenities FAQ - if we have amenities data
+        if (amenities) {
+          faqs.push({
+            category: "Amenities",
+            question: `What amenities are available at ${name}?`,
+            answer: `${name} features amenities including ${amenities}, among others. We strive to create a comfortable, home-like environment for all our residents. Schedule a tour to see our amenities in person.`
+          });
+        }
+        
+        // Type-specific FAQs
+        if (type === "nursing-home") {
+          faqs.push({
+            category: "Care",
+            question: `What level of nursing care is provided at ${name}?`,
+            answer: `${name} provides 24/7 skilled nursing care including medication management, wound care, physical therapy, occupational therapy, and speech therapy. Our licensed nurses and certified nursing assistants are on staff around the clock to ensure residents receive the care they need.`
+          });
+          faqs.push({
+            category: "Admissions",
+            question: `What is the admission process at ${name}?`,
+            answer: `The admission process at ${name} begins with an initial assessment by our clinical team. We evaluate medical needs, create a personalized care plan, and review insurance coverage. Call ${phone} to schedule an assessment and tour.`
+          });
+        } else if (type === "assisted-living") {
+          faqs.push({
+            category: "Care",
+            question: `What assistance is available at ${name}?`,
+            answer: `${name} provides assistance with daily activities including bathing, dressing, medication management, meal preparation, and housekeeping. Our staff is available 24/7 while residents maintain their independence and dignity.`
+          });
+        } else if (type === "memory-care") {
+          faqs.push({
+            category: "Safety",
+            question: `How does ${name} ensure safety for memory care residents?`,
+            answer: `${name} features secured entrances and exits, 24-hour supervision, emergency call systems, and specialized staff trained in dementia care. Our secure environment is designed to support residents with Alzheimer's and other forms of dementia.`
+          });
+        } else if (type === "hospital") {
+          faqs.push({
+            category: "Emergency",
+            question: `Does ${name} have an emergency department?`,
+            answer: `${name} provides emergency medical services. For medical emergencies, call 911 or visit our emergency department. Our emergency team is equipped to handle a wide range of medical situations 24 hours a day, 7 days a week.`
+          });
+          faqs.push({
+            category: "Appointments",
+            question: `How do I schedule an appointment at ${name}?`,
+            answer: `You can schedule appointments at ${name} by calling ${phone}. For specialty services, your primary care physician can provide a referral. Many departments also offer online scheduling through our patient portal.`
+          });
+        } else if (type === "hospice") {
+          faqs.push({
+            category: "Eligibility",
+            question: `Who is eligible for hospice care from ${name}?`,
+            answer: `${name} provides hospice care for patients with a life expectancy of six months or less as certified by a physician. Our services focus on comfort, dignity, and quality of life. Medicare, Medicaid, and most insurance plans cover hospice care.`
+          });
+        }
+        
+        // Tour FAQ - for all facilities
+        faqs.push({
+          category: "Visits",
+          question: `Can I schedule a tour of ${name}?`,
+          answer: `Yes! We welcome prospective residents and families to tour ${name}. During your visit, you can see our facilities, meet our staff, and ask questions about our care programs. Call ${phone} to schedule your tour today.`
+        });
+        
+        return faqs;
       };
-
-      // Default FAQs for any facility type
-      const defaultFaqs = [
-        { category: "General", question: "How can I schedule a tour?", answer: "We welcome prospective residents and families to tour our facility. Please call us or complete the contact form on our website to schedule a visit. We'll be happy to show you around, answer your questions, and discuss how we can meet your care needs." },
-        { category: "General", question: "What should I bring when visiting?", answer: "When visiting our facility, please bring a list of questions you'd like answered, information about the prospective resident's medical conditions and care needs, and any relevant insurance information. This helps us provide the most accurate information during your visit." },
-        { category: "Insurance", question: "Do you accept Medicare or MassHealth?", answer: "Our acceptance of Medicare and MassHealth (Massachusetts Medicaid) depends on the type of services provided and our current enrollment status. Please contact our admissions team to verify coverage for your specific situation." },
-      ];
 
       let createdCount = 0;
       let skippedCount = 0;
@@ -3155,12 +3236,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           continue; // Skip facilities that already have FAQs
         }
         
-        // Get type-specific FAQs or use default
-        const typeFaqs = faqTemplates[facility.facilityType] || [];
-        const allFaqs = [...typeFaqs, ...defaultFaqs];
+        // Generate personalized FAQs for this facility
+        const faqs = generatePersonalizedFaqs(facility);
 
-        for (let i = 0; i < allFaqs.length; i++) {
-          const faq = allFaqs[i];
+        for (let i = 0; i < faqs.length; i++) {
+          const faq = faqs[i];
           await storage.createFacilityFaq({
             facilityId: facility.id,
             question: faq.question,
@@ -3174,7 +3254,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       res.json({ 
-        message: `Successfully seeded ${createdCount} FAQs for ${facilities.length - skippedCount} facilities (${skippedCount} skipped, already had FAQs)`,
+        message: `Successfully seeded ${createdCount} personalized FAQs for ${facilities.length - skippedCount} facilities (${skippedCount} skipped, already had FAQs)`,
         facilitiesCount: facilities.length,
         skipped: skippedCount,
         faqsCount: createdCount 
