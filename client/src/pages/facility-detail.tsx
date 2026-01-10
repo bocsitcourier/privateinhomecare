@@ -7,6 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { 
   MapPin, 
   Building2,
@@ -28,10 +34,11 @@ import {
   AlertCircle,
   Leaf,
   Stethoscope,
-  Activity
+  Activity,
+  HelpCircle
 } from "lucide-react";
 
-import type { Facility, FacilityReview } from "@shared/schema";
+import type { Facility, FacilityReview, FacilityFaq } from "@shared/schema";
 import { getFacilityTypeImage } from "@/constants/facilityTypeMedia";
 
 const FACILITY_TYPES = [
@@ -108,6 +115,11 @@ export default function FacilityDetailPage() {
 
   const { data: reviews = [] } = useQuery<FacilityReview[]>({
     queryKey: ["/api/facilities", slug, "reviews"],
+    enabled: !!slug,
+  });
+
+  const { data: faqs = [] } = useQuery<FacilityFaq[]>({
+    queryKey: ["/api/facilities", slug, "faqs"],
     enabled: !!slug,
   });
 
@@ -329,6 +341,31 @@ export default function FacilityDetailPage() {
                           <Badge key={i} variant="secondary">{amenity}</Badge>
                         ))}
                       </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {faqs.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <HelpCircle className="w-5 h-5" />
+                        Frequently Asked Questions
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Accordion type="single" collapsible className="w-full">
+                        {faqs.map((faq, index) => (
+                          <AccordionItem key={faq.id} value={`faq-${index}`}>
+                            <AccordionTrigger className="text-left">
+                              {faq.question}
+                            </AccordionTrigger>
+                            <AccordionContent className="text-muted-foreground">
+                              {faq.answer}
+                            </AccordionContent>
+                          </AccordionItem>
+                        ))}
+                      </Accordion>
                     </CardContent>
                   </Card>
                 )}

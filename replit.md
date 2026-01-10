@@ -22,7 +22,7 @@ Specific features include:
 - An enhanced careers page for caregiver recruitment.
 - A Caregiver Resources Hub with articles, videos, and podcasts, categorized for easy navigation.
 - Educational "Care Options" landing pages (e.g., `/nursing-homes/massachusetts`) to guide families through different care types.
-- A statewide senior care Facility Directory covering 6 facility types and 128+ facilities across all 14 Massachusetts counties, with search, filtering, and review capabilities.
+- A statewide senior care Facility Directory covering 7 facility types (nursing homes, assisted living, memory care, independent living, continuing care, hospice, hospitals) with 796+ facilities across all 14 Massachusetts counties, featuring search, filtering, reviews, and type-specific FAQs.
 - A dedicated Hospital Directory (`/find-hospital`) with 60 Massachusetts hospitals, specialty filtering, and ER badge detection.
 - A Quiz Lead Generation System with 12 interactive assessment quizzes for lead capture, scoring, and automated email notifications.
 
@@ -30,7 +30,7 @@ Specific features include:
 
 The backend is built with Express.js, Node.js, and TypeScript, providing a RESTful API for public inquiries and admin CRUD operations. Data persistence uses Drizzle ORM for PostgreSQL (with `MemStorage` for development and `DbStorage` for production with Supabase). Zod schemas are used for validation.
 
-The database schema includes tables for users, jobs, articles (with FAQs), inquiries, page metadata, caregivers, job applications, lead magnets, intake forms, directory data (locations, pages, FAQs, reviews), care type data, and media (videos, podcasts).
+The database schema includes tables for users, jobs, articles (with FAQs), inquiries, page metadata, caregivers, job applications, lead magnets, intake forms, directory data (locations, pages, FAQs, reviews), care type data, media (videos, podcasts), and facility FAQs. The `facilityFaqs` table stores type-specific FAQs for each facility with categories like Admissions, Care, Costs, Visiting, Activities, and more.
 
 Security is multi-layered, incorporating `bcrypt` for password hashing, `express-session` with a PostgreSQL-backed store, `helmet` for security headers, API hardening against common vulnerabilities, anti-spam measures (honeypot, disposable email blocking, server-side CAPTCHA), IP-based geo-blocking, DOMPurify for HTML sanitization, and audit logging. Admin login supports reCAPTCHA. SSN fields have been removed for compliance.
 

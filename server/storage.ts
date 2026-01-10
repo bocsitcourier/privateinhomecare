@@ -24,6 +24,7 @@ import {
   type Podcast, type InsertPodcast, type UpdatePodcast,
   type Facility, type InsertFacility, type UpdateFacility,
   type FacilityReview, type InsertFacilityReview, type UpdateFacilityReview,
+  type FacilityFaq, type InsertFacilityFaq, type UpdateFacilityFaq,
   type QuizDefinition, type InsertQuizDefinition, type UpdateQuizDefinition,
   type QuizQuestion, type InsertQuizQuestion, type UpdateQuizQuestion,
   type QuizLead, type InsertQuizLead, type UpdateQuizLead,
@@ -53,6 +54,7 @@ import {
   podcasts,
   facilities,
   facilityReviews,
+  facilityFaqs,
   quizDefinitions,
   quizQuestions,
   quizLeads,
@@ -230,6 +232,13 @@ export interface IStorage {
   approveFacilityReview(id: string): Promise<FacilityReview | undefined>;
   rejectFacilityReview(id: string): Promise<FacilityReview | undefined>;
   
+  // Facility FAQs
+  listFacilityFaqs(facilityId: string): Promise<FacilityFaq[]>;
+  getFacilityFaq(id: string): Promise<FacilityFaq | undefined>;
+  createFacilityFaq(faq: InsertFacilityFaq): Promise<FacilityFaq>;
+  updateFacilityFaq(id: string, faq: UpdateFacilityFaq): Promise<FacilityFaq | undefined>;
+  deleteFacilityFaq(id: string): Promise<boolean>;
+  
   // Quiz Definitions
   listQuizzes(status?: string, category?: string): Promise<QuizDefinition[]>;
   getQuiz(id: string): Promise<QuizDefinition | undefined>;
@@ -290,6 +299,7 @@ export class MemStorage implements IStorage {
   private podcastsMap: Map<string, Podcast>;
   private facilitiesMap: Map<string, Facility>;
   private facilityReviewsMap: Map<string, FacilityReview>;
+  private facilityFaqsMap: Map<string, FacilityFaq>;
   private quizDefinitionsMap: Map<string, QuizDefinition>;
   private quizQuestionsMap: Map<string, QuizQuestion>;
   private quizLeadsMap: Map<string, QuizLead>;
@@ -320,6 +330,7 @@ export class MemStorage implements IStorage {
     this.podcastsMap = new Map();
     this.facilitiesMap = new Map();
     this.facilityReviewsMap = new Map();
+    this.facilityFaqsMap = new Map();
     this.quizDefinitionsMap = new Map();
     this.quizQuestionsMap = new Map();
     this.quizLeadsMap = new Map();
@@ -1933,6 +1944,44 @@ export class MemStorage implements IStorage {
     return updated;
   }
 
+  // Facility FAQs
+  async listFacilityFaqs(facilityId: string): Promise<FacilityFaq[]> {
+    return Array.from(this.facilityFaqsMap.values())
+      .filter(faq => faq.facilityId === facilityId && faq.isActive === "yes")
+      .sort((a, b) => a.displayOrder - b.displayOrder);
+  }
+
+  async getFacilityFaq(id: string): Promise<FacilityFaq | undefined> {
+    return this.facilityFaqsMap.get(id);
+  }
+
+  async createFacilityFaq(faq: InsertFacilityFaq): Promise<FacilityFaq> {
+    const id = randomUUID();
+    const newFaq: FacilityFaq = {
+      ...faq,
+      id,
+      category: faq.category || null,
+      displayOrder: faq.displayOrder || 0,
+      isActive: faq.isActive || "yes",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.facilityFaqsMap.set(id, newFaq);
+    return newFaq;
+  }
+
+  async updateFacilityFaq(id: string, faq: UpdateFacilityFaq): Promise<FacilityFaq | undefined> {
+    const existing = this.facilityFaqsMap.get(id);
+    if (!existing) return undefined;
+    const updated: FacilityFaq = { ...existing, ...faq, updatedAt: new Date() };
+    this.facilityFaqsMap.set(id, updated);
+    return updated;
+  }
+
+  async deleteFacilityFaq(id: string): Promise<boolean> {
+    return this.facilityFaqsMap.delete(id);
+  }
+
   // Quiz Definitions
   async listQuizzes(status?: string, category?: string): Promise<QuizDefinition[]> {
     let quizzes = Array.from(this.quizDefinitionsMap.values());
@@ -3313,6 +3362,33 @@ export class DbStorage implements IStorage {
   async rejectFacilityReview(id: string): Promise<FacilityReview | undefined> {
     const result = await this.db.update(facilityReviews).set({ status: "rejected", updatedAt: new Date() }).where(eq(facilityReviews.id, id)).returning();
     return result[0];
+  }
+
+  // Facility FAQs
+  async listFacilityFaqs(facilityId: string): Promise<FacilityFaq[]> {
+    return this.db.select().from(facilityFaqs)
+      .where(and(eq(facilityFaqs.facilityId, facilityId), eq(facilityFaqs.isActive, "yes")))
+      .orderBy(facilityFaqs.displayOrder);
+  }
+
+  async getFacilityFaq(id: string): Promise<FacilityFaq | undefined> {
+    const result = await this.db.select().from(facilityFaqs).where(eq(facilityFaqs.id, id));
+    return result[0];
+  }
+
+  async createFacilityFaq(faq: InsertFacilityFaq): Promise<FacilityFaq> {
+    const result = await this.db.insert(facilityFaqs).values(faq).returning();
+    return result[0];
+  }
+
+  async updateFacilityFaq(id: string, faq: UpdateFacilityFaq): Promise<FacilityFaq | undefined> {
+    const result = await this.db.update(facilityFaqs).set({ ...faq, updatedAt: new Date() }).where(eq(facilityFaqs.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteFacilityFaq(id: string): Promise<boolean> {
+    const result = await this.db.delete(facilityFaqs).where(eq(facilityFaqs.id, id)).returning();
+    return result.length > 0;
   }
 
   // Quiz Definitions

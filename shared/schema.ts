@@ -1167,6 +1167,31 @@ export type InsertFacilityReview = z.infer<typeof insertFacilityReviewSchema>;
 export type UpdateFacilityReview = z.infer<typeof updateFacilityReviewSchema>;
 export type FacilityReview = typeof facilityReviews.$inferSelect;
 
+// Facility FAQs
+export const facilityFaqs = pgTable("facility_faqs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  facilityId: varchar("facility_id").notNull().references(() => facilities.id, { onDelete: "cascade" }),
+  question: text("question").notNull(),
+  answer: text("answer").notNull(),
+  category: text("category"), // e.g., "Admissions", "Costs", "Care", "Visiting"
+  displayOrder: integer("display_order").notNull().default(0),
+  isActive: text("is_active").notNull().default("yes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertFacilityFaqSchema = createInsertSchema(facilityFaqs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateFacilityFaqSchema = insertFacilityFaqSchema.partial();
+
+export type InsertFacilityFaq = z.infer<typeof insertFacilityFaqSchema>;
+export type UpdateFacilityFaq = z.infer<typeof updateFacilityFaqSchema>;
+export type FacilityFaq = typeof facilityFaqs.$inferSelect;
+
 // ==========================================
 // Quiz Lead Generation System
 // ==========================================
