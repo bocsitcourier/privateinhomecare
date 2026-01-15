@@ -3029,6 +3029,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Seed endpoint to enrich facilities with Google Places data (no auth for initial run)
+  app.post("/api/seed/enrich-facilities", async (req: Request, res: Response) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 25;
+      const skipEnriched = req.query.skipEnriched !== "false";
+      
+      let facilities = await storage.listFacilities({});
+      
+      if (skipEnriched) {
+        facilities = facilities.filter(f => !f.googlePlaceId);
+      }
+      
+      const totalRemaining = facilities.length;
+      facilities = facilities.slice(0, limit);
+      
+      if (facilities.length === 0) {
+        return res.json({ 
+          message: "No facilities to enrich", 
+          total: 0,
+          remaining: 0,
+          successful: 0,
+          failed: 0 
+        });
+      }
+      
+      console.log(`Starting enrichment for ${facilities.length} facilities (${totalRemaining} remaining)...`);
+      
+      let successful = 0;
+      let failed = 0;
+      const errors: string[] = [];
+      
+      for (const facility of facilities) {
+        const result = await enrichFacility(facility);
+        
+        if (result.success && result.data) {
+          try {
+            await storage.updateFacility(facility.id, {
+              address: result.data.address || facility.address,
+              phone: result.data.phone || facility.phone,
+              website: result.data.website || facility.website,
+              overallRating: result.data.rating || facility.overallRating,
+              googleMapsUrl: result.data.googleMapsUrl,
+              googlePlaceId: result.data.googlePlaceId,
+            });
+            successful++;
+            console.log(`[${successful + failed}/${facilities.length}] Enriched: ${facility.name} - Phone: ${result.data.phone || 'N/A'}`);
+          } catch (updateError) {
+            console.error(`Failed to update facility ${facility.name}:`, updateError);
+            failed++;
+            errors.push(`Update error for ${facility.name}`);
+          }
+        } else {
+          failed++;
+          errors.push(`${facility.name}: ${result.error}`);
+          console.log(`[${successful + failed}/${facilities.length}] Failed: ${facility.name} - ${result.error}`);
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+      
+      res.json({
+        message: `Enrichment complete`,
+        processed: facilities.length,
+        remaining: totalRemaining - facilities.length,
+        successful,
+        failed,
+        errors: errors.slice(0, 10),
+      });
+    } catch (error) {
+      console.error("Error in batch enrichment:", error);
+      res.status(500).json({ message: "Failed to enrich facilities", error: String(error) });
+    }
+  });
+
   // Seed endpoint for Massachusetts facilities
   app.post("/api/seed/facilities", async (req: Request, res: Response) => {
     try {
