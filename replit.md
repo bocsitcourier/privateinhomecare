@@ -30,7 +30,18 @@ Specific features include:
 
 The backend is built with Express.js, Node.js, and TypeScript, providing a RESTful API for public inquiries and admin CRUD operations. Data persistence uses Drizzle ORM for PostgreSQL (with `MemStorage` for development and `DbStorage` for production with Supabase). Zod schemas are used for validation.
 
-The database schema includes tables for users, jobs, articles (with FAQs), inquiries, page metadata, caregivers, job applications, lead magnets, intake forms, directory data (locations, pages, FAQs, reviews), care type data, media (videos, podcasts), and facility FAQs. The `facilityFaqs` table stores type-specific FAQs for each facility with categories like Admissions, Care, Costs, Visiting, Activities, and more.
+The database schema includes tables for users, jobs, articles (with FAQs), inquiries, page metadata, caregivers, job applications, lead magnets, intake forms, directory data (locations, pages, FAQs, reviews), care type data, media (videos, podcasts), and facility FAQs. The `facilityFaqs` table stores personalized FAQs for each of the 796 facilities with categories including Location, Contact, Insurance, Capacity, Quality, Services, Amenities, Care, Admissions, Visits, Safety, and Emergency.
+
+#### Facility FAQ System
+- **Database Table**: `facilityFaqs` with fields: id, facilityId, question, answer, category, displayOrder, isActive, createdAt, updatedAt
+- **Public API**: `GET /api/facilities/:slug/faqs` returns FAQs ordered by displayOrder
+- **Admin API**: 
+  - `POST /api/admin/facilities/:id/faqs` - Create FAQ with Zod validation
+  - `PATCH /api/admin/facility-faqs/:id` - Update FAQ
+  - `DELETE /api/admin/facility-faqs/:id` - Delete FAQ
+- **Seed Endpoint**: `POST /api/seed/facility-faqs` generates 6-10 personalized FAQs per facility using actual facility data (name, location, services, ratings, insurance acceptance, bed capacity)
+- **Frontend Display**: FAQs displayed in accordion format on facility detail pages using Radix UI
+- **Admin Management**: FAQ management dialog in admin facilities page with add/edit/delete functionality
 
 Security is multi-layered, incorporating `bcrypt` for password hashing, `express-session` with a PostgreSQL-backed store, `helmet` for security headers, API hardening against common vulnerabilities, anti-spam measures (honeypot, disposable email blocking, server-side CAPTCHA), IP-based geo-blocking, DOMPurify for HTML sanitization, and audit logging. Admin login supports reCAPTCHA. SSN fields have been removed for compliance.
 
