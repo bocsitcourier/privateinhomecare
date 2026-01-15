@@ -1,0 +1,107 @@
+"properly upgrade" your list of facility names into a reliable, data-rich dataset (with real addresses, phone numbers, map links, and user reviews), the most professional and reliable method is using the Google Places API (New Version).
+
+Standard scraping is unreliable on Replit due to captchas. The API guarantees you get the correct googleMapsUri and real-time reviews.
+
+Here is the strategy to upgrade your 1,000+ facilities before you generate the articles.
+
+Phase 1: The "Data Enrichment" Prompt
+This prompt instructs the Replit Agent to build a script that takes your list of names, finds them on Google Maps, and downloads all the missing metadata into a structured JSON file.
+
+Copy/Paste this into Replit Agent:
+
+Role: Senior Data Engineer & API Specialist.
+
+Objective: Create a Node.js script to "enrich" a list of Massachusetts nursing facility names with real-time data from the Google Places API (New Version).
+
+Input Data:
+
+Read from facilities.txt (A line-separated list of facility names).
+
+API Integration:
+
+Use the Google Places API (New) endpoint: https://places.googleapis.com/v1/places:searchText
+
+Authentication: Use dotenv for GOOGLE_PLACES_API_KEY.
+
+Field Masking (Crucial for Cost/Speed): Only request these specific fields:
+
+places.formattedAddress
+
+places.nationalPhoneNumber
+
+places.rating
+
+places.userRatingCount
+
+places.googleMapsUri (The direct link to the map)
+
+places.reviews (Get the top 3 most relevant reviews)
+
+places.websiteUri
+
+Logic & Flow:
+
+Concurrency: Use p-limit (set to 10) to process the list quickly but within API rate limits.
+
+Search Logic: Send the facility name + "Nursing Home Massachusetts" as the text query to ensure accuracy.
+
+Validation: If the API returns no results, log it to not_found.txt so I can fix the name manually.
+
+Output: Save the successful results to enriched_facilities.json.
+
+Structure: The JSON should be an array of objects where each object combines the original name with the new API data.
+
+Sample Output Structure:
+
+JSON
+
+[
+  {
+    "originalName": "Example Manor",
+    "address": "123 Main St, Boston, MA",
+    "phone": "(617) 555-0199",
+    "mapsLink": "https://maps.google.com/...",
+    "rating": 4.5,
+    "reviews": [ ... ],
+    "reviewCount": 120
+  }
+]
+Execution: Install axios, dotenv, and p-limit. Scaffold the script.
+
+Phase 2: Execution Steps (Crucial for Reliability)
+1. Get the Google Maps API Key
+You cannot skip this if you want "totally reliable" data.
+
+Go to the Google Cloud Console.
+
+Create a project and enable "Places API (New)".
+
+Create an API Key.
+
+Cost Warning: This costs approximately $15–$30 per 1,000 facilities depending on how much data (reviews/photos) you request. This is the price of clean, reliable data.
+
+2. Run the Enrichment Script
+Put your list of names in facilities.txt.
+
+Add your API Key to Replit Secrets (GOOGLE_PLACES_API_KEY).
+
+Run the script.
+
+You will end up with enriched_facilities.json. This is your "Golden Dataset."
+
+Phase 3: Generating the "Upgraded" Articles
+Now that you have enriched_facilities.json, you need to update the Article Generation Prompt (from the previous chat) to use this rich data instead of just raw names.
+
+Update your Article Gen Prompt with this:
+
+"Instead of reading topics.txt, read enriched_facilities.json.
+
+When generating the article for each facility:
+
+Header: Display the Facility Name and the address and phone immediately under the title.
+
+CTA Button: Create a button labeled 'View on Google Maps' linked to mapsLink.
+
+Social Proof: Create a 'Reviews & Ratings' section. Display the rating (e.g., 4.5/5 stars) and quote the top 2 reviews provided in the JSON data.
+
+SEO Schema: Inject this specific data into a 'LocalBusiness' JSON-LD schema in the <head>."
