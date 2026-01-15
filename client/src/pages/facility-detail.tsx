@@ -35,11 +35,28 @@ import {
   Leaf,
   Stethoscope,
   Activity,
-  HelpCircle
+  HelpCircle,
+  ExternalLink,
+  Navigation
 } from "lucide-react";
+import { SiGoogle } from "react-icons/si";
 
 import type { Facility, FacilityReview, FacilityFaq } from "@shared/schema";
 import { getFacilityTypeImage } from "@/constants/facilityTypeMedia";
+
+function generateGoogleMapsUrl(facility: Facility): string {
+  if (facility.googleMapsUrl) return facility.googleMapsUrl;
+  const query = encodeURIComponent(`${facility.name}, ${facility.address}, ${facility.city}, ${facility.state} ${facility.zipCode || ''}`);
+  return `https://www.google.com/maps/search/?api=1&query=${query}`;
+}
+
+function generateGoogleReviewsUrl(facility: Facility): string {
+  if (facility.googlePlaceId) {
+    return `https://search.google.com/local/reviews?placeid=${facility.googlePlaceId}`;
+  }
+  const query = encodeURIComponent(`${facility.name} ${facility.city} MA reviews`);
+  return `https://www.google.com/search?q=${query}`;
+}
 
 const FACILITY_TYPES = [
   { key: "nursing-home", title: "Nursing Home", icon: Building2 },
@@ -288,6 +305,14 @@ export default function FacilityDetailPage() {
                     </a>
                   </Button>
                 )}
+                {!facility.phone && (
+                  <Button size="lg" variant="outline" asChild data-testid="button-google-maps">
+                    <a href={generateGoogleMapsUrl(facility)} target="_blank" rel="noopener noreferrer">
+                      <Navigation className="w-4 h-4 mr-2" />
+                      Get Directions
+                    </a>
+                  </Button>
+                )}
                 {facility.website && (
                   <Button variant="outline" asChild data-testid="link-facility-website">
                     <a href={facility.website} target="_blank" rel="noopener noreferrer">
@@ -296,6 +321,12 @@ export default function FacilityDetailPage() {
                     </a>
                   </Button>
                 )}
+                <Button variant="outline" asChild data-testid="button-google-reviews">
+                  <a href={generateGoogleReviewsUrl(facility)} target="_blank" rel="noopener noreferrer">
+                    <SiGoogle className="w-4 h-4 mr-2" />
+                    View Google Reviews
+                  </a>
+                </Button>
               </div>
             </div>
 
@@ -370,18 +401,39 @@ export default function FacilityDetailPage() {
                   </Card>
                 )}
 
-                {reviews.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Reviews</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {reviews.map(review => (
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between gap-2">
+                    <CardTitle>Reviews</CardTitle>
+                    <Button variant="outline" size="sm" asChild>
+                      <a href={generateGoogleReviewsUrl(facility)} target="_blank" rel="noopener noreferrer">
+                        <SiGoogle className="w-4 h-4 mr-2" />
+                        Google Reviews
+                        <ExternalLink className="w-3 h-3 ml-1" />
+                      </a>
+                    </Button>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {reviews.length > 0 ? (
+                      reviews.map(review => (
                         <ReviewCard key={review.id} review={review} />
-                      ))}
-                    </CardContent>
-                  </Card>
-                )}
+                      ))
+                    ) : (
+                      <div className="text-center py-6">
+                        <Star className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
+                        <p className="text-muted-foreground mb-4">
+                          No reviews yet on our platform. Check Google for more reviews.
+                        </p>
+                        <Button variant="outline" asChild>
+                          <a href={generateGoogleReviewsUrl(facility)} target="_blank" rel="noopener noreferrer">
+                            <SiGoogle className="w-4 h-4 mr-2" />
+                            View Google Reviews
+                            <ExternalLink className="w-3 h-3 ml-2" />
+                          </a>
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
 
               <div className="space-y-4">

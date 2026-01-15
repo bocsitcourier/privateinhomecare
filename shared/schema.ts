@@ -1093,6 +1093,10 @@ export const facilities = pgTable("facilities", {
   status: text("status").notNull().default("draft"), // draft, published
   publishedAt: timestamp("published_at"),
   
+  // Google Maps integration
+  googleMapsUrl: text("google_maps_url"), // Direct link to Google Maps/Reviews
+  googlePlaceId: text("google_place_id"), // Google Place ID for reviews
+  
   // Source tracking (for imported data)
   dataSource: text("data_source"), // e.g., "massgis", "medicare", "manual"
   externalId: text("external_id"), // ID from external data source
