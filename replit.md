@@ -43,6 +43,20 @@ The database schema includes tables for users, jobs, articles (with FAQs), inqui
 - **Frontend Display**: FAQs displayed in accordion format on facility detail pages using Radix UI
 - **Admin Management**: FAQ management dialog in admin facilities page with add/edit/delete functionality
 
+#### Smart Facility Data Synchronization
+- **Change Detection**: Uses MD5 hashing (`dataHash` field) to detect when facility data has changed from Google Places
+- **Regeneration Tracking**: `needsRegeneration` flag marks facilities needing content updates after data changes
+- **Business Status**: Tracks Google Places `businessStatus` (OPERATIONAL, CLOSED_TEMPORARILY, CLOSED_PERMANENTLY)
+- **Closure Detection**: `isClosed` flag automatically set to "yes" for permanently closed facilities
+- **Data Freshness**: `lastEnrichedAt` timestamp tracks when facility was last synced with Google Places
+- **Admin API**:
+  - `GET /api/admin/facilities/stats` - Data freshness statistics (enriched count, stale data, closed facilities)
+  - `GET /api/admin/facilities/needs-regeneration` - List facilities needing content updates
+  - `POST /api/admin/facilities/:id/mark-regenerated` - Clear regeneration flag after updating content
+  - `POST /api/admin/facilities/:id/enrich` - Refresh single facility from Google Places with smart change detection
+- **Enrichment Logic**: Only updates database and marks for regeneration when data actually changes (hash comparison)
+- **Frontend Features**: Data Freshness card in admin, closure badges, refresh buttons, "Needs Update" indicators
+
 Security is multi-layered, incorporating `bcrypt` for password hashing, `express-session` with a PostgreSQL-backed store, `helmet` for security headers, API hardening against common vulnerabilities, anti-spam measures (honeypot, disposable email blocking, server-side CAPTCHA), IP-based geo-blocking, DOMPurify for HTML sanitization, and audit logging. Admin login supports reCAPTCHA. SSN fields have been removed for compliance.
 
 Content management supports draft/published states and uses TipTap for rich text editing. The platform includes a lead magnet system, a 4-step job application process, a dedicated consultation system, and a comprehensive health care plan assessment intake form. A dual-purpose HIPAA NPP and consumer Privacy Policy is implemented. Automated email notifications via Resend API are configured for inquiries, applications, and referrals.
