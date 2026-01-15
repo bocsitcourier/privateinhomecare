@@ -51,6 +51,7 @@ const FacilityDirectoryPage = lazy(() => import("@/pages/facility-directory"));
 const FacilityDetailPage = lazy(() => import("@/pages/facility-detail"));
 const QuizPage = lazy(() => import("@/pages/quiz"));
 const AdminQuizLeads = lazy(() => import("@/pages/admin/quiz-leads"));
+const AdminArticles = lazy(() => import("@/pages/admin/articles"));
 const AgingResourcesPage = lazy(() => import("@/pages/aging-resources"));
 const FindHospitalPage = lazy(() => import("@/pages/find-hospital"));
 
@@ -104,6 +105,7 @@ function Router() {
         <Route path="/refer-a-friend" component={ReferAFriendPage} />
         <Route path="/quiz/:slug" component={QuizPage} />
         <Route path="/admin/quiz-leads" component={AdminQuizLeads} />
+        <Route path="/admin/articles" component={AdminArticles} />
         <Route path="/admin/inquiries" component={AdminInquiries} />
         <Route path="/admin/applications" component={AdminApplications} />
         <Route path="/admin/referrals" component={AdminReferrals} />
