@@ -3402,19 +3402,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return allImages[updatedCount % allImages.length];
       };
       
-      // Update each article
-      for (const article of articles) {
+      // Use parallel processing for faster image updates
+      const imagePromises = articles.map(async (article) => {
         const imageUrl = findBestImage(article.title, article.category || "");
-        
-        await storage.updateArticle(article.id, {
-          heroImageUrl: imageUrl,
-        });
-        updatedCount++;
-      }
+        await storage.updateArticle(article.id, { heroImageUrl: imageUrl });
+        return 1;
+      });
+      
+      const results = await Promise.all(imagePromises);
+      const finalCount = results.reduce((sum, val) => sum + val, 0);
       
       res.json({ 
-        message: `Successfully updated ${updatedCount} articles with unique senior-focused images`,
-        articlesUpdated: updatedCount,
+        message: `Successfully updated ${finalCount} articles with unique senior-focused images`,
+        articlesUpdated: finalCount,
         totalImages: allImages.length
       });
     } catch (error) {
@@ -3430,9 +3430,126 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const CONSULTATION_LINK = "https://www.privateinhomecaregiver.com/consultation";
       const BASE_URL = "https://www.privateinhomecaregiver.com";
       
+      // Related article slugs for internal linking
+      const relatedArticles: Record<string, string[]> = {
+        nutrition: ["create-medication-management-system", "importance-foot-care-seniors", "hydration-tips-elderly"],
+        medication: ["nutrition-guide-seniors-healthy-eating", "handle-medical-appointments-seniors", "regular-health-screenings-seniors"],
+        dementia: ["brain-games-cognitive-health", "create-meaningful-activities-seniors", "understanding-dementia-care-guide-families"],
+        safety: ["home-safety-checklist-seniors-fall-prevention", "preventing-caregiver-burnout-self-care", "elder-abuse-prevention"],
+        caregiver: ["preventing-caregiver-burnout-self-care", "home-health-aides-vs-cnas", "complete-guide-in-home-care-massachusetts"],
+        exercise: ["nutrition-guide-seniors-healthy-eating", "brain-games-cognitive-health", "importance-foot-care-seniors"],
+        hospice: ["advance-care-planning", "grief-loss-seniors", "hospital-home-transitions"],
+        default: ["complete-guide-in-home-care-massachusetts", "preventing-caregiver-burnout-self-care", "home-safety-checklist-seniors-fall-prevention"]
+      };
+      
+      // Generate direct answer based on topic
+      const getDirectAnswer = (title: string): string => {
+        const t = title.toLowerCase();
+        if (t.includes("nutrition") || t.includes("eating")) return "Senior nutrition focuses on meeting the unique dietary needs of older adults, including increased protein for muscle maintenance, calcium and vitamin D for bone health, and adequate hydration. A balanced diet with colorful fruits and vegetables, lean proteins, whole grains, and healthy fats supports overall health and helps manage chronic conditions.";
+        if (t.includes("medication")) return "Effective medication management for seniors involves using pill organizers, setting reminders, maintaining an updated medication list, understanding potential drug interactions, and communicating regularly with healthcare providers. Proper medication management prevents dangerous errors and ensures treatments work as intended.";
+        if (t.includes("dementia") || t.includes("alzheimer")) return "Dementia care involves creating safe, structured environments, using clear communication techniques, maintaining consistent routines, and providing meaningful activities that match the person's abilities. Professional caregivers trained in dementia care can help families navigate the unique challenges of memory-related conditions.";
+        if (t.includes("safety") || t.includes("fall")) return "Home safety for seniors includes removing tripping hazards, installing grab bars in bathrooms, ensuring adequate lighting, securing loose rugs, and organizing frequently used items within easy reach. These modifications can reduce fall risk by up to 50% and support safe aging in place.";
+        if (t.includes("caregiver") || t.includes("burnout")) return "Caregiver burnout prevention requires regular respite breaks, maintaining personal health and social connections, setting realistic expectations, accepting help from others, and recognizing early warning signs of stress. Support groups and professional resources provide essential emotional support for family caregivers.";
+        if (t.includes("exercise") || t.includes("physical")) return "Safe exercise for seniors includes walking, swimming, chair exercises, gentle stretching, and balance training. Regular physical activity improves strength, flexibility, balance, and cognitive function while reducing the risk of falls and chronic disease progression.";
+        if (t.includes("hospice") || t.includes("palliative")) return "Hospice and palliative care focus on comfort, dignity, and quality of life for those with serious illness. Hospice is for terminal conditions with a prognosis of six months or less, while palliative care can be provided alongside curative treatment at any stage of illness.";
+        return "Quality in-home care helps Massachusetts seniors maintain independence and dignity while aging in place. Professional caregivers provide personalized assistance with daily activities, medication reminders, companionship, and specialized care for conditions like dementia, adapting services as needs change.";
+      };
+      
+      // Generate FAQ items based on topic
+      const getFaqItems = (title: string): Array<{question: string; answer: string}> => {
+        const t = title.toLowerCase();
+        if (t.includes("nutrition") || t.includes("eating")) return [
+          { question: "What are the most important nutrients for seniors?", answer: "Key nutrients for seniors include protein for muscle maintenance, calcium and vitamin D for bone health, B12 for energy and cognitive function, fiber for digestive health, and omega-3 fatty acids for heart and brain health." },
+          { question: "How can I encourage a senior with poor appetite to eat?", answer: "Offer smaller, more frequent meals; make food visually appealing; include favorite foods; provide companionship during meals; address any dental or swallowing issues; and consult a healthcare provider if appetite loss persists." },
+          { question: "Should seniors take nutritional supplements?", answer: "While whole foods should be the primary nutrition source, supplements like vitamin D, B12, and calcium may be beneficial for seniors who cannot meet needs through diet alone. Always consult a healthcare provider before starting supplements." }
+        ];
+        if (t.includes("medication")) return [
+          { question: "How can I help a senior manage multiple medications?", answer: "Use a weekly pill organizer, create a medication schedule, set reminders or alarms, maintain an updated medication list for all healthcare appointments, and consider professional medication management support from a caregiver or pharmacist." },
+          { question: "What are signs of medication problems in seniors?", answer: "Watch for confusion, dizziness, falls, changes in appetite or sleep, unusual fatigue, and behavioral changes. These could indicate drug interactions, side effects, or incorrect dosing requiring immediate healthcare attention." },
+          { question: "How often should medication lists be reviewed?", answer: "Medication lists should be reviewed at every healthcare appointment, when any new medication is added, after any hospitalization, and at least annually with a pharmacist for a comprehensive medication review." }
+        ];
+        if (t.includes("dementia") || t.includes("alzheimer")) return [
+          { question: "What are early warning signs of dementia?", answer: "Early signs include memory loss affecting daily life, difficulty with familiar tasks, confusion about time or place, trouble with words, misplacing items, poor judgment, social withdrawal, and mood or personality changes." },
+          { question: "How can I communicate effectively with someone who has dementia?", answer: "Use simple, clear sentences; maintain eye contact; speak slowly and calmly; avoid arguing or correcting; offer limited choices; use visual cues; and focus on emotions rather than facts when the person is confused." },
+          { question: "What activities are beneficial for people with dementia?", answer: "Beneficial activities include music therapy, looking at photo albums, simple crafts, gentle exercise, gardening, sorting tasks, and reminiscence activities. Activities should match the person's current abilities and interests." }
+        ];
+        if (t.includes("safety") || t.includes("fall")) return [
+          { question: "What are the most important home modifications for senior safety?", answer: "Key modifications include installing grab bars in bathrooms, improving lighting throughout the home, removing throw rugs and tripping hazards, adding handrails on stairs, and ensuring clear pathways for mobility aids." },
+          { question: "How can seniors prevent falls at home?", answer: "Prevent falls by wearing non-slip footwear, using assistive devices as recommended, keeping frequently used items within reach, exercising regularly to maintain strength and balance, and having regular vision and hearing checkups." },
+          { question: "When should a senior consider hiring in-home care for safety?", answer: "Consider in-home care when a senior has experienced falls, has difficulty with daily activities, shows confusion about medications, struggles with meal preparation, or when family caregivers need support with supervision and care." }
+        ];
+        // Default FAQs
+        return [
+          { question: "What is the difference between home care and home health care?", answer: "Home care provides non-medical assistance with daily activities like bathing, dressing, and meal preparation. Home health care involves medical services like wound care and physical therapy, typically ordered by a physician and covered by Medicare." },
+          { question: "How do I know if my loved one needs in-home care?", answer: "Signs include difficulty with daily activities, poor nutrition or hygiene, medication errors, increased falls, social isolation, caregiver burnout, or the senior expressing feeling overwhelmed managing independently." },
+          { question: "What questions should I ask when choosing a home care provider?", answer: "Ask about caregiver screening and training, supervision practices, backup plans, communication protocols, costs, insurance acceptance, and how care plans are developed and adjusted as needs change." }
+        ];
+      };
+      
       // Article content templates by topic keywords
-      const generateArticleContent = (title: string, category: string): string => {
+      const generateArticleContent = (title: string, category: string, heroImageUrl?: string): string => {
         const titleLower = title.toLowerCase();
+        const directAnswer = getDirectAnswer(title);
+        const faqItems = getFaqItems(title);
+        const imageUrl = heroImageUrl || "/attached_assets/stock_images/happy_elderly_senior.jpg";
+        
+        // Determine related articles for internal linking
+        let relatedSlugs = relatedArticles.default;
+        for (const [key, slugs] of Object.entries(relatedArticles)) {
+          if (titleLower.includes(key)) {
+            relatedSlugs = slugs;
+            break;
+          }
+        }
+        
+        // H1, Hero Image, and Direct Answer block
+        const headerBlock = `<h1>${title}</h1>
+<img src="${imageUrl}" alt="${title}" class="hero-image" width="800" height="450" loading="eager" />
+<div class="direct-answer" itemscope itemtype="https://schema.org/Answer">
+<p itemprop="text"><strong>${directAnswer}</strong></p>
+</div>
+`;
+
+        // Related articles section
+        const relatedArticlesSection = `
+<h2>Related Articles</h2>
+<ul>
+${relatedSlugs.map(slug => `<li><a href="${BASE_URL}/articles/${slug}">${slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</a></li>`).join('\n')}
+</ul>
+`;
+
+        // Schema-marked FAQ section
+        const faqSection = `
+<h2>Frequently Asked Questions</h2>
+<div itemscope itemtype="https://schema.org/FAQPage">
+${faqItems.map(faq => `<div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+<h3 itemprop="name">${faq.question}</h3>
+<div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+<p itemprop="text">${faq.answer}</p>
+</div>
+</div>`).join('\n')}
+</div>
+`;
+
+        // JSON-LD FAQ Schema
+        const faqJsonLd = `
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+${faqItems.map(faq => `    {
+      "@type": "Question",
+      "name": "${faq.question.replace(/"/g, '\\"')}",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "${faq.answer.replace(/"/g, '\\"')}"
+      }
+    }`).join(',\n')}
+  ]
+}
+</script>
+`;
         
         // Common sections that appear in all articles - extended for 2000+ word count
         const ctaSection = `
@@ -3469,7 +3586,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Nutrition articles
         if (titleLower.includes("nutrition") || titleLower.includes("eating") || titleLower.includes("diet") || titleLower.includes("food") || titleLower.includes("meal")) {
-          return `
+          return `${headerBlock}
 <p>Proper nutrition plays a vital role in maintaining health and quality of life for seniors. As we age, our bodies undergo significant changes that affect how we process and absorb nutrients, making thoughtful meal planning more important than ever. This comprehensive guide explores the essential aspects of senior nutrition, providing practical strategies for maintaining optimal health through dietary choices.</p>
 
 <h2>Understanding Nutritional Needs in Older Adults</h2>
@@ -3518,12 +3635,18 @@ ${ctaSection}
 <li>Professional caregivers can provide valuable meal preparation and monitoring support</li>
 <li>Supplements should complement, not replace, a balanced diet</li>
 </ul>
+
+${relatedArticlesSection}
+
+${faqSection}
+
+${faqJsonLd}
 `;
         }
         
         // Medication management articles
         if (titleLower.includes("medication") || titleLower.includes("medicine") || titleLower.includes("prescription") || titleLower.includes("drug")) {
-          return `
+          return `${headerBlock}
 <p>Managing medications effectively is one of the most critical aspects of senior healthcare. With the average older adult taking multiple prescription medications daily, proper medication management becomes essential for preventing dangerous drug interactions, ensuring treatment effectiveness, and maintaining overall health. This guide provides comprehensive strategies for creating and maintaining a safe, effective medication management system.</p>
 
 <h2>Understanding the Importance of Medication Management</h2>
@@ -3573,12 +3696,18 @@ ${ctaSection}
 <li>Store medications properly and dispose of expired medications safely</li>
 <li>Professional caregivers can provide valuable medication management support</li>
 </ul>
+
+${relatedArticlesSection}
+
+${faqSection}
+
+${faqJsonLd}
 `;
         }
 
         // Caregiver burnout/support articles
         if (titleLower.includes("caregiver") || titleLower.includes("burnout") || titleLower.includes("self-care") || titleLower.includes("caring for")) {
-          return `
+          return `${headerBlock}
 <p>Caring for an aging loved one is one of the most meaningful acts of love, yet it can also be one of the most demanding experiences a person faces. Caregiver burnout is a real and serious condition that affects millions of family caregivers nationwide. Understanding the signs of burnout and implementing effective self-care strategies is essential for maintaining both your health and your ability to provide quality care.</p>
 
 <h2>Understanding Caregiver Burnout</h2>
@@ -3629,12 +3758,18 @@ ${ctaSection}
 <li>Respite care provides essential breaks that benefit both caregivers and care recipients</li>
 <li>Professional support services can significantly reduce caregiver stress</li>
 </ul>
+
+${relatedArticlesSection}
+
+${faqSection}
+
+${faqJsonLd}
 `;
         }
 
         // Dementia/Alzheimer's articles
         if (titleLower.includes("dementia") || titleLower.includes("alzheimer") || titleLower.includes("memory") || titleLower.includes("cognitive")) {
-          return `
+          return `${headerBlock}
 <p>Dementia affects millions of families across America, bringing unique challenges that require specialized knowledge, patience, and compassion. Whether you're newly facing a dementia diagnosis or have been providing care for some time, understanding the progression of the disease and effective care strategies can significantly improve quality of life for both the person with dementia and their caregivers.</p>
 
 <h2>Understanding Dementia and Its Progression</h2>
@@ -3685,12 +3820,18 @@ ${ctaSection}
 <li>Daily routines and meaningful activities support quality of life</li>
 <li>Early planning allows for involvement in future care decisions</li>
 </ul>
+
+${relatedArticlesSection}
+
+${faqSection}
+
+${faqJsonLd}
 `;
         }
 
         // Safety/fall prevention articles
         if (titleLower.includes("safety") || titleLower.includes("fall") || titleLower.includes("prevent") || titleLower.includes("accident")) {
-          return `
+          return `${headerBlock}
 <p>Falls are the leading cause of injury-related death and hospitalization among seniors. Each year, one in four adults over 65 experiences a fall, with many resulting in serious injuries such as hip fractures and head trauma. The good news is that most falls are preventable through proactive safety measures, environmental modifications, and health management.</p>
 
 <h2>Understanding Fall Risk Factors</h2>
@@ -3741,12 +3882,18 @@ ${ctaSection}
 <li>Assistive devices must be properly fitted and used correctly</li>
 <li>A comprehensive fall prevention plan addresses multiple risk factors</li>
 </ul>
+
+${relatedArticlesSection}
+
+${faqSection}
+
+${faqJsonLd}
 `;
         }
 
         // Exercise/physical activity articles
         if (titleLower.includes("exercise") || titleLower.includes("physical") || titleLower.includes("fitness") || titleLower.includes("activity") || titleLower.includes("mobility")) {
-          return `
+          return `${headerBlock}
 <p>Regular physical activity is one of the most powerful tools for maintaining health, independence, and quality of life in older adults. Research consistently shows that exercise benefits seniors in numerous ways, from strengthening muscles and bones to improving mood and cognitive function. The best part? It's never too late to start, and even small amounts of activity provide meaningful benefits.</p>
 
 <h2>The Benefits of Exercise for Seniors</h2>
@@ -3797,12 +3944,18 @@ ${ctaSection}
 <li>Social support and enjoyable activities improve exercise consistency</li>
 <li>Increasing daily movement supplements formal exercise</li>
 </ul>
+
+${relatedArticlesSection}
+
+${faqSection}
+
+${faqJsonLd}
 `;
         }
 
         // Sleep articles
         if (titleLower.includes("sleep") || titleLower.includes("insomnia") || titleLower.includes("rest")) {
-          return `
+          return `${headerBlock}
 <p>Quality sleep is essential for health and wellbeing at every age, but sleep patterns often change as we get older. Many seniors experience difficulty falling asleep, staying asleep, or feeling rested after sleep. Understanding these changes and implementing effective strategies can significantly improve sleep quality and overall health for older adults.</p>
 
 <h2>How Sleep Changes with Age</h2>
@@ -3853,12 +4006,18 @@ ${ctaSection}
 <li>Daytime habits including exercise and light exposure affect nighttime sleep</li>
 <li>Professional help is available for persistent sleep problems</li>
 </ul>
+
+${relatedArticlesSection}
+
+${faqSection}
+
+${faqJsonLd}
 `;
         }
 
         // Hospice/palliative/end of life articles
         if (titleLower.includes("hospice") || titleLower.includes("palliative") || titleLower.includes("end of life") || titleLower.includes("terminal")) {
-          return `
+          return `${headerBlock}
 <p>When facing a serious illness, understanding the options for comfort-focused care helps families make informed decisions that align with their values and goals. Hospice and palliative care offer specialized support that prioritizes quality of life and comfort, yet many families are uncertain about what these services entail and when to consider them.</p>
 
 <h2>Understanding Palliative Care</h2>
@@ -3908,11 +4067,17 @@ ${ctaSection}
 <li>Hospice is typically covered by Medicare and most insurance</li>
 <li>Additional in-home care can complement hospice services</li>
 </ul>
+
+${relatedArticlesSection}
+
+${faqSection}
+
+${faqJsonLd}
 `;
         }
 
         // Default general senior care article for any topic
-        return `
+        return `${headerBlock}
 <p>Caring for aging loved ones requires knowledge, compassion, and access to the right resources. Whether you're a family caregiver or helping a senior navigate their care options, understanding the landscape of senior care helps ensure the best possible outcomes. This comprehensive guide provides essential information for families navigating the journey of elder care.</p>
 
 <h2>Understanding Senior Care Needs</h2>
@@ -3963,22 +4128,27 @@ ${ctaSection}
 <li>Quality care providers demonstrate proper credentials and clear communication</li>
 <li>Advance planning prepares families for future care decisions</li>
 </ul>
+
+${relatedArticlesSection}
+
+${faqSection}
+
+${faqJsonLd}
 `;
       };
       
-      let updatedCount = 0;
-      
-      // Update each article with generated content
-      for (const article of articles) {
+      // Use parallel processing for faster updates
+      const updatePromises = articles.map(async (article) => {
         const content = generateArticleContent(article.title, article.category || "");
-        
         if (content) {
-          await storage.updateArticle(article.id, {
-            body: content,
-          });
-          updatedCount++;
+          await storage.updateArticle(article.id, { body: content });
+          return 1;
         }
-      }
+        return 0;
+      });
+      
+      const results = await Promise.all(updatePromises);
+      const updatedCount = results.reduce((sum: number, val: number) => sum + val, 0);
       
       res.json({ 
         message: `Successfully generated content for ${updatedCount} articles`,
