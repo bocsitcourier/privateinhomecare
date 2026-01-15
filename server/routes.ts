@@ -45,6 +45,7 @@ import {
 } from "./api-hardening";
 import { comprehensiveFacilities } from "./seed-facilities-data";
 import { hospitalSeedData } from "./seed-hospitals-data";
+import { enrichFacility, enrichFacilitiesBatch, type EnrichmentResult } from "./googlePlaces";
 
 declare module 'express-session' {
   interface SessionData {
@@ -2926,6 +2927,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting FAQ:", error);
       res.status(500).json({ message: "Failed to delete FAQ" });
+    }
+  });
+
+  // Admin: Enrich single facility with Google Places data
+  app.post("/api/admin/facilities/:id/enrich", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const facility = await storage.getFacility(req.params.id);
+      if (!facility) {
+        return res.status(404).json({ message: "Facility not found" });
+      }
+      
+      const result = await enrichFacility(facility);
+      
+      if (result.success && result.data) {
+        const updated = await storage.updateFacility(facility.id, {
+          address: result.data.address || facility.address,
+          phone: result.data.phone || facility.phone,
+          website: result.data.website || facility.website,
+          overallRating: result.data.rating || facility.overallRating,
+          googleMapsUrl: result.data.googleMapsUrl,
+          googlePlaceId: result.data.googlePlaceId,
+        });
+        res.json({ success: true, facility: updated, enrichment: result, reviewCount: result.data.reviewCount });
+      } else {
+        res.json({ success: false, error: result.error, facility });
+      }
+    } catch (error) {
+      console.error("Error enriching facility:", error);
+      res.status(500).json({ message: "Failed to enrich facility" });
+    }
+  });
+
+  // Admin: Enrich all facilities with Google Places data (batch)
+  app.post("/api/admin/facilities/enrich-all", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const skipEnriched = req.query.skipEnriched !== "false";
+      
+      let facilities = await storage.listFacilities({});
+      
+      if (skipEnriched) {
+        facilities = facilities.filter(f => !f.googlePlaceId);
+      }
+      
+      facilities = facilities.slice(0, limit);
+      
+      if (facilities.length === 0) {
+        return res.json({ 
+          message: "No facilities to enrich", 
+          total: 0,
+          successful: 0,
+          failed: 0 
+        });
+      }
+      
+      console.log(`Starting enrichment for ${facilities.length} facilities...`);
+      
+      const results: EnrichmentResult[] = [];
+      let successful = 0;
+      let failed = 0;
+      
+      for (const facility of facilities) {
+        const result = await enrichFacility(facility);
+        results.push(result);
+        
+        if (result.success && result.data) {
+          try {
+            await storage.updateFacility(facility.id, {
+              address: result.data.address || facility.address,
+              phone: result.data.phone || facility.phone,
+              website: result.data.website || facility.website,
+              overallRating: result.data.rating || facility.overallRating,
+              googleMapsUrl: result.data.googleMapsUrl,
+              googlePlaceId: result.data.googlePlaceId,
+            });
+            successful++;
+            console.log(`[${successful + failed}/${facilities.length}] Enriched: ${facility.name}`);
+          } catch (updateError) {
+            console.error(`Failed to update facility ${facility.name}:`, updateError);
+            failed++;
+          }
+        } else {
+          failed++;
+          console.log(`[${successful + failed}/${facilities.length}] Failed: ${facility.name} - ${result.error}`);
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+      
+      res.json({
+        message: `Enrichment complete`,
+        total: facilities.length,
+        successful,
+        failed,
+        results: results.slice(0, 10),
+      });
+    } catch (error) {
+      console.error("Error in batch enrichment:", error);
+      res.status(500).json({ message: "Failed to enrich facilities" });
     }
   });
 
