@@ -108,7 +108,7 @@ function FacilityCard({ facility, distance }: FacilityCardProps) {
   const Icon = typeInfo?.icon || Building2;
 
   return (
-    <Card className="hover-elevate transition-all">
+    <Card className="hover-elevate transition-all" data-testid={`card-facility-${facility.id}`}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div>
