@@ -31,6 +31,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
   Building2,
   MapPin,
   Phone,
@@ -44,8 +50,9 @@ import {
   XCircle,
   Clock,
   Search,
+  HelpCircle,
 } from "lucide-react";
-import type { Facility } from "@shared/schema";
+import type { Facility, FacilityFaq } from "@shared/schema";
 
 const facilityTypeLabels: Record<string, string> = {
   "nursing-home": "Nursing Home",
@@ -59,6 +66,7 @@ export default function FacilitiesPage() {
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [isManagingFaqs, setIsManagingFaqs] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -426,13 +434,21 @@ export default function FacilitiesPage() {
                 </div>
               )}
 
-              <div className="flex gap-2 pt-4">
+              <div className="flex flex-wrap gap-2 pt-4">
                 <Button
                   onClick={() => setIsEditing(true)}
                   data-testid="button-edit-facility"
                 >
                   <Pencil className="h-4 w-4 mr-2" />
                   Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsManagingFaqs(true)}
+                  data-testid="button-manage-faqs"
+                >
+                  <HelpCircle className="h-4 w-4 mr-2" />
+                  Manage FAQs
                 </Button>
                 {selectedFacility.status === "draft" && (
                   <Button
@@ -469,6 +485,14 @@ export default function FacilitiesPage() {
         }}
         facility={isEditing ? selectedFacility : null}
       />
+
+      {selectedFacility && (
+        <FaqManagementDialog
+          open={isManagingFaqs}
+          onClose={() => setIsManagingFaqs(false)}
+          facility={selectedFacility}
+        />
+      )}
     </AdminLayout>
   );
 }
@@ -1111,6 +1135,276 @@ function FacilityFormDialog({ open, onClose, facility }: FacilityFormDialogProps
             </Button>
           </div>
         </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+interface FaqManagementDialogProps {
+  open: boolean;
+  onClose: () => void;
+  facility: Facility;
+}
+
+const faqCategories = [
+  "Location",
+  "Contact",
+  "Insurance",
+  "Capacity",
+  "Quality",
+  "Services",
+  "Amenities",
+  "Care",
+  "Admissions",
+  "Visits",
+  "Safety",
+  "Emergency",
+  "General",
+];
+
+function FaqManagementDialog({ open, onClose, facility }: FaqManagementDialogProps) {
+  const { toast } = useToast();
+  const [isAddingFaq, setIsAddingFaq] = useState(false);
+  const [editingFaq, setEditingFaq] = useState<FacilityFaq | null>(null);
+  const [faqForm, setFaqForm] = useState({
+    question: "",
+    answer: "",
+    category: "General",
+    displayOrder: 0,
+  });
+
+  const { data: faqs, isLoading } = useQuery<FacilityFaq[]>({
+    queryKey: ["/api/facilities", facility.slug, "faqs"],
+    queryFn: async () => {
+      const res = await fetch(`/api/facilities/${facility.slug}/faqs`);
+      if (!res.ok) throw new Error("Failed to fetch FAQs");
+      return res.json();
+    },
+    enabled: open,
+  });
+
+  const createFaqMutation = useMutation({
+    mutationFn: (data: { question: string; answer: string; category: string; displayOrder: number }) =>
+      apiRequest("POST", `/api/admin/facilities/${facility.id}/faqs`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/facilities", facility.slug, "faqs"] });
+      toast({ title: "Success", description: "FAQ created successfully." });
+      setIsAddingFaq(false);
+      resetForm();
+    },
+    onError: () => {
+      toast({ variant: "destructive", title: "Error", description: "Failed to create FAQ." });
+    },
+  });
+
+  const updateFaqMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { question: string; answer: string; category: string; displayOrder: number } }) =>
+      apiRequest("PATCH", `/api/admin/facility-faqs/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/facilities", facility.slug, "faqs"] });
+      toast({ title: "Success", description: "FAQ updated successfully." });
+      setEditingFaq(null);
+      resetForm();
+    },
+    onError: () => {
+      toast({ variant: "destructive", title: "Error", description: "Failed to update FAQ." });
+    },
+  });
+
+  const deleteFaqMutation = useMutation({
+    mutationFn: (id: string) => apiRequest("DELETE", `/api/admin/facility-faqs/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/facilities", facility.slug, "faqs"] });
+      toast({ title: "Success", description: "FAQ deleted successfully." });
+    },
+    onError: () => {
+      toast({ variant: "destructive", title: "Error", description: "Failed to delete FAQ." });
+    },
+  });
+
+  const resetForm = () => {
+    setFaqForm({ question: "", answer: "", category: "General", displayOrder: 0 });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingFaq) {
+      updateFaqMutation.mutate({ id: editingFaq.id, data: faqForm });
+    } else {
+      createFaqMutation.mutate(faqForm);
+    }
+  };
+
+  const handleEdit = (faq: FacilityFaq) => {
+    setEditingFaq(faq);
+    setFaqForm({
+      question: faq.question,
+      answer: faq.answer,
+      category: faq.category || "General",
+      displayOrder: faq.displayOrder || 0,
+    });
+    setIsAddingFaq(true);
+  };
+
+  const handleCancel = () => {
+    setIsAddingFaq(false);
+    setEditingFaq(null);
+    resetForm();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <HelpCircle className="h-5 w-5" />
+            Manage FAQs - {facility.name}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <p className="text-sm text-muted-foreground">
+              {faqs?.length || 0} FAQs for this facility
+            </p>
+            {!isAddingFaq && (
+              <Button onClick={() => setIsAddingFaq(true)} data-testid="button-add-faq">
+                <Plus className="h-4 w-4 mr-2" />
+                Add FAQ
+              </Button>
+            )}
+          </div>
+
+          {isAddingFaq && (
+            <Card>
+              <CardContent className="pt-4">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="faq-question">Question *</Label>
+                    <Input
+                      id="faq-question"
+                      value={faqForm.question}
+                      onChange={(e) => setFaqForm({ ...faqForm, question: e.target.value })}
+                      placeholder="Enter the question"
+                      required
+                      data-testid="input-faq-question"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="faq-answer">Answer *</Label>
+                    <Textarea
+                      id="faq-answer"
+                      value={faqForm.answer}
+                      onChange={(e) => setFaqForm({ ...faqForm, answer: e.target.value })}
+                      placeholder="Enter the answer"
+                      rows={4}
+                      required
+                      data-testid="input-faq-answer"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="faq-category">Category</Label>
+                      <Select
+                        value={faqForm.category}
+                        onValueChange={(value) => setFaqForm({ ...faqForm, category: value })}
+                      >
+                        <SelectTrigger data-testid="select-faq-category">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {faqCategories.map((cat) => (
+                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="faq-display-order">Display Order</Label>
+                      <Input
+                        id="faq-display-order"
+                        type="number"
+                        value={faqForm.displayOrder}
+                        onChange={(e) => setFaqForm({ ...faqForm, displayOrder: parseInt(e.target.value) || 0 })}
+                        placeholder="0"
+                        data-testid="input-faq-display-order"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button type="button" variant="outline" onClick={handleCancel}>
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={createFaqMutation.isPending || updateFaqMutation.isPending}
+                      data-testid="button-save-faq"
+                    >
+                      {createFaqMutation.isPending || updateFaqMutation.isPending
+                        ? "Saving..."
+                        : editingFaq
+                        ? "Update FAQ"
+                        : "Create FAQ"}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
+
+          {isLoading ? (
+            <div className="text-center py-8 text-muted-foreground">Loading FAQs...</div>
+          ) : faqs && faqs.length > 0 ? (
+            <Accordion type="single" collapsible className="w-full">
+              {faqs.map((faq, index) => (
+                <AccordionItem key={faq.id} value={faq.id}>
+                  <AccordionTrigger className="text-left">
+                    <div className="flex items-center gap-2 flex-1">
+                      <span className="text-muted-foreground text-sm">{index + 1}.</span>
+                      <span className="flex-1">{faq.question}</span>
+                      {faq.category && (
+                        <Badge variant="outline" className="ml-2">{faq.category}</Badge>
+                      )}
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">{faq.answer}</p>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEdit(faq)}
+                          data-testid={`button-edit-faq-${faq.id}`}
+                        >
+                          <Pencil className="h-3 w-3 mr-1" />
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            if (confirm("Are you sure you want to delete this FAQ?")) {
+                              deleteFaqMutation.mutate(faq.id);
+                            }
+                          }}
+                          data-testid={`button-delete-faq-${faq.id}`}
+                        >
+                          <Trash2 className="h-3 w-3 mr-1 text-destructive" />
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground border rounded-lg">
+              No FAQs yet. Click "Add FAQ" to create one.
+            </div>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
