@@ -46,6 +46,12 @@ import {
 import { comprehensiveFacilities } from "./seed-facilities-data";
 import { hospitalSeedData } from "./seed-hospitals-data";
 import { enrichFacility, enrichFacilitiesBatch, createDataHash, type EnrichmentResult } from "./googlePlaces";
+import OpenAI from "openai";
+
+const openai = new OpenAI({
+  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+});
 
 declare module 'express-session' {
   interface SessionData {
@@ -2493,6 +2499,129 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(video);
     } catch (error: any) {
       res.status(500).json({ message: "Failed to unpublish video" });
+    }
+  });
+
+  // Admin: Generate AI metadata for video
+  app.post("/api/admin/videos/:id/generate-metadata", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const video = await storage.getVideo(req.params.id);
+      if (!video) {
+        return res.status(404).json({ message: "Video not found" });
+      }
+
+      const prompt = `You are an SEO/GEO expert for a Massachusetts in-home care company called PrivateInHomeCareGiver. 
+Generate optimized metadata for a video with the following details:
+
+Title: ${video.title}
+Current Description: ${video.description || 'No description'}
+Category: ${video.category}
+Duration: ${video.duration ? `${Math.floor(video.duration / 60)} minutes` : 'Unknown'}
+
+Generate the following fields in JSON format:
+{
+  "metaTitle": "SEO-optimized title (max 60 chars)",
+  "metaDescription": "SEO-optimized description (max 160 chars)",
+  "keywords": ["array", "of", "relevant", "keywords"],
+  "topics": ["main", "topics", "covered"],
+  "learningObjectives": ["what viewers will learn"],
+  "targetAudience": "who this video is for",
+  "schemaMarkup": {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    "name": "video title",
+    "description": "video description",
+    "thumbnailUrl": "${video.thumbnailUrl || ''}",
+    "uploadDate": "${video.createdAt}",
+    "duration": "PT${video.duration ? Math.floor(video.duration / 60) : 0}M",
+    "contentUrl": "${video.videoUrl || video.embedUrl || ''}",
+    "publisher": {
+      "@type": "Organization",
+      "name": "PrivateInHomeCareGiver",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://privateinhomecaregiver.com/logo.png"
+      }
+    }
+  }
+}
+
+Focus on Massachusetts senior care, in-home care, caregiving, and healthcare topics.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: "You are an SEO/GEO expert. Output valid JSON only." },
+          { role: "user", content: prompt }
+        ],
+        response_format: { type: "json_object" }
+      });
+
+      const metadata = JSON.parse(response.choices[0]?.message?.content || "{}");
+      res.json(metadata);
+    } catch (error: any) {
+      console.error("AI metadata generation error:", error);
+      res.status(500).json({ message: "Failed to generate metadata", error: error.message });
+    }
+  });
+
+  // Admin: Generate AI metadata for podcast
+  app.post("/api/admin/podcasts/:id/generate-metadata", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const podcast = await storage.getPodcast(req.params.id);
+      if (!podcast) {
+        return res.status(404).json({ message: "Podcast not found" });
+      }
+
+      const prompt = `You are an SEO/GEO expert for a Massachusetts in-home care company called PrivateInHomeCareGiver.
+Generate optimized metadata for a podcast episode with the following details:
+
+Title: ${podcast.title}
+Current Description: ${podcast.description || 'No description'}
+Category: ${podcast.category}
+Duration: ${podcast.duration ? `${Math.floor(podcast.duration / 60)} minutes` : 'Unknown'}
+Episode Number: ${podcast.episodeNumber || 'N/A'}
+
+Generate the following fields in JSON format:
+{
+  "metaTitle": "SEO-optimized title (max 60 chars)",
+  "metaDescription": "SEO-optimized description (max 160 chars)",
+  "keywords": ["array", "of", "relevant", "keywords"],
+  "topics": ["main", "topics", "covered"],
+  "learningObjectives": ["what listeners will learn"],
+  "targetAudience": "who this podcast is for",
+  "schemaMarkup": {
+    "@context": "https://schema.org",
+    "@type": "PodcastEpisode",
+    "name": "episode title",
+    "description": "episode description",
+    "datePublished": "${podcast.createdAt}",
+    "duration": "PT${podcast.duration ? Math.floor(podcast.duration / 60) : 0}M",
+    "url": "${podcast.audioUrl || podcast.embedUrl || ''}",
+    "partOfSeries": {
+      "@type": "PodcastSeries",
+      "name": "PrivateInHomeCareGiver Podcast",
+      "url": "https://privateinhomecaregiver.com/podcasts"
+    }
+  }
+}
+
+Focus on Massachusetts senior care, in-home care, caregiving, and healthcare topics.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: "You are an SEO/GEO expert. Output valid JSON only." },
+          { role: "user", content: prompt }
+        ],
+        response_format: { type: "json_object" }
+      });
+
+      const metadata = JSON.parse(response.choices[0]?.message?.content || "{}");
+      res.json(metadata);
+    } catch (error: any) {
+      console.error("AI metadata generation error:", error);
+      res.status(500).json({ message: "Failed to generate metadata", error: error.message });
     }
   });
 

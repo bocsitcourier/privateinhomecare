@@ -45,7 +45,7 @@ import {
 } from "@/components/ui/accordion";
 import { useState } from "react";
 import { format } from "date-fns";
-import { Video, Edit, Eye, Search, CheckCircle, Clock, Trash2, Plus, Play, Upload, Globe } from "lucide-react";
+import { Video, Edit, Eye, Search, CheckCircle, Clock, Trash2, Plus, Play, Upload, Globe, Sparkles, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Video as VideoType, videoCategoryEnum } from "@shared/schema";
 
@@ -72,6 +72,7 @@ export default function AdminVideosPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [editForm, setEditForm] = useState<Partial<VideoType>>({});
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const { toast } = useToast();
 
   const { data: videos, isLoading } = useQuery<VideoType[]>({
@@ -177,6 +178,46 @@ export default function AdminVideosPage() {
       });
     },
   });
+
+  const handleGenerateAIMetadata = async (videoId: string) => {
+    setIsGeneratingAI(true);
+    try {
+      const response = await fetch(`/api/admin/videos/${videoId}/generate-metadata`, {
+        method: "POST",
+        credentials: "include",
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to generate metadata");
+      }
+      
+      const metadata = await response.json();
+      
+      setEditForm(prev => ({
+        ...prev,
+        metaTitle: metadata.metaTitle || prev.metaTitle,
+        metaDescription: metadata.metaDescription || prev.metaDescription,
+        keywords: metadata.keywords || prev.keywords,
+        topics: metadata.topics || prev.topics,
+        targetAudience: metadata.targetAudience || prev.targetAudience,
+        learningObjectives: metadata.learningObjectives || prev.learningObjectives,
+        schemaMarkup: metadata.schemaMarkup ? JSON.stringify(metadata.schemaMarkup, null, 2) : prev.schemaMarkup,
+      }));
+      
+      toast({
+        title: "AI Metadata Generated",
+        description: "SEO metadata has been generated. Review and save to apply.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to generate AI metadata.",
+      });
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; icon: any }> = {
@@ -789,6 +830,40 @@ export default function AdminVideosPage() {
             </TabsContent>
             
             <TabsContent value="seo" className="space-y-4">
+              {isEditing && selectedVideo && (
+                <Card className="bg-primary/5 border-primary/20">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <h4 className="font-medium flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-primary" />
+                          AI-Powered SEO Optimization
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          Generate optimized metadata, keywords, and schema markup using AI
+                        </p>
+                      </div>
+                      <Button
+                        onClick={() => handleGenerateAIMetadata(String(selectedVideo.id))}
+                        disabled={isGeneratingAI}
+                        data-testid="button-generate-ai-metadata"
+                      >
+                        {isGeneratingAI ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Generating...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="h-4 w-4 mr-2" />
+                            Generate AI Metadata
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
               <div className="grid grid-cols-1 gap-4">
                 <div>
                   <Label htmlFor="metaTitle">SEO Title</Label>

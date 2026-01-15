@@ -74,7 +74,7 @@
     "cors": "^2.8.5",
     "date-fns": "^3.6.0",
     "drizzle-orm": "^0.39.1",
-    "drizzle-zod": "^0.7.0",
+    "drizzle-zod": "^0.7.1",
     "embla-carousel-react": "^8.6.0",
     "express": "^4.21.2",
     "express-rate-limit": "^8.1.0",
@@ -89,6 +89,9 @@
     "next": "^15.5.4",
     "next-pwa": "^5.6.0",
     "next-themes": "^0.4.6",
+    "openai": "^6.16.0",
+    "p-limit": "^7.2.0",
+    "p-retry": "^7.1.1",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "postgres": "^3.4.7",
@@ -110,8 +113,8 @@
     "workbox-window": "^7.3.0",
     "wouter": "^3.3.5",
     "ws": "^8.18.0",
-    "zod": "^3.24.2",
-    "zod-validation-error": "^3.4.0"
+    "zod": "^3.25.76",
+    "zod-validation-error": "^3.5.4"
   },
   "devDependencies": {
     "@replit/vite-plugin-cartographer": "^0.3.1",
