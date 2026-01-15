@@ -13,6 +13,7 @@ interface PlaceResult {
   websiteUri?: string;
   id?: string;
   displayName?: { text: string };
+  businessStatus?: "OPERATIONAL" | "CLOSED_TEMPORARILY" | "CLOSED_PERMANENTLY";
 }
 
 interface PlacesResponse {
@@ -31,6 +32,8 @@ export interface EnrichmentResult {
     reviewCount: number;
     googleMapsUrl: string | null;
     googlePlaceId: string | null;
+    businessStatus: string | null;
+    isClosed: "yes" | "no";
   };
   error?: string;
 }
@@ -53,7 +56,7 @@ export async function enrichFacility(facility: Facility): Promise<EnrichmentResu
       headers: {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
-        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.internationalPhoneNumber,places.rating,places.userRatingCount,places.googleMapsUri,places.websiteUri",
+        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.internationalPhoneNumber,places.rating,places.userRatingCount,places.googleMapsUri,places.websiteUri,places.businessStatus",
       },
       body: JSON.stringify({
         textQuery: searchQuery,
@@ -90,6 +93,7 @@ export async function enrichFacility(facility: Facility): Promise<EnrichmentResu
     }
 
     const place = data.places[0];
+    const isClosed = place.businessStatus === "CLOSED_PERMANENTLY" ? "yes" : "no";
     
     return {
       facilityId: facility.id,
@@ -103,6 +107,8 @@ export async function enrichFacility(facility: Facility): Promise<EnrichmentResu
         reviewCount: place.userRatingCount || 0,
         googleMapsUrl: place.googleMapsUri || null,
         googlePlaceId: place.id || null,
+        businessStatus: place.businessStatus || null,
+        isClosed,
       },
     };
   } catch (error) {

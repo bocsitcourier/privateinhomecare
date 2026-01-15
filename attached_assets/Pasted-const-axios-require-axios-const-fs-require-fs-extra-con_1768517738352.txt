@@ -1,0 +1,80 @@
+const axios = require('axios');
+const fs = require('fs-extra');
+const crypto = require('crypto');
+const pLimit = require('p-limit');
+require('dotenv').config();
+
+// Configuration
+const GOOGLE_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
+const limit = pLimit(5); // Adjust based on your API tier
+const DB_PATH = './facility_db.json';
+
+// Helper: Create a hash to detect changes
+const createHash = (data) => {
+  return crypto.createHash('md5').update(JSON.stringify(data)).digest('hex');
+};
+
+async function enrichFacility(facilityName) {
+  try {
+    const response = await axios.post(
+      'https://places.googleapis.com/v1/places:searchText',
+      { textQuery: `${facilityName}, Massachusetts` },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': GOOGLE_API_KEY,
+          'X-Goog-FieldMask': 'places.id,places.formattedAddress,places.nationalPhoneNumber,places.rating,places.googleMapsUri,places.reviews'
+        }
+      }
+    );
+
+    const place = response.data.places[0];
+    if (!place) return null;
+
+    return {
+      name: facilityName,
+      placeId: place.id,
+      address: place.formattedAddress,
+      phone: place.nationalPhoneNumber,
+      rating: place.rating,
+      mapsUri: place.googleMapsUri,
+      reviews: place.reviews?.slice(0, 3) || [],
+      updatedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error(`Error fetching ${facilityName}:`, error.message);
+    return null;
+  }
+}
+
+async function main() {
+  const rawFacilities = fs.readFileSync('facilities.txt', 'utf-8').split('\n').filter(Boolean);
+  let db = fs.existsSync(DB_PATH) ? fs.readJsonSync(DB_PATH) : {};
+
+  const tasks = rawFacilities.map((name) => limit(async () => {
+    console.log(`Checking: ${name}...`);
+    
+    const newData = await enrichFacility(name);
+    if (!newData) return;
+
+    const newHash = createHash({ 
+      addr: newData.address, 
+      ph: newData.phone, 
+      rat: newData.rating 
+    });
+
+    // SMART LOGIC: Only trigger update if data actually changed
+    if (db[name] && db[name].hash === newHash) {
+      console.log(`✅ No changes for ${name}. Skipping update.`);
+    } else {
+      console.log(`🔄 Data changed for ${name}. Updating record and marking for regeneration.`);
+      db[name] = { ...newData, hash: newHash, needsRegeneration: true };
+    }
+  }));
+
+  await Promise.all(tasks);
+  fs.writeJsonSync(DB_PATH, db, { spaces: 2 });
+  console.log('🚀 Sync Complete. Database updated.');
+}
+
+main();

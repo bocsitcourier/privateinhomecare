@@ -1097,6 +1097,12 @@ export const facilities = pgTable("facilities", {
   googleMapsUrl: text("google_maps_url"), // Direct link to Google Maps/Reviews
   googlePlaceId: text("google_place_id"), // Google Place ID for reviews
   
+  // Business status from Google Places
+  businessStatus: text("business_status"), // OPERATIONAL, CLOSED_TEMPORARILY, CLOSED_PERMANENTLY
+  isClosed: text("is_closed").default("no"), // yes, no - for permanently closed facilities
+  closureReason: text("closure_reason"), // Reason for closure if applicable
+  lastEnrichedAt: timestamp("last_enriched_at"), // When Google Places data was last fetched
+  
   // Source tracking (for imported data)
   dataSource: text("data_source"), // e.g., "massgis", "medicare", "manual"
   externalId: text("external_id"), // ID from external data source

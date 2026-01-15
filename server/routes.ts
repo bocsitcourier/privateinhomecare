@@ -3072,9 +3072,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
               overallRating: result.data.rating || facility.overallRating,
               googleMapsUrl: result.data.googleMapsUrl,
               googlePlaceId: result.data.googlePlaceId,
+              businessStatus: result.data.businessStatus,
+              isClosed: result.data.isClosed,
+              lastEnrichedAt: new Date(),
             });
             successful++;
-            console.log(`[${successful + failed}/${facilities.length}] Enriched: ${facility.name} - Phone: ${result.data.phone || 'N/A'}`);
+            const closedFlag = result.data.isClosed === "yes" ? " [CLOSED]" : "";
+            console.log(`[${successful + failed}/${facilities.length}] Enriched: ${facility.name} - Phone: ${result.data.phone || 'N/A'}${closedFlag}`);
           } catch (updateError) {
             console.error(`Failed to update facility ${facility.name}:`, updateError);
             failed++;
