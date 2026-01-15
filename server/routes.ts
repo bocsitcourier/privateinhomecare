@@ -3265,6 +3265,164 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Seed endpoint for article images - assigns unique senior-focused images to all articles
+  app.post("/api/seed/article-images", async (req: Request, res: Response) => {
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      
+      // Get all stock images
+      const stockImagesDir = path.join(process.cwd(), 'attached_assets', 'stock_images');
+      const allImages = fs.readdirSync(stockImagesDir)
+        .filter((f: string) => f.endsWith('.jpg') || f.endsWith('.png'))
+        .map((f: string) => `/attached_assets/stock_images/${f}`);
+      
+      if (allImages.length === 0) {
+        return res.status(400).json({ message: "No stock images found" });
+      }
+      
+      // Get all articles
+      const articles = await storage.listArticles();
+      
+      // Comprehensive keyword to image pattern mapping for senior care
+      const keywordPatterns: Array<{ keywords: string[]; patterns: string[] }> = [
+        { keywords: ["nutrition", "eating", "diet", "food", "meal"], patterns: ["nutrition", "eating", "meal", "cookin"] },
+        { keywords: ["medication", "medicine", "prescription", "pills", "drug"], patterns: ["medica", "taking_", "pills"] },
+        { keywords: ["caregiver", "burnout", "self-care", "stress"], patterns: ["caregiver", "respite"] },
+        { keywords: ["exercise", "physical", "mobility", "walking", "fitness", "stretching"], patterns: ["exercise", "stretching", "walking", "yoga", "couple_walki"] },
+        { keywords: ["dementia", "alzheimer", "memory loss", "cognitive decline"], patterns: ["dementia", "alzh", "memory_care", "man_with_dem"] },
+        { keywords: ["safety", "fall", "prevent", "accident", "home safety"], patterns: ["safety", "home_safety", "grab_bar"] },
+        { keywords: ["doctor", "appointment", "checkup", "screening", "medical"], patterns: ["doctor", "couple_at_doc", "blood_pressure", "citizen_blood"] },
+        { keywords: ["hospice", "palliative", "end of life", "comfort care"], patterns: ["hospice", "end_of_life", "comfort"] },
+        { keywords: ["brain", "cognitive", "puzzle", "mental stimulation"], patterns: ["brain", "cognitive", "puzzle"] },
+        { keywords: ["social", "isolation", "loneliness", "connection", "friends"], patterns: ["social", "friend", "conversation"] },
+        { keywords: ["legal", "planning", "estate", "documents", "advance directive"], patterns: ["legal", "document"] },
+        { keywords: ["mental health", "depression", "anxiety", "emotional"], patterns: ["mental_health"] },
+        { keywords: ["family", "loved one", "grandchildren", "generation"], patterns: ["family", "grandmother", "multigenerational", "grandchild"] },
+        { keywords: ["technology", "tablet", "computer", "digital"], patterns: ["tablet", "technology"] },
+        { keywords: ["holiday", "celebration", "christmas", "thanksgiving"], patterns: ["holiday", "celebration"] },
+        { keywords: ["veteran", "military", "va benefits"], patterns: ["veteran", "military"] },
+        { keywords: ["respite", "break", "relief"], patterns: ["respite"] },
+        { keywords: ["personal care", "bathing", "hygiene", "grooming", "pca"], patterns: ["personal_care", "hygiene", "home_health_aide"] },
+        { keywords: ["hospital", "discharge", "transition"], patterns: ["hospital", "discharge", "nurse_caring"] },
+        { keywords: ["heart", "cardiac", "blood pressure", "cardiovascular"], patterns: ["heart", "blood_pressure", "citizen_blood"] },
+        { keywords: ["diabetes", "blood sugar", "glucose"], patterns: ["diabetes", "blood_sugar"] },
+        { keywords: ["sleep", "insomnia", "rest", "night"], patterns: ["sleep", "sleepin", "peaceful"] },
+        { keywords: ["hydration", "water", "fluid", "dehydration"], patterns: ["drinking", "water"] },
+        { keywords: ["wound", "pressure", "skin"], patterns: ["wound", "care_medical"] },
+        { keywords: ["adult day", "day program", "activities"], patterns: ["adult_day", "program"] },
+        { keywords: ["emergency", "preparedness", "first aid"], patterns: ["emergency", "prepared"] },
+        { keywords: ["reminiscence", "memories", "photos", "life review"], patterns: ["reminiscence", "photo", "memories"] },
+        { keywords: ["vision", "eye", "glasses", "sight"], patterns: ["vision", "eye"] },
+        { keywords: ["hearing", "deaf", "hearing aid"], patterns: ["hearing"] },
+        { keywords: ["wheelchair", "walker", "mobility aid", "cane"], patterns: ["wheelchair", "mobility", "walking_cane", "man_with_wal"] },
+        { keywords: ["chronic", "condition", "disease management", "pain"], patterns: ["chronic", "disease"] },
+        { keywords: ["dental", "oral", "teeth"], patterns: ["dental", "oral"] },
+        { keywords: ["home modification", "accessibility", "ramp", "grab bar"], patterns: ["modification", "accessibility"] },
+        { keywords: ["abuse", "neglect", "elder abuse", "protection"], patterns: ["protection", "elder_protection"] },
+        { keywords: ["companion", "friendship", "visit"], patterns: ["companion", "friend"] },
+        { keywords: ["home care", "in-home", "aging in place"], patterns: ["home_health", "aide_hel", "caregiver_helping"] },
+        { keywords: ["communication", "talking", "conversation"], patterns: ["conversation", "talking", "social_conne"] },
+      ];
+      
+      // Senior-focused fallback images (happy seniors, care interactions)
+      const seniorFallbackPatterns = ["happy_elderly", "elderly_senior", "nurse_caring", "senior_couple", "elderly_couple", "grandmother", "senior_woman", "elderly_man"];
+      
+      // Track used images to ensure uniqueness
+      const usedImages = new Set<string>();
+      let updatedCount = 0;
+      
+      // Function to find images matching patterns
+      const findMatchingImages = (patterns: string[]): string[] => {
+        return allImages.filter((img: string) => 
+          patterns.some(pattern => img.toLowerCase().includes(pattern.toLowerCase()))
+        );
+      };
+      
+      // Function to find best matching image for an article
+      const findBestImage = (title: string, category: string): string => {
+        const titleLower = title.toLowerCase();
+        
+        // Check each keyword pattern
+        for (const { keywords, patterns } of keywordPatterns) {
+          if (keywords.some(kw => titleLower.includes(kw))) {
+            const matchingImages = findMatchingImages(patterns);
+            for (const img of matchingImages) {
+              if (!usedImages.has(img)) {
+                usedImages.add(img);
+                return img;
+              }
+            }
+          }
+        }
+        
+        // Category-based fallback patterns
+        const categoryPatterns: Record<string, string[]> = {
+          "Health & Wellness": ["nutrition", "exercise", "doctor", "health", "stretching", "yoga", "blood_pressure"],
+          "Caregiver Support": ["caregiver", "family", "respite", "home_health"],
+          "Dementia Care": ["dementia", "alzh", "memory", "man_with_dem"],
+          "Safety": ["safety", "home_safety", "grab_bar", "modification"],
+          "Care Guides": ["home_health", "aide_hel", "caregiver", "nurse_caring"],
+          "Financial Planning": ["legal", "document", "senior_couple"],
+          "Legal Planning": ["legal", "document"],
+          "Types of Care": ["hospice", "adult_day", "nurse_caring"],
+          "Massachusetts Resources": ["senior_couple", "happy_elderly"],
+          "Alzheimer's & Dementia": ["dementia", "alzh", "memory", "man_with_dem"],
+        };
+        
+        const patterns = categoryPatterns[category] || [];
+        if (patterns.length > 0) {
+          const matchingImages = findMatchingImages(patterns);
+          for (const img of matchingImages) {
+            if (!usedImages.has(img)) {
+              usedImages.add(img);
+              return img;
+            }
+          }
+        }
+        
+        // Senior-focused fallback
+        const seniorImages = findMatchingImages(seniorFallbackPatterns);
+        for (const img of seniorImages) {
+          if (!usedImages.has(img)) {
+            usedImages.add(img);
+            return img;
+          }
+        }
+        
+        // Last resort: any unused image
+        for (const img of allImages) {
+          if (!usedImages.has(img)) {
+            usedImages.add(img);
+            return img;
+          }
+        }
+        
+        // If all images are used, start reusing (shouldn't happen with 150+ images for 102 articles)
+        return allImages[updatedCount % allImages.length];
+      };
+      
+      // Update each article
+      for (const article of articles) {
+        const imageUrl = findBestImage(article.title, article.category || "");
+        
+        await storage.updateArticle(article.id, {
+          heroImageUrl: imageUrl,
+        });
+        updatedCount++;
+      }
+      
+      res.json({ 
+        message: `Successfully updated ${updatedCount} articles with unique senior-focused images`,
+        articlesUpdated: updatedCount,
+        totalImages: allImages.length
+      });
+    } catch (error) {
+      console.error("Error seeding article images:", error);
+      res.status(500).json({ message: "Failed to seed article images" });
+    }
+  });
+
   // ==========================================
   // Quiz Lead Generation System Routes
   // ==========================================
