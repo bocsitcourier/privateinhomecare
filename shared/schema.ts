@@ -1103,6 +1103,10 @@ export const facilities = pgTable("facilities", {
   closureReason: text("closure_reason"), // Reason for closure if applicable
   lastEnrichedAt: timestamp("last_enriched_at"), // When Google Places data was last fetched
   
+  // Smart sync fields for change detection
+  dataHash: text("data_hash"), // MD5 hash of key fields to detect changes
+  needsRegeneration: text("needs_regeneration").default("no"), // yes, no - marks facilities needing content update
+  
   // Source tracking (for imported data)
   dataSource: text("data_source"), // e.g., "massgis", "medicare", "manual"
   externalId: text("external_id"), // ID from external data source

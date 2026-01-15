@@ -1,7 +1,18 @@
 import type { Facility } from "@shared/schema";
+import crypto from "crypto";
 
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
 const PLACES_API_URL = "https://places.googleapis.com/v1/places:searchText";
+
+// Create MD5 hash of key data fields to detect changes
+export function createDataHash(data: { address?: string | null; phone?: string | null; rating?: string | null }): string {
+  const hashInput = JSON.stringify({
+    addr: data.address || "",
+    ph: data.phone || "",
+    rat: data.rating || "",
+  });
+  return crypto.createHash("md5").update(hashInput).digest("hex");
+}
 
 interface PlaceResult {
   formattedAddress?: string;

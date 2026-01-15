@@ -45,7 +45,7 @@ import {
 } from "./api-hardening";
 import { comprehensiveFacilities } from "./seed-facilities-data";
 import { hospitalSeedData } from "./seed-hospitals-data";
-import { enrichFacility, enrichFacilitiesBatch, type EnrichmentResult } from "./googlePlaces";
+import { enrichFacility, enrichFacilitiesBatch, createDataHash, type EnrichmentResult } from "./googlePlaces";
 
 declare module 'express-session' {
   interface SessionData {
@@ -2941,6 +2941,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const result = await enrichFacility(facility);
       
       if (result.success && result.data) {
+        // Smart change detection using hash
+        const newHash = createDataHash({
+          address: result.data.address,
+          phone: result.data.phone,
+          rating: result.data.rating,
+        });
+        
+        const existingHash = facility.dataHash;
+        const dataChanged = existingHash !== newHash;
+        
         const updated = await storage.updateFacility(facility.id, {
           address: result.data.address || facility.address,
           phone: result.data.phone || facility.phone,
@@ -2948,14 +2958,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
           overallRating: result.data.rating || facility.overallRating,
           googleMapsUrl: result.data.googleMapsUrl,
           googlePlaceId: result.data.googlePlaceId,
+          businessStatus: result.data.businessStatus,
+          isClosed: result.data.isClosed,
+          lastEnrichedAt: new Date(),
+          dataHash: newHash,
+          needsRegeneration: dataChanged ? "yes" : facility.needsRegeneration,
         });
-        res.json({ success: true, facility: updated, enrichment: result, reviewCount: result.data.reviewCount });
+        res.json({ 
+          success: true, 
+          dataChanged,
+          facility: updated, 
+          enrichment: result, 
+          reviewCount: result.data.reviewCount 
+        });
       } else {
         res.json({ success: false, error: result.error, facility });
       }
     } catch (error) {
       console.error("Error enriching facility:", error);
       res.status(500).json({ message: "Failed to enrich facility" });
+    }
+  });
+  
+  // Admin: Get facility data statistics (stale data reporting)
+  app.get("/api/admin/facilities/stats", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const facilities = await storage.listFacilities({});
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+      
+      const stats = {
+        total: facilities.length,
+        enriched: facilities.filter(f => f.googlePlaceId).length,
+        notEnriched: facilities.filter(f => !f.googlePlaceId).length,
+        withPhone: facilities.filter(f => f.phone).length,
+        withRating: facilities.filter(f => f.overallRating).length,
+        needsRegeneration: facilities.filter(f => f.needsRegeneration === "yes").length,
+        closed: facilities.filter(f => f.isClosed === "yes").length,
+        staleData: {
+          over30Days: facilities.filter(f => f.lastEnrichedAt && new Date(f.lastEnrichedAt) < thirtyDaysAgo).length,
+          over90Days: facilities.filter(f => f.lastEnrichedAt && new Date(f.lastEnrichedAt) < ninetyDaysAgo).length,
+          neverEnriched: facilities.filter(f => !f.lastEnrichedAt && !f.googlePlaceId).length,
+        },
+        byType: {} as Record<string, number>,
+        byCounty: {} as Record<string, number>,
+      };
+      
+      // Count by facility type
+      facilities.forEach(f => {
+        stats.byType[f.facilityType] = (stats.byType[f.facilityType] || 0) + 1;
+      });
+      
+      // Count by county
+      facilities.forEach(f => {
+        if (f.county) {
+          stats.byCounty[f.county] = (stats.byCounty[f.county] || 0) + 1;
+        }
+      });
+      
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching facility stats:", error);
+      res.status(500).json({ message: "Failed to fetch statistics" });
+    }
+  });
+  
+  // Admin: Get facilities needing regeneration
+  app.get("/api/admin/facilities/needs-regeneration", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const facilities = await storage.listFacilities({});
+      const needsRegen = facilities.filter(f => f.needsRegeneration === "yes");
+      res.json(needsRegen);
+    } catch (error) {
+      console.error("Error fetching facilities needing regeneration:", error);
+      res.status(500).json({ message: "Failed to fetch facilities" });
+    }
+  });
+  
+  // Admin: Mark facility regeneration complete
+  app.post("/api/admin/facilities/:id/mark-regenerated", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const facility = await storage.updateFacility(req.params.id, {
+        needsRegeneration: "no",
+      });
+      if (!facility) {
+        return res.status(404).json({ message: "Facility not found" });
+      }
+      res.json(facility);
+    } catch (error) {
+      console.error("Error marking facility regenerated:", error);
+      res.status(500).json({ message: "Failed to update facility" });
     }
   });
 
@@ -3058,6 +3151,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       let successful = 0;
       let failed = 0;
+      let unchanged = 0;
       const errors: string[] = [];
       
       for (const facility of facilities) {
@@ -3065,20 +3159,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (result.success && result.data) {
           try {
-            await storage.updateFacility(facility.id, {
-              address: result.data.address || facility.address,
-              phone: result.data.phone || facility.phone,
-              website: result.data.website || facility.website,
-              overallRating: result.data.rating || facility.overallRating,
-              googleMapsUrl: result.data.googleMapsUrl,
-              googlePlaceId: result.data.googlePlaceId,
-              businessStatus: result.data.businessStatus,
-              isClosed: result.data.isClosed,
-              lastEnrichedAt: new Date(),
+            // Smart change detection using hash
+            const newHash = createDataHash({
+              address: result.data.address,
+              phone: result.data.phone,
+              rating: result.data.rating,
             });
-            successful++;
-            const closedFlag = result.data.isClosed === "yes" ? " [CLOSED]" : "";
-            console.log(`[${successful + failed}/${facilities.length}] Enriched: ${facility.name} - Phone: ${result.data.phone || 'N/A'}${closedFlag}`);
+            
+            const existingHash = facility.dataHash;
+            const dataChanged = existingHash !== newHash;
+            
+            if (!dataChanged && facility.googlePlaceId) {
+              // Data unchanged - just update lastEnrichedAt timestamp
+              await storage.updateFacility(facility.id, {
+                lastEnrichedAt: new Date(),
+              });
+              unchanged++;
+              console.log(`[${successful + failed + unchanged}/${facilities.length}] ✅ No changes for ${facility.name}. Skipping update.`);
+            } else {
+              // Data changed or first enrichment - update all fields and mark for regeneration
+              await storage.updateFacility(facility.id, {
+                address: result.data.address || facility.address,
+                phone: result.data.phone || facility.phone,
+                website: result.data.website || facility.website,
+                overallRating: result.data.rating || facility.overallRating,
+                googleMapsUrl: result.data.googleMapsUrl,
+                googlePlaceId: result.data.googlePlaceId,
+                businessStatus: result.data.businessStatus,
+                isClosed: result.data.isClosed,
+                lastEnrichedAt: new Date(),
+                dataHash: newHash,
+                needsRegeneration: dataChanged ? "yes" : "no",
+              });
+              successful++;
+              const closedFlag = result.data.isClosed === "yes" ? " [CLOSED]" : "";
+              const changeFlag = dataChanged ? "🔄 Data changed." : "";
+              console.log(`[${successful + failed + unchanged}/${facilities.length}] ${changeFlag} Enriched: ${facility.name} - Phone: ${result.data.phone || 'N/A'}${closedFlag}`);
+            }
           } catch (updateError) {
             console.error(`Failed to update facility ${facility.name}:`, updateError);
             failed++;
@@ -3087,7 +3204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else {
           failed++;
           errors.push(`${facility.name}: ${result.error}`);
-          console.log(`[${successful + failed}/${facilities.length}] Failed: ${facility.name} - ${result.error}`);
+          console.log(`[${successful + failed + unchanged}/${facilities.length}] Failed: ${facility.name} - ${result.error}`);
         }
         
         await new Promise(resolve => setTimeout(resolve, 300));
@@ -3098,6 +3215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         processed: facilities.length,
         remaining: totalRemaining - facilities.length,
         successful,
+        unchanged,
         failed,
         errors: errors.slice(0, 10),
       });
