@@ -51,6 +51,10 @@ import {
   Clock,
   Search,
   HelpCircle,
+  RefreshCw,
+  AlertTriangle,
+  Database,
+  XOctagon,
 } from "lucide-react";
 import type { Facility, FacilityFaq } from "@shared/schema";
 
@@ -74,6 +78,55 @@ export default function FacilitiesPage() {
 
   const { data: facilities, isLoading } = useQuery<Facility[]>({
     queryKey: ["/api/admin/facilities"],
+  });
+  
+  // Data freshness stats query
+  interface FacilityStats {
+    total: number;
+    enriched: number;
+    notEnriched: number;
+    withPhone: number;
+    withRating: number;
+    needsRegeneration: number;
+    closed: number;
+    staleData: {
+      over30Days: number;
+      over90Days: number;
+      neverEnriched: number;
+    };
+    byType: Record<string, number>;
+    byCounty: Record<string, number>;
+  }
+  
+  const { data: dataStats } = useQuery<FacilityStats>({
+    queryKey: ["/api/admin/facilities/stats"],
+  });
+  
+  // Enrich single facility mutation
+  const enrichMutation = useMutation({
+    mutationFn: (id: string) => apiRequest("POST", `/api/admin/facilities/${id}/enrich`),
+    onSuccess: (result: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/facilities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/facilities/stats"] });
+      if (result.dataChanged) {
+        toast({
+          title: "Data Updated",
+          description: "Facility data has changed and was updated.",
+        });
+      } else {
+        toast({
+          title: "No Changes",
+          description: "Facility data is already up to date.",
+        });
+      }
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to refresh facility data.",
+      });
+    },
   });
 
   const deleteMutation = useMutation({
@@ -209,6 +262,46 @@ export default function FacilitiesPage() {
             </CardContent>
           </Card>
         </div>
+        
+        {/* Data Freshness Stats */}
+        {dataStats && (
+          <Card>
+            <CardHeader className="py-4">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Database className="h-5 w-5" />
+                Data Freshness
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-green-600" data-testid="text-enriched-count">{dataStats.enriched}</p>
+                  <p className="text-xs text-muted-foreground">Enriched</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-blue-600" data-testid="text-with-phone">{dataStats.withPhone}</p>
+                  <p className="text-xs text-muted-foreground">With Phone</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-amber-600" data-testid="text-with-rating">{dataStats.withRating}</p>
+                  <p className="text-xs text-muted-foreground">With Rating</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-orange-600" data-testid="text-stale-30">{dataStats.staleData.over30Days}</p>
+                  <p className="text-xs text-muted-foreground">Stale 30+ Days</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-red-600" data-testid="text-closed-count">{dataStats.closed}</p>
+                  <p className="text-xs text-muted-foreground">Closed</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-purple-600" data-testid="text-needs-regen">{dataStats.needsRegeneration}</p>
+                  <p className="text-xs text-muted-foreground">Needs Update</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader>
@@ -275,10 +368,26 @@ export default function FacilitiesPage() {
                         <div className="flex items-center gap-2">
                           <Building2 className="h-4 w-4 text-muted-foreground" />
                           <div>
-                            <p className="font-medium">{facility.name}</p>
-                            {facility.featured === "yes" && (
-                              <Badge variant="outline" className="text-xs">Featured</Badge>
-                            )}
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium">{facility.name}</p>
+                              {facility.isClosed === "yes" && (
+                                <Badge variant="destructive" className="text-xs gap-1">
+                                  <XOctagon className="h-3 w-3" />
+                                  Closed
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex gap-1 flex-wrap">
+                              {facility.featured === "yes" && (
+                                <Badge variant="outline" className="text-xs">Featured</Badge>
+                              )}
+                              {facility.needsRegeneration === "yes" && (
+                                <Badge variant="secondary" className="text-xs gap-1 bg-purple-100 text-purple-800">
+                                  <AlertTriangle className="h-3 w-3" />
+                                  Needs Update
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </TableCell>
@@ -306,6 +415,16 @@ export default function FacilitiesPage() {
                       <TableCell>{getStatusBadge(facility.status)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => enrichMutation.mutate(facility.id)}
+                            disabled={enrichMutation.isPending}
+                            title="Refresh Google data"
+                            data-testid={`button-refresh-${facility.id}`}
+                          >
+                            <RefreshCw className={`h-4 w-4 ${enrichMutation.isPending ? 'animate-spin' : ''}`} />
+                          </Button>
                           <Button
                             size="icon"
                             variant="ghost"

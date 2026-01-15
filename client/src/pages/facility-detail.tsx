@@ -275,10 +275,18 @@ export default function FacilityDetailPage() {
           <div className="container max-w-4xl mx-auto px-4">
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
               <div>
-                <Badge className="mb-2">
-                  <Icon className="w-3 h-3 mr-1" />
-                  {typeInfo?.title || facility.facilityType}
-                </Badge>
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <Badge>
+                    <Icon className="w-3 h-3 mr-1" />
+                    {typeInfo?.title || facility.facilityType}
+                  </Badge>
+                  {facility.isClosed === "yes" && (
+                    <Badge variant="destructive" data-testid="badge-facility-closed">
+                      <AlertCircle className="w-3 h-3 mr-1" />
+                      Permanently Closed
+                    </Badge>
+                  )}
+                </div>
                 <h1 className="text-2xl md:text-3xl font-bold" data-testid="text-facility-name">
                   {facility.name}
                 </h1>
