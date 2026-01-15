@@ -2625,6 +2625,94 @@ Focus on Massachusetts senior care, in-home care, caregiving, and healthcare top
     }
   });
 
+  // Admin: Generate AI thumbnail for video
+  app.post("/api/admin/videos/:id/generate-thumbnail", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const video = await storage.getVideo(req.params.id);
+      if (!video) {
+        return res.status(404).json({ message: "Video not found" });
+      }
+
+      const prompt = `Professional healthcare thumbnail image for a video about "${video.title}". 
+Style: Clean, modern, warm colors, professional healthcare setting. 
+Theme: Massachusetts in-home senior care, caregiving, family support.
+Category: ${video.category}.
+Requirements: No text, photorealistic, welcoming, trustworthy, 16:9 aspect ratio.`;
+
+      const response = await openai.images.generate({
+        model: "gpt-image-1",
+        prompt,
+        n: 1,
+        size: "1024x1024",
+      });
+
+      const imageData = response.data?.[0];
+      if (!imageData?.b64_json) {
+        throw new Error("No image generated");
+      }
+
+      // Save image to public folder
+      const fileName = `video-thumb-${video.id}-${Date.now()}.png`;
+      const filePath = path.join(process.cwd(), "public", "thumbnails", fileName);
+      await fs.mkdir(path.dirname(filePath), { recursive: true });
+      await fs.writeFile(filePath, Buffer.from(imageData.b64_json, "base64"));
+
+      const thumbnailUrl = `/thumbnails/${fileName}`;
+      
+      // Update video with new thumbnail
+      await storage.updateVideo(req.params.id, { thumbnailUrl });
+
+      res.json({ thumbnailUrl, message: "Thumbnail generated successfully" });
+    } catch (error: any) {
+      console.error("AI thumbnail generation error:", error);
+      res.status(500).json({ message: "Failed to generate thumbnail", error: error.message });
+    }
+  });
+
+  // Admin: Generate AI thumbnail for podcast
+  app.post("/api/admin/podcasts/:id/generate-thumbnail", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const podcast = await storage.getPodcast(req.params.id);
+      if (!podcast) {
+        return res.status(404).json({ message: "Podcast not found" });
+      }
+
+      const prompt = `Professional podcast cover art for an episode about "${podcast.title}". 
+Style: Modern, warm colors, clean design, podcast-style artwork.
+Theme: Massachusetts in-home senior care, caregiving, family support.
+Category: ${podcast.category}.
+Requirements: No text, podcast cover style, square format, professional, welcoming.`;
+
+      const response = await openai.images.generate({
+        model: "gpt-image-1",
+        prompt,
+        n: 1,
+        size: "1024x1024",
+      });
+
+      const imageData = response.data?.[0];
+      if (!imageData?.b64_json) {
+        throw new Error("No image generated");
+      }
+
+      // Save image to public folder
+      const fileName = `podcast-thumb-${podcast.id}-${Date.now()}.png`;
+      const filePath = path.join(process.cwd(), "public", "thumbnails", fileName);
+      await fs.mkdir(path.dirname(filePath), { recursive: true });
+      await fs.writeFile(filePath, Buffer.from(imageData.b64_json, "base64"));
+
+      const thumbnailUrl = `/thumbnails/${fileName}`;
+      
+      // Update podcast with new thumbnail
+      await storage.updatePodcast(req.params.id, { thumbnailUrl });
+
+      res.json({ thumbnailUrl, message: "Thumbnail generated successfully" });
+    } catch (error: any) {
+      console.error("AI thumbnail generation error:", error);
+      res.status(500).json({ message: "Failed to generate thumbnail", error: error.message });
+    }
+  });
+
   // =============================================
   // Podcasts API Routes
   // =============================================

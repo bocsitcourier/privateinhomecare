@@ -45,7 +45,7 @@ import {
 } from "@/components/ui/accordion";
 import { useState } from "react";
 import { format } from "date-fns";
-import { Headphones, Edit, Eye, Search, CheckCircle, Clock, Trash2, Plus, Mic, Globe } from "lucide-react";
+import { Headphones, Edit, Eye, Search, CheckCircle, Clock, Trash2, Plus, Mic, Globe, Sparkles, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Podcast as PodcastType, podcastCategoryEnum } from "@shared/schema";
 
@@ -72,6 +72,7 @@ export default function AdminPodcastsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [editForm, setEditForm] = useState<Partial<PodcastType>>({});
+  const [isGeneratingThumbnail, setIsGeneratingThumbnail] = useState(false);
   const { toast } = useToast();
 
   const { data: podcasts, isLoading } = useQuery<PodcastType[]>({
@@ -177,6 +178,42 @@ export default function AdminPodcastsPage() {
       });
     },
   });
+
+  const handleGenerateThumbnail = async (podcastId: string) => {
+    setIsGeneratingThumbnail(true);
+    try {
+      const response = await fetch(`/api/admin/podcasts/${podcastId}/generate-thumbnail`, {
+        method: "POST",
+        credentials: "include",
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to generate thumbnail");
+      }
+      
+      const result = await response.json();
+      
+      setEditForm(prev => ({
+        ...prev,
+        thumbnailUrl: result.thumbnailUrl,
+      }));
+      
+      queryClient.invalidateQueries({ queryKey: ["/api/podcasts"] });
+      
+      toast({
+        title: "Thumbnail Generated",
+        description: "AI thumbnail has been created and saved.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to generate thumbnail.",
+      });
+    } finally {
+      setIsGeneratingThumbnail(false);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; icon: any }> = {
@@ -682,12 +719,46 @@ export default function AdminPodcastsPage() {
                 )}
                 <div className="col-span-2">
                   <Label htmlFor="thumbnailUrl">Thumbnail URL</Label>
-                  <Input
-                    id="thumbnailUrl"
-                    value={editForm.thumbnailUrl || ""}
-                    onChange={(e) => setEditForm({ ...editForm, thumbnailUrl: e.target.value })}
-                    data-testid="input-thumbnail-url"
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      id="thumbnailUrl"
+                      value={editForm.thumbnailUrl || ""}
+                      onChange={(e) => setEditForm({ ...editForm, thumbnailUrl: e.target.value })}
+                      placeholder="Enter URL or generate with AI"
+                      data-testid="input-thumbnail-url"
+                      className="flex-1"
+                    />
+                    {isEditing && selectedPodcast && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleGenerateThumbnail(String(selectedPodcast.id))}
+                        disabled={isGeneratingThumbnail}
+                        data-testid="button-generate-thumbnail"
+                      >
+                        {isGeneratingThumbnail ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Generating...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="h-4 w-4 mr-2" />
+                            AI Thumbnail
+                          </>
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                  {editForm.thumbnailUrl && (
+                    <div className="mt-2">
+                      <img 
+                        src={editForm.thumbnailUrl} 
+                        alt="Thumbnail preview" 
+                        className="h-20 w-auto rounded border"
+                      />
+                    </div>
+                  )}
                 </div>
                 <div className="col-span-2">
                   <Label htmlFor="description">Description</Label>
