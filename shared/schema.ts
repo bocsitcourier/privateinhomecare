@@ -900,10 +900,20 @@ export const videos = pgTable("videos", {
   // Duration in seconds
   duration: integer("duration"),
   
+  // Content details for AI search
+  transcript: text("transcript"), // Full transcript for AI indexing
+  speakerName: text("speaker_name"), // Primary speaker
+  speakerTitle: text("speaker_title"), // Speaker credentials
+  topics: jsonb("topics").$type<string[]>().default([]), // Specific topics covered
+  targetAudience: text("target_audience"), // Who this video is for
+  learningObjectives: jsonb("learning_objectives").$type<string[]>().default([]), // What viewers will learn
+  
   // SEO
   metaTitle: text("meta_title"),
   metaDescription: text("meta_description"),
   keywords: jsonb("keywords").$type<string[]>().default([]),
+  canonicalUrl: text("canonical_url"), // For SEO
+  schemaMarkup: jsonb("schema_markup"), // Custom JSON-LD structured data
   
   // Organization
   featured: text("featured").notNull().default("no"),
@@ -928,6 +938,9 @@ export const insertVideoSchema = createInsertSchema(videos).omit({
   updatedAt: true,
 }).extend({
   keywords: z.array(z.string()).default([]),
+  topics: z.array(z.string()).default([]),
+  learningObjectives: z.array(z.string()).default([]),
+  schemaMarkup: z.any().optional(),
   slug: z.string().optional(),
   category: z.enum(videoCategoryEnum).default("care-tips"),
   videoType: z.enum(["upload", "youtube", "vimeo"]).default("upload"),
@@ -969,10 +982,17 @@ export const podcasts = pgTable("podcasts", {
   guestName: text("guest_name"),
   guestTitle: text("guest_title"),
   
+  // Content details for AI search
+  topics: jsonb("topics").$type<string[]>().default([]), // Specific topics covered
+  targetAudience: text("target_audience"), // Who this podcast is for
+  learningObjectives: jsonb("learning_objectives").$type<string[]>().default([]), // What listeners will learn
+  
   // SEO
   metaTitle: text("meta_title"),
   metaDescription: text("meta_description"),
   keywords: jsonb("keywords").$type<string[]>().default([]),
+  canonicalUrl: text("canonical_url"), // For SEO
+  schemaMarkup: jsonb("schema_markup"), // Custom JSON-LD structured data
   
   // Organization
   featured: text("featured").notNull().default("no"),
@@ -997,6 +1017,9 @@ export const insertPodcastSchema = createInsertSchema(podcasts).omit({
   updatedAt: true,
 }).extend({
   keywords: z.array(z.string()).default([]),
+  topics: z.array(z.string()).default([]),
+  learningObjectives: z.array(z.string()).default([]),
+  schemaMarkup: z.any().optional(),
   slug: z.string().optional(),
   category: z.enum(podcastCategoryEnum).default("tips-and-advice"),
   audioType: z.enum(["upload", "spotify", "apple", "anchor"]).default("upload"),
