@@ -5370,6 +5370,230 @@ ${faqJsonLd}
     }
   });
 
+  // Seed initial video content
+  app.post("/api/seed/videos", async (req: Request, res: Response) => {
+    try {
+      const existingVideos = await storage.listVideos();
+      if (existingVideos.length > 0 && !req.query.force) {
+        return res.json({ message: "Videos already exist. Use ?force=true to reseed.", count: existingVideos.length });
+      }
+
+      // Delete existing if force=true
+      if (req.query.force && existingVideos.length > 0) {
+        for (const video of existingVideos) {
+          await storage.deleteVideo(video.id);
+        }
+      }
+
+      const videoData = [
+        {
+          title: "Concierge Services Massachusetts - Live Life on Your Own Terms",
+          slug: "concierge-services-massachusetts",
+          description: "Discover premium concierge care services in Massachusetts that help seniors maintain independence while receiving personalized support. Learn how concierge caregiving goes beyond basic care to enhance quality of life.",
+          category: "services",
+          videoType: "upload",
+          videoUrl: "/videos/concierge-services-massachusetts.mp4",
+          thumbnailUrl: "",
+          duration: 180,
+          speakerName: "PrivateInHomeCareGiver",
+          speakerTitle: "Massachusetts Home Care Experts",
+          topics: ["concierge care", "luxury senior care", "personalized services", "Massachusetts home care"],
+          targetAudience: "Families seeking premium care options for elderly loved ones",
+          learningObjectives: ["Understand concierge care services", "Learn benefits of personalized care", "Discover Massachusetts care options"],
+          metaTitle: "Concierge Care Services Massachusetts | Premium Senior Care",
+          metaDescription: "Learn about premium concierge care services for seniors in Massachusetts. Personalized support that helps your loved ones live life on their own terms.",
+          keywords: ["concierge care", "premium senior care", "Massachusetts home care", "personalized elder care"],
+          featured: "yes",
+          sortOrder: 1,
+          status: "published",
+        },
+        {
+          title: "Dementia Care Massachusetts - 7 Essential Options Explained",
+          slug: "dementia-care-massachusetts-options",
+          description: "Comprehensive guide to dementia care options in Massachusetts. Learn about the 7 essential care pathways available for families navigating memory care decisions.",
+          category: "dementia-care",
+          videoType: "upload",
+          videoUrl: "/videos/dementia-care-massachusetts.mp4",
+          thumbnailUrl: "",
+          duration: 210,
+          speakerName: "PrivateInHomeCareGiver",
+          speakerTitle: "Memory Care Specialists",
+          topics: ["dementia care", "memory care", "Alzheimer's support", "Massachusetts care options"],
+          targetAudience: "Families caring for loved ones with dementia or Alzheimer's",
+          learningObjectives: ["Understand 7 dementia care options", "Learn about memory care services", "Navigate care decisions"],
+          metaTitle: "7 Dementia Care Options in Massachusetts | Expert Guide",
+          metaDescription: "Explore 7 essential dementia care options in Massachusetts. Expert guidance for families navigating memory care for loved ones.",
+          keywords: ["dementia care", "memory care Massachusetts", "Alzheimer's care", "senior memory support"],
+          featured: "yes",
+          sortOrder: 2,
+          status: "published",
+        },
+        {
+          title: "Home Care Costs Greater Boston - Expert Analysis",
+          slug: "home-care-costs-greater-boston",
+          description: "Expert analysis of home care costs in Greater Boston. Understand pricing structures, what affects rates, and how to budget for quality in-home care services.",
+          category: "cost-analysis",
+          videoType: "upload",
+          videoUrl: "/videos/home-care-costs-greater-boston.mp4",
+          thumbnailUrl: "",
+          duration: 195,
+          speakerName: "PrivateInHomeCareGiver",
+          speakerTitle: "Care Cost Analysts",
+          topics: ["home care costs", "Greater Boston pricing", "care budgeting", "affordable care options"],
+          targetAudience: "Families researching home care costs in the Boston area",
+          learningObjectives: ["Understand home care pricing", "Learn cost factors", "Budget effectively for care"],
+          metaTitle: "Home Care Costs in Greater Boston | 2025 Price Analysis",
+          metaDescription: "Expert analysis of home care costs in Greater Boston. Learn what affects pricing and how to budget for quality in-home care.",
+          keywords: ["home care costs", "Boston care prices", "in-home care rates", "care budgeting"],
+          featured: "no",
+          sortOrder: 3,
+          status: "published",
+        },
+        {
+          title: "In-Home Care in Newton MA - 5 Essential Tips for Families",
+          slug: "in-home-care-newton-ma-tips",
+          description: "Essential tips for families seeking in-home care in Newton, Massachusetts. Learn how to find, evaluate, and hire quality caregivers for your loved ones.",
+          category: "care-tips",
+          videoType: "upload",
+          videoUrl: "/videos/in-home-care-newton-ma.mp4",
+          thumbnailUrl: "",
+          duration: 240,
+          speakerName: "PrivateInHomeCareGiver",
+          speakerTitle: "Newton MA Care Specialists",
+          topics: ["Newton MA care", "hiring caregivers", "family care tips", "local care resources"],
+          targetAudience: "Newton, MA families seeking in-home care solutions",
+          learningObjectives: ["Find quality caregivers", "Evaluate care providers", "Navigate local care options"],
+          metaTitle: "In-Home Care Newton MA | 5 Essential Family Tips",
+          metaDescription: "5 essential tips for finding in-home care in Newton, MA. Expert guidance for families seeking quality caregivers.",
+          keywords: ["Newton MA home care", "in-home caregivers", "elder care tips", "family care guide"],
+          featured: "no",
+          sortOrder: 4,
+          status: "published",
+        },
+        {
+          title: "Private Home Care Cambridge MA - Expert 2025 Guide",
+          slug: "private-home-care-cambridge-ma-guide",
+          description: "Comprehensive 2025 guide to private home care services in Cambridge, Massachusetts. Everything families need to know about finding quality care in the Cambridge area.",
+          category: "guides",
+          videoType: "upload",
+          videoUrl: "/videos/private-home-care-cambridge-ma.mp4",
+          thumbnailUrl: "",
+          duration: 420,
+          speakerName: "PrivateInHomeCareGiver",
+          speakerTitle: "Cambridge Care Experts",
+          topics: ["Cambridge home care", "private caregivers", "local care services", "2025 care guide"],
+          targetAudience: "Cambridge, MA residents seeking private home care",
+          learningObjectives: ["Navigate Cambridge care options", "Understand private care benefits", "Find qualified providers"],
+          metaTitle: "Private Home Care Cambridge MA | Expert 2025 Guide",
+          metaDescription: "Complete 2025 guide to private home care in Cambridge, MA. Expert insights for families seeking quality care services.",
+          keywords: ["Cambridge home care", "private caregivers MA", "Cambridge senior care", "home care guide"],
+          featured: "yes",
+          sortOrder: 5,
+          status: "published",
+        },
+        {
+          title: "Senior Companion Services Greater Boston",
+          slug: "senior-companion-greater-boston",
+          description: "Learn about senior companion and escort services in Greater Boston. Discover how companionship care enriches the lives of elderly adults and provides family peace of mind.",
+          category: "companionship",
+          videoType: "upload",
+          videoUrl: "/videos/senior-companion-greater-boston.mp4",
+          thumbnailUrl: "",
+          duration: 360,
+          speakerName: "PrivateInHomeCareGiver",
+          speakerTitle: "Companionship Care Team",
+          topics: ["companion care", "senior companionship", "escort services", "social engagement"],
+          targetAudience: "Families seeking companionship services for elderly loved ones",
+          learningObjectives: ["Understand companion care", "Learn service benefits", "Find local providers"],
+          metaTitle: "Senior Companion Services Greater Boston | Companionship Care",
+          metaDescription: "Explore senior companion and escort services in Greater Boston. Quality companionship care for elderly adults.",
+          keywords: ["senior companion", "companion care Boston", "elderly companionship", "escort services"],
+          featured: "no",
+          sortOrder: 6,
+          status: "published",
+        },
+        {
+          title: "Private In-Home Care Lexington Massachusetts - Expert Analysis",
+          slug: "private-care-lexington-massachusetts",
+          description: "Expert analysis of private in-home care options in Lexington, Massachusetts. Understand what makes Lexington unique for senior care services.",
+          category: "local-guides",
+          videoType: "upload",
+          videoUrl: "/videos/private-care-lexington-massachusetts.mp4",
+          thumbnailUrl: "",
+          duration: 255,
+          speakerName: "PrivateInHomeCareGiver",
+          speakerTitle: "Lexington Care Analysts",
+          topics: ["Lexington care", "private home care", "local senior services", "expert analysis"],
+          targetAudience: "Lexington, MA residents researching home care options",
+          learningObjectives: ["Understand Lexington care landscape", "Evaluate private care options", "Make informed decisions"],
+          metaTitle: "Private Home Care Lexington MA | Expert Analysis",
+          metaDescription: "Expert analysis of private in-home care in Lexington, Massachusetts. Insights for families seeking quality care.",
+          keywords: ["Lexington home care", "private caregivers", "MA senior care", "local care analysis"],
+          featured: "no",
+          sortOrder: 7,
+          status: "published",
+        },
+        {
+          title: "Private In-Home Care Massachusetts - Peace of Mind for Families",
+          slug: "private-care-massachusetts-peace-of-mind",
+          description: "Discover how private in-home care in Massachusetts provides peace of mind for families. Learn about the emotional and practical benefits of professional home care.",
+          category: "family-support",
+          videoType: "upload",
+          videoUrl: "/videos/private-care-massachusetts-peace-of-mind.mp4",
+          thumbnailUrl: "",
+          duration: 200,
+          speakerName: "PrivateInHomeCareGiver",
+          speakerTitle: "Family Care Consultants",
+          topics: ["family peace of mind", "home care benefits", "caregiver support", "emotional wellness"],
+          targetAudience: "Family members concerned about elderly loved ones",
+          learningObjectives: ["Understand care benefits", "Reduce family stress", "Find reliable support"],
+          metaTitle: "Home Care Peace of Mind | Massachusetts Families",
+          metaDescription: "Learn how private in-home care provides peace of mind for Massachusetts families caring for elderly loved ones.",
+          keywords: ["family peace of mind", "home care benefits", "Massachusetts caregivers", "elder care support"],
+          featured: "no",
+          sortOrder: 8,
+          status: "published",
+        },
+        {
+          title: "Purposeful Aging Massachusetts - The Ageless Spirit of Seniors",
+          slug: "purposeful-aging-massachusetts",
+          description: "Celebrating purposeful aging in Massachusetts. Discover how seniors maintain vibrant, meaningful lives with the right support and community engagement.",
+          category: "lifestyle",
+          videoType: "upload",
+          videoUrl: "/videos/purposeful-aging-massachusetts.mp4",
+          thumbnailUrl: "",
+          duration: 175,
+          speakerName: "PrivateInHomeCareGiver",
+          speakerTitle: "Aging Well Advocates",
+          topics: ["purposeful aging", "senior wellness", "active aging", "community engagement"],
+          targetAudience: "Seniors and families interested in aging well",
+          learningObjectives: ["Embrace purposeful aging", "Maintain active lifestyle", "Build meaningful connections"],
+          metaTitle: "Purposeful Aging in Massachusetts | Ageless Spirit",
+          metaDescription: "Celebrating purposeful aging in Massachusetts. How seniors maintain vibrant, meaningful lives with support.",
+          keywords: ["purposeful aging", "senior wellness", "aging well", "Massachusetts seniors"],
+          featured: "no",
+          sortOrder: 9,
+          status: "published",
+        }
+      ];
+
+      const createdVideos = [];
+      for (const video of videoData) {
+        const created = await storage.createVideo(video);
+        createdVideos.push(created);
+      }
+
+      res.json({
+        message: `Successfully seeded ${createdVideos.length} videos`,
+        count: createdVideos.length,
+        videos: createdVideos.map(v => ({ slug: v.slug, title: v.title }))
+      });
+    } catch (error) {
+      console.error("Error seeding videos:", error);
+      res.status(500).json({ message: "Failed to seed videos", error: String(error) });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
