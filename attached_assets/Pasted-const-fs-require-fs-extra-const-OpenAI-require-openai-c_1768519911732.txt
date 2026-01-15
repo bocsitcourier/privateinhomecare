@@ -1,0 +1,65 @@
+const fs = require('fs-extra');
+const OpenAI = require('openai');
+const pLimit = require('p-limit');
+const path = require('path');
+require('dotenv').config();
+
+const openai = new OpenAI();
+const limit = pLimit(5); // Process 5 files at a time to save memory/CPU
+const MEDIA_DIR = './uploads';
+const DATA_DIR = './data';
+
+async function processFile(filePath) {
+  const fileName = path.basename(filePath);
+  const facilityName = fileName.split('.')[0].replace(/_/g, ' '); // Assumes filename is Facility_Name.mp4
+  
+  console.log(`📡 Processing: ${facilityName}...`);
+
+  try {
+    // 1. Ask AI to generate SEO/GEO Metadata for this specific file
+    const aiResponse = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{
+        role: "system",
+        content: "You are an SEO/GEO expert. Create VideoObject or PodcastEpisode JSON-LD metadata, a 50-word snippet, and 3 key timestamps/chapters based on this file name."
+      }, {
+        role: "user",
+        content: `Facility: ${facilityName}, File: ${fileName}`
+      }],
+      response_format: { type: "json_object" }
+    });
+
+    const metadata = JSON.parse(aiResponse.choices[0].message.content);
+
+    // 2. Save the metadata JSON sidecar
+    const metaPath = path.join(DATA_DIR, `${fileName}.json`);
+    await fs.writeJson(metaPath, {
+      ...metadata,
+      processedAt: new Date().toISOString(),
+      fileUrl: `/uploads/${fileName}`
+    }, { spaces: 2 });
+
+    console.log(`✅ Metadata created for ${fileName}`);
+  } catch (err) {
+    console.error(`❌ Error processing ${fileName}:`, err.message);
+  }
+}
+
+async function startBatch() {
+  await fs.ensureDir(DATA_DIR);
+  const files = await fs.readdir(MEDIA_DIR);
+  
+  // Filter for video and audio formats
+  const mediaFiles = files.filter(f => ['.mp4', '.mp3', '.wav', '.mov'].includes(path.extname(f)));
+
+  console.log(`🚀 Starting batch processing for ${mediaFiles.length} files...`);
+
+  const tasks = mediaFiles.map(file => {
+    return limit(() => processFile(path.join(MEDIA_DIR, file)));
+  });
+
+  await Promise.all(tasks);
+  console.log('🏁 All media files registered and SEO-optimized.');
+}
+
+startBatch();

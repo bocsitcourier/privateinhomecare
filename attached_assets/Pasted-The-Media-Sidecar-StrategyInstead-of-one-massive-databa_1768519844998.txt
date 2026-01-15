@@ -1,0 +1,58 @@
+The "Media Sidecar" StrategyInstead of one massive database, create a folder for each facility. Inside that folder, you’ll have:video.mp4 / podcast.mp3metadata.json (The "Brain" for AI search)index.html (The GEO-optimized page)1. The Node.js "Asset Uploader" CodeThis script scans your /uploads folder, extracts data from the files, and uses OpenAI to create the SEO/GEO tags.JavaScriptconst fs = require('fs-extra');
+const OpenAI = require('openai');
+const path = require('path');
+require('dotenv').config();
+
+const openai = new OpenAI();
+
+async function registerMedia(fileName, facilityName) {
+  const ext = path.extname(fileName);
+  const type = (ext === '.mp3' || ext === '.wav') ? 'PodcastEpisode' : 'VideoObject';
+  
+  // 1. Generate SEO Metadata for this specific file
+  const aiResponse = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [{
+      role: "system",
+      content: "Generate SEO metadata for a nursing facility media file. Output JSON only."
+    }, {
+      role: "user",
+      content: `Facility: ${facilityName}, File: ${fileName}, Type: ${type}`
+    }],
+    response_format: { type: "json_object" }
+  });
+
+  const metadata = JSON.parse(aiResponse.choices[0].message.content);
+
+  // 2. Save the metadata as a sidecar JSON
+  const metaPath = `./data/${facilityName.replace(/ /g, '_')}_metadata.json`;
+  await fs.ensureDir('./data');
+  await fs.writeJson(metaPath, {
+    ...metadata,
+    fileName,
+    type,
+    uploadDate: new Date().toISOString(),
+    fileUrl: `https://your-domain.replit.app/uploads/${fileName}`
+  }, { spaces: 2 });
+
+  console.log(`✅ Registered ${type} for ${facilityName}`);
+}
+2. GEO (Generative Engine Optimization) MetadataTo rank in AI Overviews (Perplexity, Gemini, Google SGE), the AI must understand the intent of your video without watching it. Use the following schema structure in your metadata.json:FeatureImplementation for AI SearchtranscriptCrucial. AI search bots "read" transcripts. Put the full text in the metadata.hasPart (Chapters)Breaks video into segments (e.g., "Tour of the Kitchen"). AI uses this to answer specific queries.descriptionWrite this as a "Snippet"—a 50-word authoritative summary.keywordsUse long-tail local terms (e.g., "skilled nursing Massachusetts reviews").3. Managing Content (Add, Edit, Delete)To make this manageable in Replit, ask the Agent to build a simple Admin CLI or Dashboard.Add: Drop a file into /uploads and run node register.js.Edit: To update metadata, edit the _metadata.json file. The generate.js script will see the change and re-build the HTML.Delete: A script that removes the .mp4, the .json, and the .html simultaneously.JavaScript// DELETE Logic
+async function deleteFacilityMedia(facilityName) {
+  const slug = facilityName.replace(/ /g, '_');
+  await fs.remove(`./uploads/${slug}.mp4`);
+  await fs.remove(`./data/${slug}_metadata.json`);
+  await fs.remove(`./output/${slug}.html`);
+  console.log(`🗑️ Deleted all assets for ${facilityName}`);
+}
+4. Final HTML Injection (The SEO Template)Your generate.js should inject the metadata into the <head> of your facility pages.HTML<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "${data.type}",
+  "name": "${data.seoTitle}",
+  "description": "${data.seoDescription}",
+  "contentUrl": "${data.fileUrl}",
+  "transcript": "${data.fullTranscript}",
+  "uploadDate": "${data.uploadDate}"
+}
+</script>

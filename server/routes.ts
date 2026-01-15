@@ -409,6 +409,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   app.use('/attached_assets', express.static('attached_assets'));
   
+  // Serve video files from public/videos directory
+  app.use('/videos', (req, res, next) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Accept-Ranges', 'bytes');
+    next();
+  });
+  app.use('/videos', express.static('public/videos'));
+  
   app.post("/api/auth/login", authLimiter, async (req, res) => {
     try {
       const { username, password, captchaToken } = req.body;
