@@ -66,7 +66,7 @@ const facilityTypeLabels: Record<string, string> = {
   "continuing-care": "Continuing Care",
 };
 
-export default function FacilitiesPage() {
+export function FacilitiesManagementContent() {
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -197,11 +197,9 @@ export default function FacilitiesPage() {
 
   if (isLoading) {
     return (
-      <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      </AdminLayout>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
     );
   }
 
@@ -213,57 +211,56 @@ export default function FacilitiesPage() {
   };
 
   return (
-    <AdminLayout>
-      <div className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Facilities Directory</h1>
-            <p className="text-muted-foreground mt-2">
-              Manage Massachusetts senior care facilities
-            </p>
-          </div>
-          <Button onClick={() => setIsCreating(true)} data-testid="button-add-facility">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Facility
-          </Button>
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold" data-testid="text-page-title">Facilities Management</h1>
+          <p className="text-muted-foreground mt-2">
+            Manage Massachusetts senior care facilities
+          </p>
         </div>
+        <Button onClick={() => setIsCreating(true)} data-testid="button-add-facility">
+          <Plus className="h-4 w-4 mr-2" />
+          Add Facility
+        </Button>
+      </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="py-4">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Facilities</CardTitle>
-            </CardHeader>
-            <CardContent className="py-0 pb-4">
-              <p className="text-2xl font-bold" data-testid="text-total-facilities">{stats.total}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="py-4">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Published</CardTitle>
-            </CardHeader>
-            <CardContent className="py-0 pb-4">
-              <p className="text-2xl font-bold text-green-600" data-testid="text-published-facilities">{stats.published}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="py-4">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Drafts</CardTitle>
-            </CardHeader>
-            <CardContent className="py-0 pb-4">
-              <p className="text-2xl font-bold text-yellow-600" data-testid="text-draft-facilities">{stats.draft}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="py-4">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Featured</CardTitle>
-            </CardHeader>
-            <CardContent className="py-0 pb-4">
-              <p className="text-2xl font-bold text-blue-600" data-testid="text-featured-facilities">{stats.featured}</p>
-            </CardContent>
-          </Card>
-        </div>
-        
-        {/* Data Freshness Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="py-4">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Facilities</CardTitle>
+          </CardHeader>
+          <CardContent className="py-0 pb-4">
+            <p className="text-2xl font-bold" data-testid="text-total-facilities">{stats.total}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="py-4">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Published</CardTitle>
+          </CardHeader>
+          <CardContent className="py-0 pb-4">
+            <p className="text-2xl font-bold text-green-600" data-testid="text-published-facilities">{stats.published}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="py-4">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Drafts</CardTitle>
+          </CardHeader>
+          <CardContent className="py-0 pb-4">
+            <p className="text-2xl font-bold text-yellow-600" data-testid="text-draft-facilities">{stats.draft}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="py-4">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Featured</CardTitle>
+          </CardHeader>
+          <CardContent className="py-0 pb-4">
+            <p className="text-2xl font-bold text-blue-600" data-testid="text-featured-facilities">{stats.featured}</p>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Data Freshness Stats */}
         {dataStats && (
           <Card>
             <CardHeader className="py-4">
@@ -465,7 +462,6 @@ export default function FacilitiesPage() {
             </Table>
           </CardContent>
         </Card>
-      </div>
 
       <Dialog open={!!selectedFacility && !isEditing} onOpenChange={() => setSelectedFacility(null)}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -612,6 +608,14 @@ export default function FacilitiesPage() {
           facility={selectedFacility}
         />
       )}
+    </div>
+  );
+}
+
+export default function FacilitiesPage() {
+  return (
+    <AdminLayout>
+      <FacilitiesManagementContent />
     </AdminLayout>
   );
 }

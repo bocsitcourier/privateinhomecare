@@ -65,7 +65,7 @@ const AUDIO_TYPES = [
   { value: "anchor", label: "Anchor" },
 ];
 
-export default function AdminPodcastsPage() {
+export function PodcastsManagementContent() {
   const [selectedPodcast, setSelectedPodcast] = useState<PodcastType | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -318,11 +318,9 @@ export default function AdminPodcastsPage() {
 
   if (isLoading) {
     return (
-      <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      </AdminLayout>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
     );
   }
 
@@ -341,8 +339,7 @@ export default function AdminPodcastsPage() {
   };
 
   return (
-    <AdminLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold" data-testid="text-page-title">Podcasts Management</h1>
@@ -531,7 +528,6 @@ export default function AdminPodcastsPage() {
             </Table>
           </CardContent>
         </Card>
-      </div>
 
       <Dialog open={!!selectedPodcast && !isEditing} onOpenChange={() => setSelectedPodcast(null)}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -1025,6 +1021,14 @@ export default function AdminPodcastsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+export default function AdminPodcastsPage() {
+  return (
+    <AdminLayout>
+      <PodcastsManagementContent />
     </AdminLayout>
   );
 }

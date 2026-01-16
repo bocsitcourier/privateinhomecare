@@ -1,0 +1,125 @@
+professional, visual dashboard in Replit, you need to connect your SQLite database to an API endpoint and then build an HTML view using Chart.js.
+
+1. The API Endpoint (server.js)
+This code creates an endpoint /api/analytics/summary that pulls the raw data from SQLite and aggregates it for your charts.
+
+JavaScript
+
+// Backend: Fetch summary statistics
+app.get('/api/analytics/summary', (req, res) => {
+  try {
+    // 1. Top 10 Facilities by Views
+    const topFacilities = db.prepare(`
+      SELECT slug, COUNT(*) as views 
+      FROM page_views 
+      GROUP BY slug 
+      ORDER BY views DESC 
+      LIMIT 10
+    `).all();
+
+    // 2. Traffic over the last 7 days
+    const dailyTraffic = db.prepare(`
+      SELECT date(timestamp) as day, COUNT(*) as views 
+      FROM page_views 
+      GROUP BY day 
+      ORDER BY day ASC 
+      LIMIT 7
+    `).all();
+
+    // 3. Media Engagement (Plays vs Completes)
+    const mediaStats = db.prepare(`
+      SELECT event_type, COUNT(*) as count 
+      FROM media_events 
+      GROUP BY event_type
+    `).all();
+
+    res.json({ topFacilities, dailyTraffic, mediaStats });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+2. The Admin Dashboard UI (admin.html)
+This template uses Tailwind CSS for the layout and Chart.js for the data visualization. Drop this into your public/admin.html file.
+
+HTML
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">Facility Insights Dashboard</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-white p-6 rounded-xl shadow">
+                <h2 class="text-xl font-semibold mb-4">Traffic (Last 7 Days)</h2>
+                <canvas id="trafficChart"></canvas>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow">
+                <h2 class="text-xl font-semibold mb-4">Media Engagement</h2>
+                <canvas id="engagementChart"></canvas>
+            </div>
+        </div>
+
+        <div class="mt-8 bg-white p-6 rounded-xl shadow">
+            <h2 class="text-xl font-semibold mb-4">Most Popular Facilities</h2>
+            <div id="topFacilitiesList" class="space-y-2"></div>
+        </div>
+    </div>
+
+    <script>
+        async function loadDashboard() {
+            const res = await fetch('/api/analytics/summary');
+            const data = await res.json();
+
+            // Render Traffic Line Chart
+            new Chart(document.getElementById('trafficChart'), {
+                type: 'line',
+                data: {
+                    labels: data.dailyTraffic.map(d => d.day),
+                    datasets: [{ label: 'Views', data: data.dailyTraffic.map(d => d.views), borderColor: '#3b82f6', tension: 0.3 }]
+                }
+            });
+
+            // Render Engagement Pie Chart
+            new Chart(document.getElementById('engagementChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: data.mediaStats.map(s => s.event_type),
+                    datasets: [{ data: data.mediaStats.map(s => s.count), backgroundColor: ['#10b981', '#f59e0b', '#ef4444'] }]
+                }
+            });
+
+            // Fill Top Facilities Table
+            const list = document.getElementById('topFacilitiesList');
+            data.topFacilities.forEach(f => {
+                list.innerHTML += `<div class="flex justify-between border-b py-2"><span>${f.slug}</span><span class="font-bold">${f.views} views</span></div>`;
+            });
+        }
+        loadDashboard();
+    </script>
+</body>
+</html>
+3. Protecting Your Data (Simple Security)
+To ensure competitors don't see your analytics, add this simple "Gatekeeper" middleware to your Replit code.
+
+JavaScript
+
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "change_me";
+
+const adminAuth = (req, res, next) => {
+  const auth = req.headers.authorization;
+  if (auth === `Basic ${Buffer.from(`admin:${ADMIN_PASSWORD}`).toString('base64')}`) {
+    return next();
+  }
+  res.set('WWW-Authenticate', 'Basic realm="401"');
+  res.status(401).send('Authentication required.');
+};
+
+// Apply to admin pages and API
+app.use('/admin.html', adminAuth);
+app.use('/api/analytics', adminAuth);

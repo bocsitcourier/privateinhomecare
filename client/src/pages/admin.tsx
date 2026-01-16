@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, LayoutDashboard, Briefcase, FileText, MessageSquare, Settings, Users, UserCog, Loader2, ClipboardList, FileCheck, Gift, MapPin } from "lucide-react";
+import { AlertCircle, LayoutDashboard, Briefcase, FileText, MessageSquare, Settings, Users, UserCog, Loader2, ClipboardList, FileCheck, Gift, MapPin, Video, Mic, Building2, HelpCircle } from "lucide-react";
 import JobsManagement from "@/components/admin/JobsManagement";
 import ArticlesManagement from "@/components/admin/ArticlesManagement";
 import InquiriesManagement from "@/components/admin/InquiriesManagement";
@@ -18,6 +18,10 @@ import AdminDashboard from "@/components/admin/AdminDashboard";
 import ApplicationsManagement from "@/components/admin/ApplicationsManagement";
 import ReferralsManagement from "@/components/admin/ReferralsManagement";
 import LocationsManagement from "@/components/admin/LocationsManagement";
+import { VideosManagementContent } from "@/pages/admin/videos";
+import { PodcastsManagementContent } from "@/pages/admin/podcasts";
+import { FacilitiesManagementContent } from "@/pages/admin/facilities";
+import { QuizLeadsManagementContent } from "@/pages/admin/quiz-leads";
 
 export default function AdminPage() {
   const [, setLocation] = useLocation();
@@ -271,6 +275,22 @@ export default function AdminPage() {
               <Settings className="w-4 h-4 mr-2" />
               SEO
             </TabsTrigger>
+            <TabsTrigger value="videos" data-testid="tab-videos">
+              <Video className="w-4 h-4 mr-2" />
+              Videos
+            </TabsTrigger>
+            <TabsTrigger value="podcasts" data-testid="tab-podcasts">
+              <Mic className="w-4 h-4 mr-2" />
+              Podcasts
+            </TabsTrigger>
+            <TabsTrigger value="facilities" data-testid="tab-facilities">
+              <Building2 className="w-4 h-4 mr-2" />
+              Facilities
+            </TabsTrigger>
+            <TabsTrigger value="quizzes" data-testid="tab-quizzes">
+              <HelpCircle className="w-4 h-4 mr-2" />
+              Quiz Leads
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard">
@@ -315,6 +335,22 @@ export default function AdminPage() {
 
           <TabsContent value="seo">
             <PageMetaManagement />
+          </TabsContent>
+
+          <TabsContent value="videos">
+            <VideosManagementContent />
+          </TabsContent>
+
+          <TabsContent value="podcasts">
+            <PodcastsManagementContent />
+          </TabsContent>
+
+          <TabsContent value="facilities">
+            <FacilitiesManagementContent />
+          </TabsContent>
+
+          <TabsContent value="quizzes">
+            <QuizLeadsManagementContent />
           </TabsContent>
         </Tabs>
       </main>

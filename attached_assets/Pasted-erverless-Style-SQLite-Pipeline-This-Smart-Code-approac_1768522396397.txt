@@ -1,0 +1,73 @@
+erverless-Style SQLite Pipeline.This "Smart Code" approach stores everything in a local .sqlite file, which is much faster and more reliable than a JSON file for high-frequency writing (like tracking every click).1. The ArchitectureFrontend Tracker: A tiny script (1KB) that fires on page load and video/podcast interactions.Backend API: An Express.js endpoint in your Replit that receives and validates data.Database: A single analytics.sqlite file that holds thousands of records without slowing down.2. The Database Setup (db.js)First, install the high-speed library: npm install better-sqlite3.JavaScriptconst Database = require('better-sqlite3');
+const db = new Database('analytics.sqlite');
+
+// Create tables for page views and custom media events
+db.exec(`
+  CREATE TABLE IF NOT EXISTS page_views (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    slug TEXT,
+    referrer TEXT,
+    user_agent TEXT,
+    ip_masked TEXT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS media_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    facility_name TEXT,
+    event_type TEXT, -- 'play', 'pause', 'complete'
+    media_type TEXT, -- 'video', 'podcast'
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+`);
+
+module.exports = db;
+3. The "Smart" Frontend TrackerAdd this script to your global HTML template. It uses navigator.sendBeacon, which ensures data is sent even if the user closes the tab immediately.HTML<script>
+  const track = (endpoint, data) => {
+    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    navigator.sendBeacon('/api/track' + endpoint, blob);
+  };
+
+  // 1. Auto-track Page View
+  window.addEventListener('load', () => {
+    track('/pageview', {
+      slug: window.location.pathname,
+      referrer: document.referrer
+    });
+  });
+
+  // 2. Smart Media Tracking (Inject this for Videos/Podcasts)
+  function setupMediaTracking(element, facilityName, type) {
+    ['play', 'pause', 'ended'].forEach(event => {
+      element.addEventListener(event, () => {
+        track('/media', { facilityName, event_type: event, media_type: type });
+      });
+    });
+  }
+</script>
+4. The Backend API ImplementationAdd this to your main Express server. It includes GDPR-compliant IP masking (hashing the IP so you can count unique users without storing personal data).JavaScriptconst db = require('./db.js');
+const crypto = require('crypto');
+
+// Helper to anonymize IP
+const maskIp = (ip) => crypto.createHash('md5').update(ip).digest('hex').substring(0, 10);
+
+app.post('/api/track/pageview', (req, res) => {
+  const { slug, referrer } = req.body;
+  const ipMasked = maskIp(req.ip);
+  const userAgent = req.headers['user-agent'];
+
+  const stmt = db.prepare('INSERT INTO page_views (slug, referrer, user_agent, ip_masked) VALUES (?, ?, ?, ?)');
+  stmt.run(slug, referrer, userAgent, ipMasked);
+  res.sendStatus(204);
+});
+
+app.post('/api/track/media', (req, res) => {
+  const { facilityName, event_type, media_type } = req.body;
+  const stmt = db.prepare('INSERT INTO media_events (facility_name, event_type, media_type) VALUES (?, ?, ?)');
+  stmt.run(facilityName, event_type, media_type);
+  res.sendStatus(204);
+});
+5. The "Analytics Dashboard" (Direct SQL Control)The beauty of this system is that you don't need a complex UI. You can run simple SQL queries to see your most popular facilities:Query GoalSQL CodeTop 5 FacilitiesSELECT slug, COUNT(*) as views FROM page_views GROUP BY slug ORDER BY views DESC LIMIT 5;Video Play CountSELECT facility_name, COUNT(*) FROM media_events WHERE event_type='play' GROUP BY facility_name;Unique VisitorsSELECT COUNT(DISTINCT ip_masked) FROM page_views;6. Automatic Data Retention (Cleanup)To keep your database "superfast," add a small cron job or function that runs once a week to delete data older than 90 days:JavaScriptfunction cleanupAnalytics() {
+  db.prepare("DELETE FROM page_views WHERE timestamp < date('now', '-90 days')").run();
+  db.prepare("DELETE FROM media_events WHERE timestamp < date('now', '-90 days')").run();
+}

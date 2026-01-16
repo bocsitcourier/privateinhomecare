@@ -61,7 +61,7 @@ const URGENCY_CONFIG = {
   low: { label: "Low", color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" },
 };
 
-export default function AdminQuizLeadsPage() {
+export function QuizLeadsManagementContent() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -133,11 +133,10 @@ export default function AdminQuizLeadsPage() {
   };
 
   return (
-    <AdminLayout>
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Quiz Leads</h1>
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold" data-testid="text-page-title">Quiz Leads Management</h1>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -203,245 +202,252 @@ export default function AdminQuizLeadsPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Filters */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by name, email, or phone..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                  data-testid="input-search"
-                />
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-[180px]" data-testid="select-status-filter">
-                  <SelectValue placeholder="All Statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="new">New</SelectItem>
-                  <SelectItem value="contacted">Contacted</SelectItem>
-                  <SelectItem value="qualified">Qualified</SelectItem>
-                  <SelectItem value="converted">Converted</SelectItem>
-                  <SelectItem value="closed">Closed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Leads Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quiz Leads ({filteredLeads.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin" />
-              </div>
-            ) : filteredLeads.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No leads found
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Contact</TableHead>
-                      <TableHead>Score</TableHead>
-                      <TableHead>Urgency</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredLeads.map((lead) => (
-                      <TableRow key={lead.id} data-testid={`row-lead-${lead.id}`}>
-                        <TableCell className="font-medium">{lead.name}</TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-1 text-sm">
-                              <Mail className="w-3 h-3" />
-                              {lead.email}
-                            </div>
-                            {lead.phone && (
-                              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                <Phone className="w-3 h-3" />
-                                {lead.phone}
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="font-mono">
-                            <TrendingUp className="w-3 h-3 mr-1" />
-                            {lead.leadScore}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {lead.urgencyLevel && (
-                            <Badge className={URGENCY_CONFIG[lead.urgencyLevel as keyof typeof URGENCY_CONFIG]?.color || ""}>
-                              {URGENCY_CONFIG[lead.urgencyLevel as keyof typeof URGENCY_CONFIG]?.label || lead.urgencyLevel}
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            value={lead.status}
-                            onValueChange={(value) => handleStatusChange(lead.id, value)}
-                          >
-                            <SelectTrigger className="w-[130px]" data-testid={`select-status-${lead.id}`}>
-                              <Badge className={STATUS_CONFIG[lead.status as keyof typeof STATUS_CONFIG]?.color || ""}>
-                                {STATUS_CONFIG[lead.status as keyof typeof STATUS_CONFIG]?.label || lead.status}
-                              </Badge>
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="new">New</SelectItem>
-                              <SelectItem value="contacted">Contacted</SelectItem>
-                              <SelectItem value="qualified">Qualified</SelectItem>
-                              <SelectItem value="converted">Converted</SelectItem>
-                              <SelectItem value="closed">Closed</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <Calendar className="w-3 h-3" />
-                            {format(new Date(lead.createdAt), "MMM d, yyyy")}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => fetchLeadDetails.mutate(lead.id)}
-                              disabled={fetchLeadDetails.isPending}
-                              data-testid={`button-view-${lead.id}`}
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                if (confirm("Are you sure you want to delete this lead?")) {
-                                  deleteLeadMutation.mutate(lead.id);
-                                }
-                              }}
-                              data-testid={`button-delete-${lead.id}`}
-                            >
-                              <Trash2 className="w-4 h-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* View Lead Modal */}
-        <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Lead Details</DialogTitle>
-            </DialogHeader>
-            
-            {selectedLead && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Name</p>
-                    <p className="font-medium">{selectedLead.name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <p className="font-medium">{selectedLead.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Phone</p>
-                    <p className="font-medium">{selectedLead.phone || "Not provided"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Lead Score</p>
-                    <p className="font-medium">{selectedLead.leadScore}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Urgency</p>
-                    {selectedLead.urgencyLevel && (
-                      <Badge className={URGENCY_CONFIG[selectedLead.urgencyLevel as keyof typeof URGENCY_CONFIG]?.color || ""}>
-                        {URGENCY_CONFIG[selectedLead.urgencyLevel as keyof typeof URGENCY_CONFIG]?.label || selectedLead.urgencyLevel}
-                      </Badge>
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Quiz</p>
-                    <p className="font-medium">{selectedLead.quiz?.title || "Unknown"}</p>
-                  </div>
-                </div>
-
-                {selectedLead.responses && selectedLead.responses.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold mb-3">Quiz Responses</h4>
-                    <div className="space-y-3">
-                      {selectedLead.responses.map((response, index) => (
-                        <div key={response.id} className="p-3 bg-muted/50 rounded-lg">
-                          <p className="text-sm font-medium mb-1">
-                            {index + 1}. {response.question?.questionText}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {response.answerValue || response.answerText || response.answerValues?.join(", ") || "No answer"}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <h4 className="font-semibold mb-2">Notes</h4>
-                  <Textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Add notes about this lead..."
-                    className="min-h-[100px]"
-                    data-testid="input-notes"
-                  />
-                  <Button 
-                    onClick={handleSaveNotes} 
-                    className="mt-2"
-                    disabled={updateLeadMutation.isPending}
-                    data-testid="button-save-notes"
-                  >
-                    Save Notes
-                  </Button>
-                </div>
-
-                {selectedLead.sourcePage && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Source Page</p>
-                    <p className="text-sm break-all">{selectedLead.sourcePage}</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
       </div>
+
+      {/* Filters */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name, email, or phone..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+                data-testid="input-search"
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]" data-testid="select-status-filter">
+                <SelectValue placeholder="All Statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="new">New</SelectItem>
+                <SelectItem value="contacted">Contacted</SelectItem>
+                <SelectItem value="qualified">Qualified</SelectItem>
+                <SelectItem value="converted">Converted</SelectItem>
+                <SelectItem value="closed">Closed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Leads Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quiz Leads ({filteredLeads.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin" />
+            </div>
+          ) : filteredLeads.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No leads found
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead>Score</TableHead>
+                    <TableHead>Urgency</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredLeads.map((lead) => (
+                    <TableRow key={lead.id} data-testid={`row-lead-${lead.id}`}>
+                      <TableCell className="font-medium">{lead.name}</TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1 text-sm">
+                            <Mail className="w-3 h-3" />
+                            {lead.email}
+                          </div>
+                          {lead.phone && (
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <Phone className="w-3 h-3" />
+                              {lead.phone}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="font-mono">
+                          <TrendingUp className="w-3 h-3 mr-1" />
+                          {lead.leadScore}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {lead.urgencyLevel && (
+                          <Badge className={URGENCY_CONFIG[lead.urgencyLevel as keyof typeof URGENCY_CONFIG]?.color || ""}>
+                            {URGENCY_CONFIG[lead.urgencyLevel as keyof typeof URGENCY_CONFIG]?.label || lead.urgencyLevel}
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Select
+                          value={lead.status}
+                          onValueChange={(value) => handleStatusChange(lead.id, value)}
+                        >
+                          <SelectTrigger className="w-[130px]" data-testid={`select-status-${lead.id}`}>
+                            <Badge className={STATUS_CONFIG[lead.status as keyof typeof STATUS_CONFIG]?.color || ""}>
+                              {STATUS_CONFIG[lead.status as keyof typeof STATUS_CONFIG]?.label || lead.status}
+                            </Badge>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="new">New</SelectItem>
+                            <SelectItem value="contacted">Contacted</SelectItem>
+                            <SelectItem value="qualified">Qualified</SelectItem>
+                            <SelectItem value="converted">Converted</SelectItem>
+                            <SelectItem value="closed">Closed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <Calendar className="w-3 h-3" />
+                          {format(new Date(lead.createdAt), "MMM d, yyyy")}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => fetchLeadDetails.mutate(lead.id)}
+                            disabled={fetchLeadDetails.isPending}
+                            data-testid={`button-view-${lead.id}`}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              if (confirm("Are you sure you want to delete this lead?")) {
+                                deleteLeadMutation.mutate(lead.id);
+                              }
+                            }}
+                            data-testid={`button-delete-${lead.id}`}
+                          >
+                            <Trash2 className="w-4 h-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* View Lead Modal */}
+      <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Lead Details</DialogTitle>
+          </DialogHeader>
+          
+          {selectedLead && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Name</p>
+                  <p className="font-medium">{selectedLead.name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Email</p>
+                  <p className="font-medium">{selectedLead.email}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Phone</p>
+                  <p className="font-medium">{selectedLead.phone || "Not provided"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Lead Score</p>
+                  <p className="font-medium">{selectedLead.leadScore}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Urgency</p>
+                  {selectedLead.urgencyLevel && (
+                    <Badge className={URGENCY_CONFIG[selectedLead.urgencyLevel as keyof typeof URGENCY_CONFIG]?.color || ""}>
+                      {URGENCY_CONFIG[selectedLead.urgencyLevel as keyof typeof URGENCY_CONFIG]?.label || selectedLead.urgencyLevel}
+                    </Badge>
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Quiz</p>
+                  <p className="font-medium">{selectedLead.quiz?.title || "Unknown"}</p>
+                </div>
+              </div>
+
+              {selectedLead.responses && selectedLead.responses.length > 0 && (
+                <div>
+                  <h4 className="font-semibold mb-3">Quiz Responses</h4>
+                  <div className="space-y-3">
+                    {selectedLead.responses.map((response, index) => (
+                      <div key={response.id} className="p-3 bg-muted/50 rounded-lg">
+                        <p className="text-sm font-medium mb-1">
+                          {index + 1}. {response.question?.questionText}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {response.answerValue || response.answerText || response.answerValues?.join(", ") || "No answer"}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <h4 className="font-semibold mb-2">Notes</h4>
+                <Textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Add notes about this lead..."
+                  className="min-h-[100px]"
+                  data-testid="input-notes"
+                />
+                <Button 
+                  onClick={handleSaveNotes} 
+                  className="mt-2"
+                  disabled={updateLeadMutation.isPending}
+                  data-testid="button-save-notes"
+                >
+                  Save Notes
+                </Button>
+              </div>
+
+              {selectedLead.sourcePage && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Source Page</p>
+                  <p className="text-sm break-all">{selectedLead.sourcePage}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+export default function AdminQuizLeadsPage() {
+  return (
+    <AdminLayout>
+      <QuizLeadsManagementContent />
     </AdminLayout>
   );
 }
