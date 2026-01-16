@@ -53,6 +53,9 @@ export default function PageSEO({
       
       <link rel="canonical" href={canonicalUrl} />
       
+      <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+      <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+      
       {/* Massachusetts Geo Targeting (opt-in) */}
       {includeMaGeoTargeting && (
         <>

@@ -358,7 +358,28 @@ export default function FacilityDirectoryPage() {
       <Helmet>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
+        <meta name="keywords" content={`${typeInfo?.title.toLowerCase() || 'senior care facilities'} Massachusetts, ${typeInfo?.title.toLowerCase() || 'care facilities'} near me, MA ${typeInfo?.title.toLowerCase() || 'senior care'}, elderly care Massachusetts, nursing facilities MA, assisted living near Boston, memory care Worcester, senior living Springfield`} />
         <link rel="canonical" href={`https://privateinhomecaregiver.com/facilities${selectedType !== "all" ? `/${selectedType}` : ""}`} />
+        
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        
+        <meta name="geo.region" content="US-MA" />
+        <meta name="geo.placename" content="Massachusetts" />
+        <meta name="geo.position" content="42.4072;-71.3824" />
+        <meta name="ICBM" content="42.4072, -71.3824" />
+        
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:url" content={`https://privateinhomecaregiver.com/facilities${selectedType !== "all" ? `/${selectedType}` : ""}`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="PrivateInHomeCareGiver" />
+        <meta property="og:locale" content="en_US" />
+        
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+        
         <script type="application/ld+json">
           {JSON.stringify(schemaJson)}
         </script>

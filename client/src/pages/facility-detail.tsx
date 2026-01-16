@@ -43,6 +43,7 @@ import { SiGoogle } from "react-icons/si";
 
 import type { Facility, FacilityReview, FacilityFaq } from "@shared/schema";
 import { getFacilityTypeImage } from "@/constants/facilityTypeMedia";
+import { generateFacilityKeywords, generateFacilityMetaDescription } from "@/components/SEOHead";
 
 function generateGoogleMapsUrl(facility: Facility): string {
   if (facility.googleMapsUrl) return facility.googleMapsUrl;
@@ -143,13 +144,26 @@ export default function FacilityDetailPage() {
   const typeInfo = FACILITY_TYPES.find(t => t.key === facility?.facilityType);
   const Icon = typeInfo?.icon || Building2;
 
+  const facilitySchemaType = useMemo(() => {
+    const typeMap: Record<string, string> = {
+      'nursing-home': 'NursingHome',
+      'hospital': 'Hospital',
+      'hospice': 'MedicalBusiness',
+      'assisted-living': 'LodgingBusiness',
+      'memory-care': 'LodgingBusiness',
+      'independent-living': 'LodgingBusiness',
+      'continuing-care': 'LodgingBusiness'
+    };
+    return typeMap[facility?.facilityType || ''] || 'LocalBusiness';
+  }, [facility?.facilityType]);
+
   const schemaJson = useMemo(() => {
     if (!facility) return null;
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://privateinhomecaregiver.com";
     
     return {
       "@context": "https://schema.org",
-      "@type": "LocalBusiness",
+      "@type": facilitySchemaType,
       "@id": `${baseUrl}/facility/${facility.slug}`,
       "name": facility.name,
       "description": facility.description || facility.shortDescription,
@@ -161,27 +175,108 @@ export default function FacilityDetailPage() {
         "postalCode": facility.zipCode,
         "addressCountry": "US"
       },
+      ...(facility.latitude && facility.longitude && {
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": facility.latitude,
+          "longitude": facility.longitude
+        }
+      }),
       ...(facility.phone && { "telephone": facility.phone }),
       ...(facility.website && { "url": facility.website }),
       ...(facility.email && { "email": facility.email }),
       ...(facility.heroImageUrl && { "image": facility.heroImageUrl }),
-      ...(facility.overallRating && { 
+      ...(facility.overallRating && parseFloat(facility.overallRating) > 0 && { 
         "aggregateRating": {
           "@type": "AggregateRating",
           "ratingValue": facility.overallRating,
           "reviewCount": facility.reviewCount || 1,
-          "bestRating": 5,
-          "worstRating": 1
+          "bestRating": "5",
+          "worstRating": "1"
         }
       }),
       "areaServed": {
         "@type": "State",
         "name": "Massachusetts"
       },
+      ...(facility.services && facility.services.length > 0 && {
+        "amenityFeature": facility.services.map(s => ({
+          "@type": "LocationFeatureSpecification",
+          "name": s
+        }))
+      }),
       "priceRange": facility.priceRangeMin && facility.priceRangeMax 
         ? `$${facility.priceRangeMin.toLocaleString()} - $${facility.priceRangeMax.toLocaleString()}/mo`
         : undefined
     };
+  }, [facility, facilitySchemaType]);
+
+  const breadcrumbSchema = useMemo(() => {
+    if (!facility) return null;
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://privateinhomecaregiver.com";
+    
+    return {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": baseUrl
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Facility Directory",
+          "item": `${baseUrl}/facilities`
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": typeInfo?.title || facility.facilityType,
+          "item": `${baseUrl}/facilities/${facility.facilityType}`
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "name": facility.name,
+          "item": `${baseUrl}/facility/${facility.slug}`
+        }
+      ]
+    };
+  }, [facility, typeInfo]);
+
+  const faqSchema = useMemo(() => {
+    if (!faqs || faqs.length === 0) return null;
+    
+    return {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": faqs.filter(f => f.isActive === "yes").map(faq => ({
+        "@type": "Question",
+        "name": faq.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.answer
+        }
+      }))
+    };
+  }, [faqs]);
+
+  const seoKeywords = useMemo(() => {
+    if (!facility) return [];
+    if (facility.keywords && facility.keywords.length > 0) {
+      return facility.keywords as string[];
+    }
+    return generateFacilityKeywords({
+      name: facility.name,
+      facilityType: facility.facilityType,
+      city: facility.city,
+      county: facility.county || undefined,
+      services: facility.services as string[] || [],
+      specializations: facility.specializations as string[] || []
+    });
   }, [facility]);
 
   if (isLoading) {
@@ -225,19 +320,70 @@ export default function FacilityDetailPage() {
     );
   }
 
-  const pageTitle = `${facility.name} | ${typeInfo?.title || "Senior Care"} in ${facility.city}, MA`;
-  const pageDescription = facility.metaDescription || facility.shortDescription || 
-    `${facility.name} is a ${typeInfo?.title?.toLowerCase() || "senior care facility"} in ${facility.city}, Massachusetts. View ratings, services, pricing, and contact information.`;
+  const pageTitle = facility.metaTitle || `${facility.name} | ${typeInfo?.title || "Senior Care"} in ${facility.city}, MA`;
+  const pageDescription = facility.metaDescription || generateFacilityMetaDescription({
+    name: facility.name,
+    facilityType: facility.facilityType,
+    city: facility.city,
+    state: facility.state,
+    overallRating: facility.overallRating || undefined,
+    reviewCount: facility.reviewCount || 0,
+    services: facility.services as string[] || [],
+    acceptsMedicare: facility.acceptsMedicare || undefined,
+    acceptsMedicaid: facility.acceptsMedicaid || undefined
+  });
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://privateinhomecaregiver.com";
+  const canonicalUrl = `${baseUrl}/facility/${facility.slug}`;
+  const ogImage = facility.heroImageUrl || getFacilityTypeImage(facility.facilityType).hero;
 
   return (
     <>
       <Helmet>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
-        <link rel="canonical" href={`https://privateinhomecaregiver.com/facility/${facility.slug}`} />
+        <meta name="keywords" content={seoKeywords.join(', ')} />
+        <link rel="canonical" href={canonicalUrl} />
+        
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        
+        <meta name="geo.region" content="US-MA" />
+        <meta name="geo.placename" content={`${facility.city}, Massachusetts`} />
+        {facility.latitude && facility.longitude && (
+          <>
+            <meta name="geo.position" content={`${facility.latitude};${facility.longitude}`} />
+            <meta name="ICBM" content={`${facility.latitude}, ${facility.longitude}`} />
+          </>
+        )}
+        
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:type" content="place" />
+        <meta property="og:site_name" content="PrivateInHomeCareGiver" />
+        <meta property="og:locale" content="en_US" />
+        {ogImage && <meta property="og:image" content={ogImage.startsWith('http') ? ogImage : `${baseUrl}${ogImage}`} />}
+        <meta property="place:location:latitude" content={facility.latitude || ""} />
+        <meta property="place:location:longitude" content={facility.longitude || ""} />
+        
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+        {ogImage && <meta name="twitter:image" content={ogImage.startsWith('http') ? ogImage : `${baseUrl}${ogImage}`} />}
+        
         {schemaJson && (
           <script type="application/ld+json">
             {JSON.stringify(schemaJson)}
+          </script>
+        )}
+        {breadcrumbSchema && (
+          <script type="application/ld+json">
+            {JSON.stringify(breadcrumbSchema)}
+          </script>
+        )}
+        {faqSchema && (
+          <script type="application/ld+json">
+            {JSON.stringify(faqSchema)}
           </script>
         )}
       </Helmet>

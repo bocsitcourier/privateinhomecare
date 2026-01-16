@@ -1,12 +1,69 @@
 # robots.txt for PrivateInHomeCareGiver
+# Massachusetts In-Home Care Platform
+
+# General rules for all bots
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /admin/*
 Disallow: /api/admin/
 Disallow: /uploads/
+Disallow: /api/
+
+# Allow specific public API endpoints for crawlers
+Allow: /api/articles
+Allow: /api/facilities
+Allow: /api/videos
+Allow: /api/podcasts
+
+# Googlebot-specific rules
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /api/admin/
+
+# Google Images bot
+User-agent: Googlebot-Image
+Allow: /
+Disallow: /admin
+
+# Bingbot-specific rules
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+Disallow: /api/admin/
+
+# AI Crawlers for Generative AI SEO
+User-agent: GPTBot
+Allow: /
+Disallow: /admin
+Disallow: /api/admin/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /admin
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /admin
+
+User-agent: anthropic-ai
+Allow: /
+Disallow: /admin
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /admin
+
+User-agent: CCBot
+Allow: /
+Disallow: /admin
 
 # Sitemap location
 Sitemap: https://privateinhomecaregiver.com/sitemap.xml
 
 # Crawl-delay for well-behaved bots
 Crawl-delay: 1
+
+# Host directive
+Host: https://privateinhomecaregiver.com

@@ -268,6 +268,31 @@ export default function ArticlePage() {
     }))
   } : null;
 
+  const breadcrumbData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": window.location.origin
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Articles",
+        "item": `${window.location.origin}/articles`
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": article.title,
+        "item": canonicalUrl
+      }
+    ]
+  };
+
   return (
     <>
       <Helmet>
@@ -275,6 +300,9 @@ export default function ArticlePage() {
         <meta name="description" content={article.metaDescription || article.excerpt || ''} />
         
         <link rel="canonical" href={canonicalUrl} />
+        
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         
         {/* Massachusetts Geo Targeting - applied for MA-focused articles */}
         <meta name="geo.region" content="US-MA" />
@@ -315,6 +343,9 @@ export default function ArticlePage() {
             {JSON.stringify(faqStructuredData)}
           </script>
         )}
+        <script type="application/ld+json">
+          {JSON.stringify(breadcrumbData)}
+        </script>
       </Helmet>
       <Header />
       <div className="container mx-auto px-4 py-8">

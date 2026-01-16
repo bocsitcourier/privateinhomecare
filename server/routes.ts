@@ -2078,6 +2078,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
         xml += '  </url>\n';
       });
 
+      // Facility Directory pages
+      xml += '  <url>\n';
+      xml += `    <loc>${baseUrl}/facilities</loc>\n`;
+      xml += '    <changefreq>weekly</changefreq>\n';
+      xml += '    <priority>0.9</priority>\n';
+      xml += '  </url>\n';
+
+      // Facility type pages
+      const facilityTypes = ['nursing-home', 'assisted-living', 'memory-care', 'independent-living', 'continuing-care', 'hospice', 'hospital'];
+      facilityTypes.forEach(type => {
+        xml += '  <url>\n';
+        xml += `    <loc>${baseUrl}/facilities/${type}</loc>\n`;
+        xml += '    <changefreq>weekly</changefreq>\n';
+        xml += '    <priority>0.8</priority>\n';
+        xml += '  </url>\n';
+      });
+
+      // Individual Facility pages (all 796+ facilities)
+      try {
+        const facilities = await storage.listFacilities({ status: 'published' });
+        facilities.forEach((facility: any) => {
+          xml += '  <url>\n';
+          xml += `    <loc>${baseUrl}/facility/${facility.slug}</loc>\n`;
+          if (facility.updatedAt) {
+            xml += `    <lastmod>${new Date(facility.updatedAt).toISOString()}</lastmod>\n`;
+          }
+          xml += '    <changefreq>monthly</changefreq>\n';
+          xml += '    <priority>0.7</priority>\n';
+          xml += '  </url>\n';
+        });
+      } catch (facilityError) {
+        console.warn('Could not add facilities to sitemap:', facilityError);
+      }
+
+      // Hospital finder page
+      xml += '  <url>\n';
+      xml += `    <loc>${baseUrl}/find-hospital</loc>\n`;
+      xml += '    <changefreq>weekly</changefreq>\n';
+      xml += '    <priority>0.8</priority>\n';
+      xml += '  </url>\n';
+
+      // Care options pages
+      const careOptions = ['home-care', 'assisted-living', 'nursing-homes', 'memory-care', 'hospice-palliative-care', 'independent-living'];
+      careOptions.forEach(option => {
+        xml += '  <url>\n';
+        xml += `    <loc>${baseUrl}/${option}/massachusetts</loc>\n`;
+        xml += '    <changefreq>monthly</changefreq>\n';
+        xml += '    <priority>0.8</priority>\n';
+        xml += '  </url>\n';
+      });
+
+      // Videos and Podcasts pages
+      xml += '  <url>\n';
+      xml += `    <loc>${baseUrl}/videos</loc>\n`;
+      xml += '    <changefreq>weekly</changefreq>\n';
+      xml += '    <priority>0.7</priority>\n';
+      xml += '  </url>\n';
+      
+      xml += '  <url>\n';
+      xml += `    <loc>${baseUrl}/podcasts</loc>\n`;
+      xml += '    <changefreq>weekly</changefreq>\n';
+      xml += '    <priority>0.7</priority>\n';
+      xml += '  </url>\n';
+
+      // Caregiver Resources page
+      xml += '  <url>\n';
+      xml += `    <loc>${baseUrl}/caregiver-resources</loc>\n`;
+      xml += '    <changefreq>weekly</changefreq>\n';
+      xml += '    <priority>0.8</priority>\n';
+      xml += '  </url>\n';
+
+      // Aging Resources page
+      xml += '  <url>\n';
+      xml += `    <loc>${baseUrl}/aging-resources</loc>\n`;
+      xml += '    <changefreq>monthly</changefreq>\n';
+      xml += '    <priority>0.7</priority>\n';
+      xml += '  </url>\n';
+
+      // Quiz pages
+      const quizTypes = ['care-needs', 'caregiver-stress', 'daily-living', 'memory', 'fall-risk', 'medication', 'nutrition', 'social', 'financial', 'planning', 'caregiver-readiness', 'home-safety'];
+      quizTypes.forEach(quiz => {
+        xml += '  <url>\n';
+        xml += `    <loc>${baseUrl}/quiz/${quiz}</loc>\n`;
+        xml += '    <changefreq>monthly</changefreq>\n';
+        xml += '    <priority>0.6</priority>\n';
+        xml += '  </url>\n';
+      });
+
       xml += '</urlset>';
 
       res.header('Content-Type', 'application/xml');
