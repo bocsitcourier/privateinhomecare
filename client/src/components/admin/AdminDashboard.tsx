@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Briefcase, FileText, MessageSquare, CheckCircle, Users, HelpCircle, ClipboardList, Gift, FileCheck, Eye, TrendingUp, Video, Headphones } from "lucide-react";
+import { Link } from "wouter";
 
 interface AnalyticsSummary {
   totalPageViews: number;
@@ -63,7 +64,8 @@ export default function AdminDashboard() {
       pending: Array.isArray(inquiries) ? inquiries.filter((i: any) => i.status === 'pending').length : 0,
       icon: MessageSquare,
       color: "text-blue-500",
-      bgColor: "bg-blue-50 dark:bg-blue-950"
+      bgColor: "bg-blue-50 dark:bg-blue-950",
+      href: "/admin/inquiries"
     },
     {
       title: "Quiz Leads",
@@ -71,7 +73,8 @@ export default function AdminDashboard() {
       pending: Array.isArray(quizLeads) ? quizLeads.filter((q: any) => q.status === 'new').length : 0,
       icon: HelpCircle,
       color: "text-purple-500",
-      bgColor: "bg-purple-50 dark:bg-purple-950"
+      bgColor: "bg-purple-50 dark:bg-purple-950",
+      href: "/admin/quiz-leads"
     },
     {
       title: "Intake Forms",
@@ -79,7 +82,8 @@ export default function AdminDashboard() {
       pending: Array.isArray(intakeForms) ? intakeForms.filter((i: any) => i.status === 'pending').length : 0,
       icon: ClipboardList,
       color: "text-green-500",
-      bgColor: "bg-green-50 dark:bg-green-950"
+      bgColor: "bg-green-50 dark:bg-green-950",
+      href: "/admin/intake-forms"
     },
     {
       title: "Referrals",
@@ -87,7 +91,8 @@ export default function AdminDashboard() {
       pending: Array.isArray(referrals) ? referrals.filter((r: any) => r.status === 'pending').length : 0,
       icon: Gift,
       color: "text-orange-500",
-      bgColor: "bg-orange-50 dark:bg-orange-950"
+      bgColor: "bg-orange-50 dark:bg-orange-950",
+      href: "/admin/referrals"
     },
   ];
 
@@ -98,7 +103,8 @@ export default function AdminDashboard() {
       pending: Array.isArray(applications) ? applications.filter((a: any) => a.status === 'pending').length : 0,
       icon: FileCheck,
       color: "text-cyan-500",
-      bgColor: "bg-cyan-50 dark:bg-cyan-950"
+      bgColor: "bg-cyan-50 dark:bg-cyan-950",
+      href: "/admin/applications"
     },
     {
       title: "Caregivers",
@@ -106,7 +112,8 @@ export default function AdminDashboard() {
       active: Array.isArray(caregivers) ? caregivers.filter((c: any) => c.status === 'active').length : 0,
       icon: Users,
       color: "text-primary",
-      bgColor: "bg-primary/10"
+      bgColor: "bg-primary/10",
+      href: "/admin/caregivers"
     },
     {
       title: "Job Listings",
@@ -114,7 +121,8 @@ export default function AdminDashboard() {
       published: Array.isArray(jobs) ? jobs.filter((j: any) => j.status === 'published').length : 0,
       icon: Briefcase,
       color: "text-amber-500",
-      bgColor: "bg-amber-50 dark:bg-amber-950"
+      bgColor: "bg-amber-50 dark:bg-amber-950",
+      href: "/admin/jobs"
     },
   ];
 
@@ -125,7 +133,8 @@ export default function AdminDashboard() {
       published: Array.isArray(articles) ? articles.filter((a: any) => a.status === 'published').length : 0,
       icon: FileText,
       color: "text-indigo-500",
-      bgColor: "bg-indigo-50 dark:bg-indigo-950"
+      bgColor: "bg-indigo-50 dark:bg-indigo-950",
+      href: "/admin/articles"
     },
     {
       title: "Videos",
@@ -133,7 +142,8 @@ export default function AdminDashboard() {
       published: Array.isArray(videos) ? videos.filter((v: any) => v.status === 'published').length : 0,
       icon: Video,
       color: "text-red-500",
-      bgColor: "bg-red-50 dark:bg-red-950"
+      bgColor: "bg-red-50 dark:bg-red-950",
+      href: "/admin/videos"
     },
     {
       title: "Podcasts",
@@ -141,7 +151,8 @@ export default function AdminDashboard() {
       published: Array.isArray(podcasts) ? podcasts.filter((p: any) => p.status === 'published').length : 0,
       icon: Headphones,
       color: "text-pink-500",
-      bgColor: "bg-pink-50 dark:bg-pink-950"
+      bgColor: "bg-pink-50 dark:bg-pink-950",
+      href: "/admin/podcasts"
     },
   ];
 
@@ -198,19 +209,21 @@ export default function AdminDashboard() {
         </h3>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           {leadStats.map((stat) => (
-            <Card key={stat.title} className={stat.bgColor}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2">
-                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                <stat.icon className={`w-4 h-4 ${stat.color}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold" data-testid={`text-${stat.title.toLowerCase().replace(' ', '-')}-count`}>{stat.value}</div>
-                <div className="flex items-center text-xs text-muted-foreground mt-2">
-                  <CheckCircle className="w-3 h-3 mr-1 text-yellow-500" />
-                  {stat.pending} pending
-                </div>
-              </CardContent>
-            </Card>
+            <Link key={stat.title} href={stat.href}>
+              <Card className={`${stat.bgColor} cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02]`}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2">
+                  <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                  <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold" data-testid={`text-${stat.title.toLowerCase().replace(' ', '-')}-count`}>{stat.value}</div>
+                  <div className="flex items-center text-xs text-muted-foreground mt-2">
+                    <CheckCircle className="w-3 h-3 mr-1 text-yellow-500" />
+                    {stat.pending} pending
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       </div>
@@ -223,21 +236,23 @@ export default function AdminDashboard() {
         </h3>
         <div className="grid md:grid-cols-3 gap-4">
           {teamStats.map((stat) => (
-            <Card key={stat.title} className={stat.bgColor}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2">
-                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                <stat.icon className={`w-4 h-4 ${stat.color}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <div className="flex items-center text-xs text-muted-foreground mt-2">
-                  <CheckCircle className="w-3 h-3 mr-1 text-green-500" />
-                  {'pending' in stat ? `${stat.pending} pending` : 
-                   'active' in stat ? `${stat.active} active` : 
-                   `${stat.published} published`}
-                </div>
-              </CardContent>
-            </Card>
+            <Link key={stat.title} href={stat.href}>
+              <Card className={`${stat.bgColor} cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02]`}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2">
+                  <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                  <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stat.value}</div>
+                  <div className="flex items-center text-xs text-muted-foreground mt-2">
+                    <CheckCircle className="w-3 h-3 mr-1 text-green-500" />
+                    {'pending' in stat ? `${stat.pending} pending` : 
+                     'active' in stat ? `${stat.active} active` : 
+                     `${stat.published} published`}
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       </div>
@@ -250,19 +265,21 @@ export default function AdminDashboard() {
         </h3>
         <div className="grid md:grid-cols-3 gap-4">
           {contentStats.map((stat) => (
-            <Card key={stat.title} className={stat.bgColor}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2">
-                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                <stat.icon className={`w-4 h-4 ${stat.color}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <div className="flex items-center text-xs text-muted-foreground mt-2">
-                  <CheckCircle className="w-3 h-3 mr-1 text-green-500" />
-                  {stat.published} published
-                </div>
-              </CardContent>
-            </Card>
+            <Link key={stat.title} href={stat.href}>
+              <Card className={`${stat.bgColor} cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02]`}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2">
+                  <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                  <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stat.value}</div>
+                  <div className="flex items-center text-xs text-muted-foreground mt-2">
+                    <CheckCircle className="w-3 h-3 mr-1 text-green-500" />
+                    {stat.published} published
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       </div>
