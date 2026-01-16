@@ -434,11 +434,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Password is required" });
       }
       
-      // Check if CAPTCHA is configured on the server
-      const captchaConfigured = !!process.env.RECAPTCHA_SECRET_KEY;
+      // Check if CAPTCHA is required (configured AND in production)
+      const isProduction = process.env.NODE_ENV === 'production';
+      const captchaRequired = !!process.env.RECAPTCHA_SECRET_KEY && isProduction;
       
-      // Require CAPTCHA token if CAPTCHA is configured
-      if (captchaConfigured) {
+      // Require CAPTCHA token only in production
+      if (captchaRequired) {
         if (!captchaToken || typeof captchaToken !== 'string') {
           return res.status(400).json({ error: "CAPTCHA verification required" });
         }
