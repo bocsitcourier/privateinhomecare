@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Heart, Users, Home as HomeIcon, Brain, Phone, Mail, MapPin, ArrowRight, Clock, DollarSign, Building2, BookOpen, ClipboardCheck, Play, Mic, Shield, Hospital, Leaf } from "lucide-react";
-import type { Article, Job } from "@shared/schema";
+import type { Article, Job, Video } from "@shared/schema";
 import caregiverImage from "@assets/compassionate inhome care_1760033982348.webp";
 import careCoordinatorImage from "@assets/Private inhome care in MA_1760035857926.png";
 import susanImage from "@assets/susan-testimonial.png";
@@ -127,6 +127,10 @@ export default function Home() {
     queryKey: ["/api/jobs"],
   });
 
+  const { data: videos } = useQuery<Video[]>({
+    queryKey: ["/api/videos"],
+  });
+
   const publishedArticles = Array.isArray(articles) 
     ? articles.filter(a => a.status === 'published')
     : [];
@@ -134,6 +138,16 @@ export default function Home() {
   const publishedJobs = Array.isArray(jobs)
     ? jobs.filter(j => j.status === 'published').slice(0, 3)
     : [];
+
+  const featuredVideos = Array.isArray(videos)
+    ? videos.filter(v => v.status === 'published' && v.featured === 'yes').slice(0, 4)
+    : [];
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const categories = ["All", "Care Tips", "Health & Wellness", "Family Resources"];
 
@@ -396,6 +410,68 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {featuredVideos.length > 0 && (
+          <section id="videos" className="max-w-7xl mx-auto px-4 py-12 md:py-16">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl md:text-3xl font-bold text-primary mb-3">
+                Featured Videos
+              </h3>
+              <p className="text-muted-foreground">
+                Helpful guides and expert advice for families
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {featuredVideos.map((video) => (
+                <Link key={video.id} href={`/videos/${video.slug}`}>
+                  <Card className="h-full hover-elevate cursor-pointer group overflow-hidden" data-testid={`card-video-${video.id}`}>
+                    <div className="relative aspect-video bg-muted">
+                      {video.thumbnailUrl ? (
+                        <img
+                          src={video.thumbnailUrl}
+                          alt={video.title}
+                          className="w-full h-full object-cover"
+                          data-testid={`img-video-thumb-${video.id}`}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-primary/10">
+                          <Play className="w-12 h-12 text-primary/40" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center">
+                          <Play className="w-6 h-6 text-primary ml-1" />
+                        </div>
+                      </div>
+                      {video.duration && (
+                        <span className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                          {formatDuration(video.duration)}
+                        </span>
+                      )}
+                    </div>
+                    <CardContent className="p-4">
+                      <h4 className="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors">
+                        {video.title}
+                      </h4>
+                      {video.speakerName && (
+                        <p className="text-xs text-muted-foreground mt-1">{video.speakerName}</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+            <div className="flex justify-center mt-8">
+              <Link href="/videos">
+                <Button variant="outline" className="gap-2" data-testid="button-view-all-videos">
+                  <Play className="w-4 h-4" />
+                  View All Videos
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
+          </section>
+        )}
 
         <section id="reviews" className="bg-primary/10 py-24 md:py-32">
           <div className="max-w-7xl mx-auto px-4">
