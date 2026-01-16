@@ -73,7 +73,77 @@ export function PodcastsManagementContent() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [editForm, setEditForm] = useState<Partial<PodcastType>>({});
   const [isGeneratingThumbnail, setIsGeneratingThumbnail] = useState(false);
+  const [isUploadingAudio, setIsUploadingAudio] = useState(false);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
   const { toast } = useToast();
+
+  const handleAudioFileUpload = async (file: File) => {
+    setIsUploadingAudio(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch('/api/upload/media', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+      
+      const result = await response.json();
+      setEditForm(prev => ({ ...prev, audioUrl: result.url }));
+      
+      toast({
+        title: "Audio Uploaded",
+        description: `${file.name} uploaded successfully.`,
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Upload Failed",
+        description: error.message || "Failed to upload audio file.",
+      });
+    } finally {
+      setIsUploadingAudio(false);
+    }
+  };
+
+  const handleCoverFileUpload = async (file: File) => {
+    setIsUploadingCover(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch('/api/upload/media', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+      
+      const result = await response.json();
+      setEditForm(prev => ({ ...prev, coverImageUrl: result.url }));
+      
+      toast({
+        title: "Cover Image Uploaded",
+        description: "Cover image uploaded successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Upload Failed",
+        description: error.message || "Failed to upload cover image.",
+      });
+    } finally {
+      setIsUploadingCover(false);
+    }
+  };
 
   const { data: podcasts, isLoading } = useQuery<PodcastType[]>({
     queryKey: ["/api/podcasts"],
@@ -690,13 +760,41 @@ export function PodcastsManagementContent() {
                   </Select>
                 </div>
                 {editForm.audioType === "upload" && (
-                  <div className="col-span-2">
-                    <Label htmlFor="audioUrl">Audio URL (Upload)</Label>
+                  <div className="col-span-2 space-y-3">
+                    <Label>Audio File</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="file"
+                        accept="audio/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleAudioFileUpload(file);
+                        }}
+                        disabled={isUploadingAudio}
+                        className="flex-1"
+                        data-testid="input-audio-file"
+                      />
+                      {isUploadingAudio && (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Uploading...
+                        </div>
+                      )}
+                    </div>
+                    {editForm.audioUrl && (
+                      <div className="flex items-center gap-2 text-sm text-green-600">
+                        <CheckCircle className="h-4 w-4" />
+                        Audio uploaded: {editForm.audioUrl}
+                      </div>
+                    )}
+                    <div className="text-xs text-muted-foreground">
+                      Or enter URL manually:
+                    </div>
                     <Input
                       id="audioUrl"
                       value={editForm.audioUrl || ""}
                       onChange={(e) => setEditForm({ ...editForm, audioUrl: e.target.value })}
-                      placeholder="/podcasts/episode-1.mp3"
+                      placeholder="/podcasts/episode.mp3 or https://..."
                       data-testid="input-audio-url"
                     />
                   </div>
@@ -713,17 +811,26 @@ export function PodcastsManagementContent() {
                     />
                   </div>
                 )}
-                <div className="col-span-2">
-                  <Label htmlFor="thumbnailUrl">Thumbnail URL</Label>
-                  <div className="flex gap-2">
+                <div className="col-span-2 space-y-3">
+                  <Label>Cover Image / Thumbnail</Label>
+                  <div className="flex gap-2 flex-wrap">
                     <Input
-                      id="thumbnailUrl"
-                      value={editForm.thumbnailUrl || ""}
-                      onChange={(e) => setEditForm({ ...editForm, thumbnailUrl: e.target.value })}
-                      placeholder="Enter URL or generate with AI"
-                      data-testid="input-thumbnail-url"
-                      className="flex-1"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleCoverFileUpload(file);
+                      }}
+                      disabled={isUploadingCover}
+                      className="flex-1 min-w-[200px]"
+                      data-testid="input-cover-file"
                     />
+                    {isUploadingCover && (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Uploading...
+                      </div>
+                    )}
                     {isEditing && selectedPodcast && (
                       <Button
                         type="button"
@@ -746,6 +853,16 @@ export function PodcastsManagementContent() {
                       </Button>
                     )}
                   </div>
+                  <div className="text-xs text-muted-foreground">
+                    Or enter URL manually:
+                  </div>
+                  <Input
+                    id="thumbnailUrl"
+                    value={editForm.thumbnailUrl || ""}
+                    onChange={(e) => setEditForm({ ...editForm, thumbnailUrl: e.target.value })}
+                    placeholder="https://... or /uploads/..."
+                    data-testid="input-thumbnail-url"
+                  />
                   {editForm.thumbnailUrl && (
                     <div className="mt-2">
                       <img 

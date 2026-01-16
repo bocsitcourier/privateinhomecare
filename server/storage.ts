@@ -30,6 +30,8 @@ import {
   type QuizLead, type InsertQuizLead, type UpdateQuizLead,
   type QuizResponse, type InsertQuizResponse,
   type QuizWithQuestions, type QuizLeadWithResponses,
+  type PageView, type InsertPageView,
+  type MediaEvent, type InsertMediaEvent,
   users,
   recoveryCodes,
   jobs,
@@ -58,7 +60,9 @@ import {
   quizDefinitions,
   quizQuestions,
   quizLeads,
-  quizResponses
+  quizResponses,
+  pageViews,
+  mediaEvents
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { slugify, generateUniqueSlug } from "@shared/utils";
@@ -272,6 +276,17 @@ export interface IStorage {
   
   // Quiz Analytics
   getQuizLeadStats(): Promise<{ total: number; new: number; contacted: number; qualified: number; converted: number }>;
+  
+  // Analytics - Page Views and Media Events
+  createPageView(view: InsertPageView): Promise<PageView>;
+  createMediaEvent(event: InsertMediaEvent): Promise<MediaEvent>;
+  getAnalyticsSummary(): Promise<{
+    totalPageViews: number;
+    uniqueVisitors: number;
+    topPages: { slug: string; views: number }[];
+    dailyTraffic: { day: string; views: number }[];
+    mediaPlays: { type: string; count: number }[];
+  }>;
 }
 
 export class MemStorage implements IStorage {
@@ -304,6 +319,8 @@ export class MemStorage implements IStorage {
   private quizQuestionsMap: Map<string, QuizQuestion>;
   private quizLeadsMap: Map<string, QuizLead>;
   private quizResponsesMap: Map<string, QuizResponse>;
+  private pageViewsMap: Map<string, PageView>;
+  private mediaEventsMap: Map<string, MediaEvent>;
 
   constructor() {
     this.users = new Map();
@@ -335,6 +352,8 @@ export class MemStorage implements IStorage {
     this.quizQuestionsMap = new Map();
     this.quizLeadsMap = new Map();
     this.quizResponsesMap = new Map();
+    this.pageViewsMap = new Map();
+    this.mediaEventsMap = new Map();
     
     this.seedDefaultData();
   }
@@ -2238,6 +2257,87 @@ export class MemStorage implements IStorage {
       converted: leads.filter(l => l.status === "converted").length,
     };
   }
+
+  // Analytics methods
+  async createPageView(view: InsertPageView): Promise<PageView> {
+    const id = randomUUID();
+    const newView: PageView = {
+      id,
+      slug: view.slug,
+      referrer: view.referrer || null,
+      userAgent: view.userAgent || null,
+      ipMasked: view.ipMasked || null,
+      timestamp: new Date(),
+    };
+    this.pageViewsMap.set(id, newView);
+    return newView;
+  }
+
+  async createMediaEvent(event: InsertMediaEvent): Promise<MediaEvent> {
+    const id = randomUUID();
+    const newEvent: MediaEvent = {
+      id,
+      mediaId: event.mediaId || null,
+      mediaTitle: event.mediaTitle || null,
+      eventType: event.eventType,
+      mediaType: event.mediaType,
+      timestamp: new Date(),
+    };
+    this.mediaEventsMap.set(id, newEvent);
+    return newEvent;
+  }
+
+  async getAnalyticsSummary(): Promise<{
+    totalPageViews: number;
+    uniqueVisitors: number;
+    topPages: { slug: string; views: number }[];
+    dailyTraffic: { day: string; views: number }[];
+    mediaPlays: { type: string; count: number }[];
+  }> {
+    const views = Array.from(this.pageViewsMap.values());
+    const events = Array.from(this.mediaEventsMap.values());
+    
+    const slugCounts = views.reduce((acc, v) => {
+      acc[v.slug] = (acc[v.slug] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    const topPages = Object.entries(slugCounts)
+      .map(([slug, views]) => ({ slug, views }))
+      .sort((a, b) => b.views - a.views)
+      .slice(0, 10);
+    
+    const dayCounts = views.reduce((acc, v) => {
+      const day = v.timestamp.toISOString().split('T')[0];
+      acc[day] = (acc[day] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    const dailyTraffic = Object.entries(dayCounts)
+      .map(([day, views]) => ({ day, views }))
+      .sort((a, b) => a.day.localeCompare(b.day))
+      .slice(-7);
+    
+    const mediaTypeCounts = events
+      .filter(e => e.eventType === 'play')
+      .reduce((acc, e) => {
+        acc[e.mediaType] = (acc[e.mediaType] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+    
+    const mediaPlays = Object.entries(mediaTypeCounts)
+      .map(([type, count]) => ({ type, count }));
+    
+    const uniqueIps = new Set(views.map(v => v.ipMasked).filter(Boolean));
+    
+    return {
+      totalPageViews: views.length,
+      uniqueVisitors: uniqueIps.size,
+      topPages,
+      dailyTraffic,
+      mediaPlays,
+    };
+  }
 }
 
 export class DbStorage implements IStorage {
@@ -3556,6 +3656,69 @@ export class DbStorage implements IStorage {
       contacted: leads.filter((l: QuizLead) => l.status === "contacted").length,
       qualified: leads.filter((l: QuizLead) => l.status === "qualified").length,
       converted: leads.filter((l: QuizLead) => l.status === "converted").length,
+    };
+  }
+
+  // Analytics methods
+  async createPageView(view: InsertPageView): Promise<PageView> {
+    const result = await this.db.insert(pageViews).values(view).returning();
+    return result[0];
+  }
+
+  async createMediaEvent(event: InsertMediaEvent): Promise<MediaEvent> {
+    const result = await this.db.insert(mediaEvents).values(event).returning();
+    return result[0];
+  }
+
+  async getAnalyticsSummary(): Promise<{
+    totalPageViews: number;
+    uniqueVisitors: number;
+    topPages: { slug: string; views: number }[];
+    dailyTraffic: { day: string; views: number }[];
+    mediaPlays: { type: string; count: number }[];
+  }> {
+    const views = await this.db.select().from(pageViews);
+    const events = await this.db.select().from(mediaEvents);
+    
+    const slugCounts = views.reduce((acc: Record<string, number>, v: PageView) => {
+      acc[v.slug] = (acc[v.slug] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    const topPages = Object.entries(slugCounts)
+      .map(([slug, views]) => ({ slug, views: views as number }))
+      .sort((a, b) => b.views - a.views)
+      .slice(0, 10);
+    
+    const dayCounts = views.reduce((acc: Record<string, number>, v: PageView) => {
+      const day = v.timestamp.toISOString().split('T')[0];
+      acc[day] = (acc[day] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    const dailyTraffic = Object.entries(dayCounts)
+      .map(([day, views]) => ({ day, views: views as number }))
+      .sort((a, b) => a.day.localeCompare(b.day))
+      .slice(-7);
+    
+    const mediaTypeCounts = events
+      .filter((e: MediaEvent) => e.eventType === 'play')
+      .reduce((acc: Record<string, number>, e: MediaEvent) => {
+        acc[e.mediaType] = (acc[e.mediaType] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+    
+    const mediaPlays = Object.entries(mediaTypeCounts)
+      .map(([type, count]) => ({ type, count: count as number }));
+    
+    const uniqueIps = new Set(views.map((v: PageView) => v.ipMasked).filter(Boolean));
+    
+    return {
+      totalPageViews: views.length,
+      uniqueVisitors: uniqueIps.size,
+      topPages,
+      dailyTraffic,
+      mediaPlays,
     };
   }
 }

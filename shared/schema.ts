@@ -1415,3 +1415,39 @@ export type QuizLeadWithResponses = QuizLead & {
   quiz: QuizDefinition;
   responses: (QuizResponse & { question: QuizQuestion })[];
 };
+
+// Analytics - Page Views
+export const pageViews = pgTable("page_views", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  slug: text("slug").notNull(),
+  referrer: text("referrer"),
+  userAgent: text("user_agent"),
+  ipMasked: text("ip_masked"),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+});
+
+export const insertPageViewSchema = createInsertSchema(pageViews).omit({
+  id: true,
+  timestamp: true,
+});
+
+export type InsertPageView = z.infer<typeof insertPageViewSchema>;
+export type PageView = typeof pageViews.$inferSelect;
+
+// Analytics - Media Events (video/podcast plays)
+export const mediaEvents = pgTable("media_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  mediaId: text("media_id"),
+  mediaTitle: text("media_title"),
+  eventType: text("event_type").notNull(), // 'play', 'pause', 'complete'
+  mediaType: text("media_type").notNull(), // 'video', 'podcast'
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+});
+
+export const insertMediaEventSchema = createInsertSchema(mediaEvents).omit({
+  id: true,
+  timestamp: true,
+});
+
+export type InsertMediaEvent = z.infer<typeof insertMediaEventSchema>;
+export type MediaEvent = typeof mediaEvents.$inferSelect;

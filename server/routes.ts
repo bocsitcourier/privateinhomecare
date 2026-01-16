@@ -47,6 +47,13 @@ import { comprehensiveFacilities } from "./seed-facilities-data";
 import { hospitalSeedData } from "./seed-hospitals-data";
 import { enrichFacility, enrichFacilitiesBatch, createDataHash, type EnrichmentResult } from "./googlePlaces";
 import OpenAI from "openai";
+import crypto from "crypto";
+
+// Helper to anonymize IP for analytics
+const maskIp = (ip: string | undefined): string => {
+  if (!ip) return 'unknown';
+  return crypto.createHash('md5').update(ip).digest('hex').substring(0, 10);
+};
 
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
@@ -378,6 +385,29 @@ const resumeUpload = multer({
   }
 });
 
+const mediaUpload = multer({
+  storage: uploadStorage,
+  limits: {
+    fileSize: 500 * 1024 * 1024, // 500MB for videos/audio
+  },
+  fileFilter: (req, file, cb) => {
+    const videoTypes = /mp4|webm|mov|avi|mkv|m4v/;
+    const audioTypes = /mp3|wav|ogg|m4a|aac|flac/;
+    const imageTypes = /jpeg|jpg|png|gif|webp/;
+    
+    const ext = path.extname(file.originalname).toLowerCase().replace('.', '');
+    const isVideo = videoTypes.test(ext) || file.mimetype.startsWith('video/');
+    const isAudio = audioTypes.test(ext) || file.mimetype.startsWith('audio/');
+    const isImage = imageTypes.test(ext) || file.mimetype.startsWith('image/');
+    
+    if (isVideo || isAudio || isImage) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Only video, audio, and image files are allowed'));
+    }
+  }
+});
+
 export async function registerRoutes(app: Express): Promise<Server> {
   
   // Seed admin user and demo articles on startup
@@ -679,6 +709,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/upload/media", requireAuth, mediaUpload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+      
+      const fileUrl = `/uploads/${req.file.filename}`;
+      res.json({ 
+        url: fileUrl,
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        size: req.file.size,
+        mimetype: req.file.mimetype
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post("/api/upload-resume", publicFormLimiter, resumeUpload.single('file'), async (req, res) => {
     try {
       if (!req.file) {
@@ -692,6 +741,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
         originalName: req.file.originalname,
         size: req.file.size
       });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Analytics tracking endpoints
+  app.post("/api/track/pageview", async (req, res) => {
+    try {
+      const { slug, referrer } = req.body;
+      if (!slug) {
+        return res.status(400).json({ error: "Slug is required" });
+      }
+      const ipMasked = maskIp(req.ip || req.socket.remoteAddress);
+      const userAgent = req.headers['user-agent'] || '';
+      
+      await storage.createPageView({
+        slug,
+        referrer: referrer || null,
+        userAgent,
+        ipMasked,
+      });
+      res.sendStatus(204);
+    } catch (error: any) {
+      console.error("Page view tracking error:", error);
+      res.sendStatus(204); // Don't fail silently for analytics
+    }
+  });
+
+  app.post("/api/track/media", async (req, res) => {
+    try {
+      const { mediaId, mediaTitle, eventType, mediaType } = req.body;
+      if (!eventType || !mediaType) {
+        return res.status(400).json({ error: "Event type and media type required" });
+      }
+      
+      await storage.createMediaEvent({
+        mediaId: mediaId || null,
+        mediaTitle: mediaTitle || null,
+        eventType,
+        mediaType,
+      });
+      res.sendStatus(204);
+    } catch (error: any) {
+      console.error("Media tracking error:", error);
+      res.sendStatus(204);
+    }
+  });
+
+  // Analytics summary endpoint (admin only)
+  app.get("/api/admin/analytics/summary", requireAuth, async (req, res) => {
+    try {
+      const summary = await storage.getAnalyticsSummary();
+      res.json(summary);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -2676,6 +2778,99 @@ Requirements: No text, photorealistic, welcoming, trustworthy, 16:9 aspect ratio
     } catch (error: any) {
       console.error("AI thumbnail generation error:", error);
       res.status(500).json({ message: "Failed to generate thumbnail", error: error.message });
+    }
+  });
+
+  // Admin: Extract thumbnail from video file using ffmpeg
+  app.post("/api/admin/videos/:id/extract-thumbnail", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const video = await storage.getVideo(req.params.id);
+      if (!video) {
+        return res.status(404).json({ message: "Video not found" });
+      }
+
+      if (!video.videoUrl) {
+        return res.status(400).json({ message: "Video URL is required to extract thumbnail" });
+      }
+
+      // Handle different video storage paths
+      let videoPath: string;
+      if (video.videoUrl.startsWith('/uploads/')) {
+        videoPath = path.join(process.cwd(), 'public', video.videoUrl);
+      } else if (video.videoUrl.startsWith('/videos/')) {
+        videoPath = path.join(process.cwd(), 'public', video.videoUrl);
+      } else if (video.videoUrl.startsWith('http')) {
+        return res.status(400).json({ message: "Cannot extract thumbnail from external URLs. Use AI thumbnail generation instead." });
+      } else {
+        videoPath = path.join(process.cwd(), 'public', video.videoUrl);
+      }
+      
+      // Check if video file exists
+      try {
+        await fs.access(videoPath);
+      } catch {
+        return res.status(404).json({ message: "Video file not found on disk" });
+      }
+
+      // Create thumbnails directory if it doesn't exist
+      const thumbnailDir = path.join(process.cwd(), 'public', 'thumbnails');
+      await fs.mkdir(thumbnailDir, { recursive: true });
+
+      const fileName = `video-snapshot-${video.id}-${Date.now()}.jpg`;
+      const thumbnailPath = path.join(thumbnailDir, fileName);
+
+      // Validate timestamp format strictly (HH:MM:SS format only)
+      const timestampPattern = /^\d{2}:\d{2}:\d{2}$/;
+      const rawTimestamp = req.body.timestamp || '00:00:05';
+      
+      if (!timestampPattern.test(rawTimestamp)) {
+        return res.status(400).json({ message: "Invalid timestamp format. Use HH:MM:SS format." });
+      }
+
+      // Use spawn instead of exec to prevent command injection
+      const { spawn } = await import('child_process');
+      
+      const runFfmpeg = (ts: string): Promise<void> => {
+        return new Promise((resolve, reject) => {
+          const ffmpegProcess = spawn('ffmpeg', [
+            '-i', videoPath,
+            '-ss', ts,
+            '-vframes', '1',
+            '-q:v', '2',
+            thumbnailPath,
+            '-y'
+          ]);
+          
+          ffmpegProcess.on('close', (code) => {
+            if (code === 0) {
+              resolve();
+            } else {
+              reject(new Error(`ffmpeg exited with code ${code}`));
+            }
+          });
+          
+          ffmpegProcess.on('error', (err) => {
+            reject(err);
+          });
+        });
+      };
+
+      try {
+        await runFfmpeg(rawTimestamp);
+      } catch (ffmpegError: any) {
+        // If timestamp is past video length, try extracting from 1 second
+        await runFfmpeg('00:00:01');
+      }
+
+      const thumbnailUrl = `/thumbnails/${fileName}`;
+      
+      // Update video with new thumbnail
+      await storage.updateVideo(req.params.id, { thumbnailUrl });
+
+      res.json({ thumbnailUrl, message: "Thumbnail extracted from video successfully" });
+    } catch (error: any) {
+      console.error("Video thumbnail extraction error:", error);
+      res.status(500).json({ message: "Failed to extract thumbnail", error: error.message });
     }
   });
 

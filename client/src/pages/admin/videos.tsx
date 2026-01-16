@@ -45,7 +45,7 @@ import {
 } from "@/components/ui/accordion";
 import { useState } from "react";
 import { format } from "date-fns";
-import { Video, Edit, Eye, Search, CheckCircle, Clock, Trash2, Plus, Play, Upload, Globe, Sparkles, Loader2 } from "lucide-react";
+import { Video, Edit, Eye, Search, CheckCircle, Clock, Trash2, Plus, Play, Upload, Globe, Sparkles, Loader2, Camera } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Video as VideoType, videoCategoryEnum } from "@shared/schema";
 
@@ -74,7 +74,77 @@ export function VideosManagementContent() {
   const [editForm, setEditForm] = useState<Partial<VideoType>>({});
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [isGeneratingThumbnail, setIsGeneratingThumbnail] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false);
   const { toast } = useToast();
+
+  const handleVideoFileUpload = async (file: File) => {
+    setIsUploadingVideo(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch('/api/upload/media', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+      
+      const result = await response.json();
+      setEditForm(prev => ({ ...prev, videoUrl: result.url }));
+      
+      toast({
+        title: "Video Uploaded",
+        description: `${file.name} uploaded successfully.`,
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Upload Failed",
+        description: error.message || "Failed to upload video file.",
+      });
+    } finally {
+      setIsUploadingVideo(false);
+    }
+  };
+
+  const handleThumbnailFileUpload = async (file: File) => {
+    setIsUploadingThumbnail(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch('/api/upload/media', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+      
+      const result = await response.json();
+      setEditForm(prev => ({ ...prev, thumbnailUrl: result.url }));
+      
+      toast({
+        title: "Thumbnail Uploaded",
+        description: "Thumbnail image uploaded successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Upload Failed",
+        description: error.message || "Failed to upload thumbnail.",
+      });
+    } finally {
+      setIsUploadingThumbnail(false);
+    }
+  };
 
   const { data: videos, isLoading } = useQuery<VideoType[]>({
     queryKey: ["/api/videos"],
@@ -254,6 +324,48 @@ export function VideosManagementContent() {
       });
     } finally {
       setIsGeneratingThumbnail(false);
+    }
+  };
+
+  const [isExtractingThumbnail, setIsExtractingThumbnail] = useState(false);
+
+  const handleExtractThumbnail = async (videoId: string) => {
+    setIsExtractingThumbnail(true);
+    try {
+      const response = await fetch(`/api/admin/videos/${videoId}/extract-thumbnail`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ timestamp: "00:00:05" }),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to extract thumbnail");
+      }
+      
+      const result = await response.json();
+      
+      setEditForm(prev => ({
+        ...prev,
+        thumbnailUrl: result.thumbnailUrl,
+      }));
+      
+      // Refresh the videos list
+      queryClient.invalidateQueries({ queryKey: ["/api/videos"] });
+      
+      toast({
+        title: "Thumbnail Extracted",
+        description: "Video snapshot has been captured and saved.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to extract thumbnail from video.",
+      });
+    } finally {
+      setIsExtractingThumbnail(false);
     }
   };
 
@@ -722,13 +834,41 @@ export function VideosManagementContent() {
                   </Select>
                 </div>
                 {editForm.videoType === "upload" && (
-                  <div className="col-span-2">
-                    <Label htmlFor="videoUrl">Video URL (Upload)</Label>
+                  <div className="col-span-2 space-y-3">
+                    <Label>Video File</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="file"
+                        accept="video/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleVideoFileUpload(file);
+                        }}
+                        disabled={isUploadingVideo}
+                        className="flex-1"
+                        data-testid="input-video-file"
+                      />
+                      {isUploadingVideo && (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Uploading...
+                        </div>
+                      )}
+                    </div>
+                    {editForm.videoUrl && (
+                      <div className="flex items-center gap-2 text-sm text-green-600">
+                        <CheckCircle className="h-4 w-4" />
+                        Video uploaded: {editForm.videoUrl}
+                      </div>
+                    )}
+                    <div className="text-xs text-muted-foreground">
+                      Or enter URL manually:
+                    </div>
                     <Input
                       id="videoUrl"
                       value={editForm.videoUrl || ""}
                       onChange={(e) => setEditForm({ ...editForm, videoUrl: e.target.value })}
-                      placeholder="/videos/my-video.mp4"
+                      placeholder="/videos/my-video.mp4 or https://..."
                       data-testid="input-video-url"
                     />
                   </div>
@@ -745,17 +885,47 @@ export function VideosManagementContent() {
                     />
                   </div>
                 )}
-                <div className="col-span-2">
-                  <Label htmlFor="thumbnailUrl">Thumbnail URL</Label>
-                  <div className="flex gap-2">
+                <div className="col-span-2 space-y-3">
+                  <Label>Thumbnail</Label>
+                  <div className="flex gap-2 flex-wrap">
                     <Input
-                      id="thumbnailUrl"
-                      value={editForm.thumbnailUrl || ""}
-                      onChange={(e) => setEditForm({ ...editForm, thumbnailUrl: e.target.value })}
-                      placeholder="Enter URL or generate with AI"
-                      data-testid="input-thumbnail-url"
-                      className="flex-1"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleThumbnailFileUpload(file);
+                      }}
+                      disabled={isUploadingThumbnail}
+                      className="flex-1 min-w-[200px]"
+                      data-testid="input-thumbnail-file"
                     />
+                    {isUploadingThumbnail && (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Uploading...
+                      </div>
+                    )}
+                    {isEditing && selectedVideo && editForm.videoType === "upload" && editForm.videoUrl && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleExtractThumbnail(String(selectedVideo.id))}
+                        disabled={isExtractingThumbnail}
+                        data-testid="button-extract-thumbnail"
+                      >
+                        {isExtractingThumbnail ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Extracting...
+                          </>
+                        ) : (
+                          <>
+                            <Camera className="h-4 w-4 mr-2" />
+                            Snapshot
+                          </>
+                        )}
+                      </Button>
+                    )}
                     {isEditing && selectedVideo && (
                       <Button
                         type="button"
@@ -778,6 +948,16 @@ export function VideosManagementContent() {
                       </Button>
                     )}
                   </div>
+                  <div className="text-xs text-muted-foreground">
+                    Or enter URL manually:
+                  </div>
+                  <Input
+                    id="thumbnailUrl"
+                    value={editForm.thumbnailUrl || ""}
+                    onChange={(e) => setEditForm({ ...editForm, thumbnailUrl: e.target.value })}
+                    placeholder="https://... or /uploads/..."
+                    data-testid="input-thumbnail-url"
+                  />
                   {editForm.thumbnailUrl && (
                     <div className="mt-2">
                       <img 
