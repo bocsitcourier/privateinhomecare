@@ -57,8 +57,8 @@ export default function AdminPage() {
       return;
     }
     
-    // Only require CAPTCHA if the site key is configured
-    if (import.meta.env.VITE_RECAPTCHA_SITE_KEY && !captchaToken) {
+    // Only require CAPTCHA if the site key is configured and in production
+    if (import.meta.env.VITE_RECAPTCHA_SITE_KEY && !import.meta.env.DEV && !captchaToken) {
       setError("Please complete the CAPTCHA verification");
       return;
     }
@@ -142,7 +142,7 @@ export default function AdminPage() {
                 />
               </div>
 
-              {import.meta.env.VITE_RECAPTCHA_SITE_KEY && (
+              {import.meta.env.VITE_RECAPTCHA_SITE_KEY && !import.meta.env.DEV && (
                 <div className="flex justify-center py-2">
                   <ReCAPTCHA
                     ref={recaptchaRef}
@@ -164,7 +164,7 @@ export default function AdminPage() {
                 <Button
                   type="submit"
                   className="flex-1"
-                  disabled={import.meta.env.VITE_RECAPTCHA_SITE_KEY ? !captchaToken : false}
+                  disabled={import.meta.env.VITE_RECAPTCHA_SITE_KEY && !import.meta.env.DEV ? !captchaToken : false}
                   data-testid="button-admin-login"
                 >
                   Login
