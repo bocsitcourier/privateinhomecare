@@ -462,6 +462,7 @@ export function VideosManagementContent() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-16">Thumbnail</TableHead>
                   <TableHead>Title</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Type</TableHead>
@@ -474,6 +475,20 @@ export function VideosManagementContent() {
               <TableBody>
                 {filteredVideos?.map((video) => (
                   <TableRow key={video.id} data-testid={`row-video-${video.id}`}>
+                    <TableCell>
+                      {video.thumbnailUrl ? (
+                        <img 
+                          src={video.thumbnailUrl} 
+                          alt={video.title}
+                          className="h-10 w-16 object-cover rounded"
+                          data-testid={`img-thumbnail-${video.id}`}
+                        />
+                      ) : (
+                        <div className="h-10 w-16 bg-muted rounded flex items-center justify-center">
+                          <Video className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell className="font-medium max-w-xs truncate">
                       {video.title}
                     </TableCell>

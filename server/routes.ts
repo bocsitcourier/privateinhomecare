@@ -425,6 +425,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   app.use('/videos', express.static('public/videos'));
   
+  // Serve thumbnail images from public/thumbnails directory
+  app.use('/thumbnails', (req, res, next) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+  });
+  app.use('/thumbnails', express.static('public/thumbnails'));
+  
   app.post("/api/auth/login", authLimiter, async (req, res) => {
     try {
       const { username, password, captchaToken } = req.body;
