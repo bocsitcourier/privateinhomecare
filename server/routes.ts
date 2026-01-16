@@ -293,11 +293,13 @@ async function verifyCaptcha(token: string): Promise<{ success: boolean; error?:
   const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
   const isProduction = process.env.NODE_ENV === 'production';
   
-  if (!recaptchaSecret) {
-    if (isProduction) {
-      return { success: false, error: "Server configuration error. Please contact support." };
-    }
+  // Skip CAPTCHA verification in development mode
+  if (!isProduction) {
     return { success: true };
+  }
+  
+  if (!recaptchaSecret) {
+    return { success: false, error: "Server configuration error. Please contact support." };
   }
   
   try {
