@@ -1,12 +1,37 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import ReCAPTCHA from "react-google-recaptcha";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, LayoutDashboard, Briefcase, FileText, MessageSquare, Settings, Users, UserCog, Loader2, ClipboardList, FileCheck, Gift, MapPin, Video, Mic, Building2, HelpCircle } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { 
+  AlertCircle, 
+  LayoutDashboard, 
+  Briefcase, 
+  FileText, 
+  MessageSquare, 
+  Settings, 
+  Users, 
+  UserCog, 
+  Loader2, 
+  ClipboardList, 
+  FileCheck, 
+  Gift, 
+  MapPin, 
+  Video, 
+  Mic, 
+  Building2, 
+  HelpCircle,
+  ChevronRight,
+  Menu,
+  X,
+  Home,
+  FileEdit,
+  Megaphone,
+  Database
+} from "lucide-react";
 import JobsManagement from "@/components/admin/JobsManagement";
 import ArticlesManagement from "@/components/admin/ArticlesManagement";
 import InquiriesManagement from "@/components/admin/InquiriesManagement";
@@ -23,6 +48,72 @@ import { PodcastsManagementContent } from "@/pages/admin/podcasts";
 import { FacilitiesManagementContent } from "@/pages/admin/facilities";
 import { QuizLeadsManagementContent } from "@/pages/admin/quiz-leads";
 
+interface NavItem {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+}
+
+interface NavGroup {
+  title: string;
+  icon: React.ReactNode;
+  items: NavItem[];
+}
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    title: "Overview",
+    icon: <Home className="w-4 h-4" />,
+    items: [
+      { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
+    ]
+  },
+  {
+    title: "Lead Management",
+    icon: <Megaphone className="w-4 h-4" />,
+    items: [
+      { id: "messages", label: "Messages", icon: <MessageSquare className="w-4 h-4" /> },
+      { id: "quizzes", label: "Quiz Leads", icon: <HelpCircle className="w-4 h-4" /> },
+      { id: "intake", label: "Intake Forms", icon: <ClipboardList className="w-4 h-4" /> },
+      { id: "referrals", label: "Referrals", icon: <Gift className="w-4 h-4" /> },
+    ]
+  },
+  {
+    title: "Team",
+    icon: <Users className="w-4 h-4" />,
+    items: [
+      { id: "caregivers", label: "Caregivers", icon: <Users className="w-4 h-4" /> },
+      { id: "jobs", label: "Job Listings", icon: <Briefcase className="w-4 h-4" /> },
+      { id: "applications", label: "Applications", icon: <FileCheck className="w-4 h-4" /> },
+    ]
+  },
+  {
+    title: "Content",
+    icon: <FileEdit className="w-4 h-4" />,
+    items: [
+      { id: "articles", label: "Articles", icon: <FileText className="w-4 h-4" /> },
+      { id: "videos", label: "Videos", icon: <Video className="w-4 h-4" /> },
+      { id: "podcasts", label: "Podcasts", icon: <Mic className="w-4 h-4" /> },
+    ]
+  },
+  {
+    title: "Directory",
+    icon: <Database className="w-4 h-4" />,
+    items: [
+      { id: "facilities", label: "Facilities", icon: <Building2 className="w-4 h-4" /> },
+      { id: "locations", label: "Locations", icon: <MapPin className="w-4 h-4" /> },
+    ]
+  },
+  {
+    title: "Settings",
+    icon: <Settings className="w-4 h-4" />,
+    items: [
+      { id: "seo", label: "SEO & Meta", icon: <Settings className="w-4 h-4" /> },
+      { id: "hipaa", label: "HIPAA Logs", icon: <FileText className="w-4 h-4" /> },
+    ]
+  },
+];
+
 export default function AdminPage() {
   const [, setLocation] = useLocation();
   const [password, setPassword] = useState("");
@@ -30,9 +121,11 @@ export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
   const [error, setError] = useState("");
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [activeSection, setActiveSection] = useState("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
 
-  // Check auth status on component mount
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
@@ -61,7 +154,6 @@ export default function AdminPage() {
       return;
     }
     
-    // Only require CAPTCHA if the site key is configured and recaptcha not disabled
     const recaptchaDisabled = import.meta.env.VITE_DISABLE_RECAPTCHA === 'true';
     if (import.meta.env.VITE_RECAPTCHA_SITE_KEY && !recaptchaDisabled && !captchaToken) {
       setError("Please complete the CAPTCHA verification");
@@ -108,7 +200,50 @@ export default function AdminPage() {
     setError("");
   };
 
-  // Show loading state while checking auth
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+    setLocation("/");
+    setTimeout(() => {
+      setAuthenticated(false);
+      setPassword("");
+      setCaptchaToken(null);
+      recaptchaRef.current?.reset();
+    }, 100);
+  };
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case "dashboard": return <AdminDashboard />;
+      case "locations": return <LocationsManagement />;
+      case "intake": return <IntakeFormsManagement />;
+      case "hipaa": return <HipaaAcknowledgmentsManagement />;
+      case "caregivers": return <CaregiversManagement />;
+      case "jobs": return <JobsManagement />;
+      case "applications": return <ApplicationsManagement />;
+      case "referrals": return <ReferralsManagement />;
+      case "articles": return <ArticlesManagement />;
+      case "messages": return <InquiriesManagement />;
+      case "seo": return <PageMetaManagement />;
+      case "videos": return <VideosManagementContent />;
+      case "podcasts": return <PodcastsManagementContent />;
+      case "facilities": return <FacilitiesManagementContent />;
+      case "quizzes": return <QuizLeadsManagementContent />;
+      default: return <AdminDashboard />;
+    }
+  };
+
+  const getActiveLabel = () => {
+    for (const group of NAV_GROUPS) {
+      const item = group.items.find(i => i.id === activeSection);
+      if (item) return item.label;
+    }
+    return "Dashboard";
+  };
+
   if (isCheckingAuth) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -124,31 +259,33 @@ export default function AdminPage() {
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-xl">
           <CardContent className="p-8">
-            <h1 className="text-2xl font-bold text-center text-primary mb-6">
-              Admin Login
-            </h1>
-            
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <Label htmlFor="admin-password">Password</Label>
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
+                <LayoutDashboard className="w-8 h-8 text-primary" />
+              </div>
+              <h1 className="text-2xl font-bold text-primary">Admin Portal</h1>
+              <p className="text-muted-foreground mt-2">Sign in to manage your site</p>
+            </div>
+
+            <form onSubmit={handleLogin} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
                 <Input
-                  id="admin-password"
+                  id="password"
                   type="password"
                   value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setError("");
-                  }}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter admin password"
+                  className="h-11"
                   data-testid="input-admin-password"
                 />
               </div>
 
               {import.meta.env.VITE_RECAPTCHA_SITE_KEY && import.meta.env.VITE_DISABLE_RECAPTCHA !== 'true' && (
-                <div className="flex justify-center py-2">
+                <div className="flex justify-center">
                   <ReCAPTCHA
                     ref={recaptchaRef}
                     sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
@@ -159,8 +296,8 @@ export default function AdminPage() {
               )}
 
               {error && (
-                <div className="flex items-center gap-2 text-destructive text-sm" data-testid="text-error-admin">
-                  <AlertCircle className="w-4 h-4" />
+                <div className="flex items-center gap-2 text-destructive text-sm bg-destructive/10 p-3 rounded-lg" data-testid="text-error-admin">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
@@ -168,19 +305,20 @@ export default function AdminPage() {
               <div className="flex gap-3">
                 <Button
                   type="submit"
-                  className="flex-1"
+                  className="flex-1 h-11"
                   disabled={import.meta.env.VITE_RECAPTCHA_SITE_KEY && import.meta.env.VITE_DISABLE_RECAPTCHA !== 'true' ? !captchaToken : false}
                   data-testid="button-admin-login"
                 >
-                  Login
+                  Sign In
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
+                  className="h-11"
                   onClick={() => setPassword("demo123")}
                   data-testid="button-fill-demo"
                 >
-                  Fill Demo
+                  Demo
                 </Button>
               </div>
             </form>
@@ -191,169 +329,148 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-primary">Admin Dashboard</h1>
+    <div className="min-h-screen bg-background flex">
+      {/* Mobile menu overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`
+        fixed lg:static inset-y-0 left-0 z-50
+        ${sidebarOpen ? 'w-64' : 'w-16'} 
+        ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        bg-card border-r transition-all duration-300 flex flex-col
+      `}>
+        {/* Sidebar Header */}
+        <div className="h-16 border-b flex items-center justify-between px-4">
+          {sidebarOpen && (
+            <h1 className="font-bold text-primary text-lg">Admin</h1>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="hidden lg:flex"
+            data-testid="button-toggle-sidebar"
+          >
+            <ChevronRight className={`w-4 h-4 transition-transform ${sidebarOpen ? 'rotate-180' : ''}`} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileMenuOpen(false)}
+            className="lg:hidden"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+
+        {/* Navigation */}
+        <ScrollArea className="flex-1 py-4">
+          <nav className="space-y-6 px-3">
+            {NAV_GROUPS.map((group) => (
+              <div key={group.title}>
+                {sidebarOpen && (
+                  <div className="flex items-center gap-2 px-3 mb-2">
+                    <span className="text-muted-foreground">{group.icon}</span>
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      {group.title}
+                    </span>
+                  </div>
+                )}
+                <div className="space-y-1">
+                  {group.items.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        setActiveSection(item.id);
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`
+                        w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                        ${activeSection === item.id 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                        }
+                        ${!sidebarOpen ? 'justify-center' : ''}
+                      `}
+                      data-testid={`nav-${item.id}`}
+                      title={!sidebarOpen ? item.label : undefined}
+                    >
+                      {item.icon}
+                      {sidebarOpen && <span>{item.label}</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </nav>
+        </ScrollArea>
+
+        {/* Sidebar Footer */}
+        <div className="border-t p-3">
+          <Button
+            variant="ghost"
+            className={`w-full ${sidebarOpen ? 'justify-start' : 'justify-center'}`}
+            onClick={() => setLocation("/admin/profile")}
+            data-testid="button-profile"
+          >
+            <UserCog className="w-4 h-4" />
+            {sidebarOpen && <span className="ml-2">Profile</span>}
+          </Button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Header */}
+        <header className="h-16 border-b bg-card flex items-center justify-between px-4 lg:px-6">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden"
+              data-testid="button-mobile-menu"
+            >
+              <Menu className="w-5 h-5" />
+            </Button>
+            <div>
+              <h2 className="text-xl font-semibold" data-testid="text-active-section">{getActiveLabel()}</h2>
+            </div>
+          </div>
           <div className="flex items-center gap-3">
             <Button 
               variant="outline" 
-              onClick={() => setLocation("/admin/profile")}
-              data-testid="button-profile"
+              size="sm"
+              onClick={() => setLocation("/")}
+              data-testid="button-view-site"
             >
-              <UserCog className="w-4 h-4 mr-2" />
-              Profile
+              <Home className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">View Site</span>
             </Button>
             <Button 
               variant="outline" 
-              onClick={async () => {
-                try {
-                  await fetch("/api/auth/logout", { method: "POST" });
-                } catch (error) {
-                  console.error("Logout error:", error);
-                }
-                setLocation("/");
-                setTimeout(() => {
-                  setAuthenticated(false);
-                  setPassword("");
-                  setCaptchaToken(null);
-                  recaptchaRef.current?.reset();
-                }, 100);
-              }}
+              size="sm"
+              onClick={handleLogout}
               data-testid="button-logout"
             >
               Logout
             </Button>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList className="flex flex-wrap gap-1 w-full max-w-7xl mb-8 h-auto">
-            <TabsTrigger value="dashboard" data-testid="tab-dashboard">
-              <LayoutDashboard className="w-4 h-4 mr-2" />
-              Dashboard
-            </TabsTrigger>
-            <TabsTrigger value="locations" data-testid="tab-locations">
-              <MapPin className="w-4 h-4 mr-2" />
-              Locations
-            </TabsTrigger>
-            <TabsTrigger value="intake" data-testid="tab-intake">
-              <ClipboardList className="w-4 h-4 mr-2" />
-              Intake
-            </TabsTrigger>
-            <TabsTrigger value="hipaa" data-testid="tab-hipaa">
-              <FileText className="w-4 h-4 mr-2" />
-              HIPAA
-            </TabsTrigger>
-            <TabsTrigger value="caregivers" data-testid="tab-caregivers">
-              <Users className="w-4 h-4 mr-2" />
-              Caregivers
-            </TabsTrigger>
-            <TabsTrigger value="jobs" data-testid="tab-jobs">
-              <Briefcase className="w-4 h-4 mr-2" />
-              Jobs
-            </TabsTrigger>
-            <TabsTrigger value="applications" data-testid="tab-applications">
-              <FileCheck className="w-4 h-4 mr-2" />
-              Applications
-            </TabsTrigger>
-            <TabsTrigger value="referrals" data-testid="tab-referrals">
-              <Gift className="w-4 h-4 mr-2" />
-              Referrals
-            </TabsTrigger>
-            <TabsTrigger value="articles" data-testid="tab-articles">
-              <FileText className="w-4 h-4 mr-2" />
-              Articles
-            </TabsTrigger>
-            <TabsTrigger value="messages" data-testid="tab-messages">
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Messages
-            </TabsTrigger>
-            <TabsTrigger value="seo" data-testid="tab-seo">
-              <Settings className="w-4 h-4 mr-2" />
-              SEO
-            </TabsTrigger>
-            <TabsTrigger value="videos" data-testid="tab-videos">
-              <Video className="w-4 h-4 mr-2" />
-              Videos
-            </TabsTrigger>
-            <TabsTrigger value="podcasts" data-testid="tab-podcasts">
-              <Mic className="w-4 h-4 mr-2" />
-              Podcasts
-            </TabsTrigger>
-            <TabsTrigger value="facilities" data-testid="tab-facilities">
-              <Building2 className="w-4 h-4 mr-2" />
-              Facilities
-            </TabsTrigger>
-            <TabsTrigger value="quizzes" data-testid="tab-quizzes">
-              <HelpCircle className="w-4 h-4 mr-2" />
-              Quiz Leads
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="dashboard">
-            <AdminDashboard />
-          </TabsContent>
-
-          <TabsContent value="locations">
-            <LocationsManagement />
-          </TabsContent>
-
-          <TabsContent value="intake">
-            <IntakeFormsManagement />
-          </TabsContent>
-
-          <TabsContent value="hipaa">
-            <HipaaAcknowledgmentsManagement />
-          </TabsContent>
-
-          <TabsContent value="caregivers">
-            <CaregiversManagement />
-          </TabsContent>
-
-          <TabsContent value="jobs">
-            <JobsManagement />
-          </TabsContent>
-
-          <TabsContent value="applications">
-            <ApplicationsManagement />
-          </TabsContent>
-
-          <TabsContent value="referrals">
-            <ReferralsManagement />
-          </TabsContent>
-
-          <TabsContent value="articles">
-            <ArticlesManagement />
-          </TabsContent>
-
-          <TabsContent value="messages">
-            <InquiriesManagement />
-          </TabsContent>
-
-          <TabsContent value="seo">
-            <PageMetaManagement />
-          </TabsContent>
-
-          <TabsContent value="videos">
-            <VideosManagementContent />
-          </TabsContent>
-
-          <TabsContent value="podcasts">
-            <PodcastsManagementContent />
-          </TabsContent>
-
-          <TabsContent value="facilities">
-            <FacilitiesManagementContent />
-          </TabsContent>
-
-          <TabsContent value="quizzes">
-            <QuizLeadsManagementContent />
-          </TabsContent>
-        </Tabs>
-      </main>
+        {/* Content Area */}
+        <main className="flex-1 overflow-auto p-4 lg:p-6">
+          <div className="max-w-7xl mx-auto">
+            {renderContent()}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
