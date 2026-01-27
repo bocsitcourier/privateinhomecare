@@ -11,9 +11,9 @@ export default function Hero() {
             <img 
               src={heroImage} 
               alt="Private in-home caregiver providing compassionate care to elderly patient"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-center"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/80 to-primary/40" />
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/60 to-transparent" />
           </div>
           
           <div className="relative z-10 p-8 md:p-12 lg:p-16">
