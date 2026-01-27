@@ -47,6 +47,11 @@ export default function ContactForm({ preselectedService }: ContactFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!form.name.trim() || !form.email.trim() || !form.phone.trim() || !form.service || !form.message.trim()) {
+      setError("Please fill in all required fields");
+      return;
+    }
+    
     if (!agreedToTerms || !agreedToPolicy) {
       setError("Please agree to the Terms of Service and Privacy Policy to continue");
       return;
@@ -64,9 +69,9 @@ export default function ContactForm({ preselectedService }: ContactFormProps) {
       await apiRequest("POST", "/api/inquiries", {
         name: form.name,
         email: form.email,
-        phone: form.phone || null,
-        service: form.service || null,
-        message: form.message || null,
+        phone: form.phone,
+        service: form.service,
+        message: form.message,
         website: form.website,
         agreedToTerms: agreedToTerms ? "yes" : "no",
         agreedToPolicy: agreedToPolicy ? "yes" : "no",
@@ -147,7 +152,7 @@ export default function ContactForm({ preselectedService }: ContactFormProps) {
           </div>
 
           <div>
-            <Label htmlFor="phone">Phone</Label>
+            <Label htmlFor="phone">Phone *</Label>
             <Input
               id="phone"
               name="phone"
@@ -155,13 +160,14 @@ export default function ContactForm({ preselectedService }: ContactFormProps) {
               value={form.phone}
               onChange={(e) => handleChange("phone", e.target.value)}
               placeholder="(555) 123-4567"
+              required
               data-testid="input-phone"
             />
           </div>
 
           <div>
-            <Label htmlFor="service">Type of Care</Label>
-            <Select value={form.service} onValueChange={(value) => handleChange("service", value)}>
+            <Label htmlFor="service">Type of Care *</Label>
+            <Select value={form.service} onValueChange={(value) => handleChange("service", value)} required>
               <SelectTrigger data-testid="select-service">
                 <SelectValue placeholder="Select type of care" />
               </SelectTrigger>
@@ -176,7 +182,7 @@ export default function ContactForm({ preselectedService }: ContactFormProps) {
           </div>
 
           <div>
-            <Label htmlFor="message">Tell us about your loved one</Label>
+            <Label htmlFor="message">Tell us about your loved one *</Label>
             <Textarea
               id="message"
               name="message"
@@ -184,6 +190,7 @@ export default function ContactForm({ preselectedService }: ContactFormProps) {
               onChange={(e) => handleChange("message", e.target.value)}
               placeholder="Tell us about your care needs..."
               rows={4}
+              required
               data-testid="input-message"
             />
           </div>

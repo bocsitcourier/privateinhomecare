@@ -31,6 +31,11 @@ export default function ConsultationPage() {
     e.preventDefault();
     setError("");
 
+    if (!name.trim() || !email.trim() || !phone.trim() || !preferredDate.trim() || !message.trim()) {
+      setError("Please fill in all required fields");
+      return;
+    }
+
     if (!agreedToTerms || !agreedToPolicy) {
       setError("You must agree to the Terms of Service and Privacy Policy");
       return;
@@ -191,25 +196,27 @@ export default function ConsultationPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="preferredDate">Preferred Date/Time (Optional)</Label>
+                  <Label htmlFor="preferredDate">Preferred Date/Time *</Label>
                   <Input
                     id="preferredDate"
                     type="text"
                     value={preferredDate}
                     onChange={(e) => setPreferredDate(e.target.value)}
                     placeholder="e.g., Next Tuesday afternoon, or weekday mornings"
+                    required
                     data-testid="input-preferred-date"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="message">Tell Us About Your Needs (Optional)</Label>
+                  <Label htmlFor="message">Tell Us About Your Needs *</Label>
                   <Textarea
                     id="message"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="Share any specific care needs, concerns, or questions you have..."
                     rows={5}
+                    required
                     data-testid="input-message"
                   />
                 </div>
