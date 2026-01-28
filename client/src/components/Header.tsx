@@ -72,7 +72,7 @@ export default function Header() {
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
-              <a href="/#areas" data-testid="link-locations" className="text-foreground hover-elevate px-3 py-2 rounded-md transition">Locations</a>
+              <Link href="/locations" data-testid="link-locations" className="text-foreground hover-elevate px-3 py-2 rounded-md transition">Locations</Link>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-1 text-foreground hover-elevate px-3 py-2 rounded-md transition" data-testid="link-care-options">
@@ -225,14 +225,14 @@ export default function Header() {
                   ))}
                 </div>
               </div>
-              <a 
-                href="/#areas" 
+              <Link 
+                href="/locations" 
                 className="text-foreground hover-elevate px-3 py-3 rounded-md text-base" 
                 data-testid="link-locations-mobile"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Locations
-              </a>
+              </Link>
               <div className="px-3 py-2">
                 <p className="text-sm font-medium text-muted-foreground mb-2">Care Options</p>
                 <div className="flex flex-col gap-1 pl-2">
