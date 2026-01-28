@@ -981,6 +981,8 @@ export default function Home() {
           <div>
             <h4 className="font-semibold text-primary mb-3">Resources</h4>
             <ul className="space-y-2 text-sm">
+              <li><Link href="/initial-assessment" className="text-foreground/70 hover:text-primary" data-testid="link-initial-assessment">Initial Assessment</Link></li>
+              <li><Link href="/non-solicitation-agreement" className="text-foreground/70 hover:text-primary" data-testid="link-non-solicitation-agreement">Non-Solicitation Agreement</Link></li>
               <li><Link href="/intake" className="text-foreground/70 hover:text-primary" data-testid="link-intake-form">Client intake form</Link></li>
               <li><Link href="/hipaa-acknowledgment" className="text-foreground/70 hover:text-primary" data-testid="link-hipaa-form">HIPAA acknowledgment</Link></li>
               <li><Link href="/privacy-policy" className="text-foreground/70 hover:text-primary" data-testid="link-privacy-policy">Privacy policy</Link></li>

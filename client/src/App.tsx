@@ -60,6 +60,8 @@ const AdminPodcasts = lazy(() => import("@/pages/admin/podcasts"));
 const AgingResourcesPage = lazy(() => import("@/pages/aging-resources"));
 const FindHospitalPage = lazy(() => import("@/pages/find-hospital"));
 const ServiceDetailPage = lazy(() => import("@/pages/service-detail"));
+const NonSolicitationAgreementPage = lazy(() => import("@/pages/non-solicitation-agreement"));
+const InitialAssessmentPage = lazy(() => import("@/pages/initial-assessment"));
 
 // Loading fallback component
 function PageLoader() {
@@ -116,6 +118,8 @@ function Router() {
         <Route path="/non-solicitation-policy" component={NonSolicitationPolicyPage} />
         <Route path="/terms-and-conditions" component={TermsAndConditionsPage} />
         <Route path="/intake" component={IntakePage} />
+        <Route path="/non-solicitation-agreement" component={NonSolicitationAgreementPage} />
+        <Route path="/initial-assessment" component={InitialAssessmentPage} />
         <Route path="/caregiver-log" component={CaregiverLogPage} />
         <Route path="/hipaa-acknowledgment" component={HipaaAcknowledgmentPage} />
         <Route path="/refer-a-friend" component={ReferAFriendPage} />

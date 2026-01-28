@@ -851,6 +851,155 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public form submission routes
+  app.post("/api/forms/non-solicitation", publicFormLimiter, async (req, res) => {
+    try {
+      const formData = req.body;
+      
+      if (formData.email && isDisposableEmail(formData.email)) {
+        return res.status(400).json({ error: "Please use a permanent email address" });
+      }
+      
+      const agreementData = {
+        email: formData.email,
+        clientFullName: formData.clientFullName,
+        responsibleParty: formData.responsibleParty,
+        billingAddress: formData.billingAddress,
+        placementOption: formData.placementOption,
+        agreementTerms: {
+          noPrivateEmployment: formData.acknowledgments?.noPrivateEmployment || false,
+          noReferralForPrivateHire: formData.acknowledgments?.noReferrals || false,
+          understandUnderTablePayments: formData.acknowledgments?.noUnderTablePayments || false,
+        },
+        penaltyAcknowledgments: {
+          agreedToLiquidatedDamages: formData.penalties?.agreedToLiquidatedDamages || false,
+          agreedToLegalFees: formData.penalties?.agreedToLegalFees || false,
+        },
+        electronicSignature: formData.signature,
+        agreementDate: formData.signatureDate,
+        status: "active",
+      };
+      
+      const agreement = await storage.createNonSolicitationAgreement(agreementData);
+      
+      // Send confirmation email if email is configured
+      try {
+        await sendEmail({
+          to: formData.email,
+          subject: "Non-Solicitation Agreement Received - Private In-Home Caregiver",
+          html: `
+            <h2>Non-Solicitation Agreement Received</h2>
+            <p>Dear ${formData.clientFullName},</p>
+            <p>Thank you for completing the Non-Solicitation & Placement Agreement with Private In-Home Caregiver.</p>
+            <p>We have received your signed agreement and will keep it on file.</p>
+            <p>If you have any questions, please contact us at (617) 686-0595.</p>
+            <p>Best regards,<br>Private In-Home Caregiver Team</p>
+          `
+        });
+      } catch (emailError) {
+        console.error("Failed to send confirmation email:", emailError);
+      }
+      
+      res.status(201).json({ success: true, id: agreement.id });
+    } catch (error: any) {
+      console.error("Non-solicitation form error:", error);
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/forms/initial-assessment", publicFormLimiter, async (req, res) => {
+    try {
+      const formData = req.body;
+      
+      if (formData.email && isDisposableEmail(formData.email)) {
+        return res.status(400).json({ error: "Please use a permanent email address" });
+      }
+      
+      const assessmentData = {
+        email: formData.email,
+        clientFullName: formData.clientFullName,
+        clientDateOfBirth: formData.clientDob,
+        serviceAddress: formData.serviceAddress,
+        responsiblePartyName: formData.responsiblePartyName,
+        responsiblePartyRelationship: formData.responsiblePartyRelationship,
+        billingEmail: formData.billingEmail,
+        primaryPhone: formData.primaryPhone,
+        careAssessment: {
+          primaryDiagnosis: formData.primaryDiagnosis,
+          adlsRequired: formData.adlsRequired || [],
+          iadlsRequired: formData.iadlsRequired || [],
+          medicalHistory: formData.medicalHistory,
+          currentMedications: formData.currentMedications,
+        },
+        homeSafety: {
+          homeAccessMethod: formData.homeAccessMethod,
+          keypadCodeOrKeyLocation: formData.keyLocation || "",
+          petsInHome: formData.petsInHome,
+          smokingPolicy: formData.smokingPolicy,
+        },
+        serviceSchedule: {
+          serviceStartDate: formData.serviceStartDate,
+          serviceDays: formData.serviceDays || [],
+          shiftHours: formData.shiftHours,
+          guaranteedMinHours: formData.minimumHoursPerWeek || "",
+          recommendedLevelOfCare: formData.recommendedCareLevel,
+          careGoal: formData.careGoal,
+        },
+        financialAgreement: {
+          standardHourlyRate: formData.standardRateAccepted || false,
+          weekendHolidayRate: formData.weekendRateAccepted || false,
+          initialRetainerFee: formData.retainerAccepted || false,
+          additionalFees: formData.additionalFees || [],
+          preferredPaymentMethod: formData.paymentMethod,
+        },
+        legalAcknowledgments: {
+          agreedHipaa: formData.acknowledgments?.hipaa || false,
+          agreedPrivacyPolicy: formData.acknowledgments?.privacy || false,
+          agreedTermsConditions: formData.acknowledgments?.terms || false,
+          agreedCancellationPolicy: formData.acknowledgments?.cancellation || false,
+          agreedNonSolicitation: formData.acknowledgments?.nonSolicitation || false,
+          understandNonMedical: formData.acknowledgments?.nonMedical || false,
+        },
+        emergencyContact: {
+          emergencyContactName: formData.emergencyContactName,
+          emergencyContactPhone: formData.emergencyContactPhone,
+          additionalPhone: formData.additionalPhone || "",
+          preferredHospital: formData.preferredHospital,
+        },
+        electronicSignature: formData.signature,
+        signatureDate: formData.signatureDate,
+        status: "pending",
+      };
+      
+      const assessment = await storage.createInitialAssessment(assessmentData);
+      
+      // Send confirmation email
+      try {
+        await sendEmail({
+          to: formData.email,
+          subject: "Initial Assessment Received - Private In-Home Caregiver",
+          html: `
+            <h2>Initial Assessment & Service Agreement Received</h2>
+            <p>Dear ${formData.clientFullName},</p>
+            <p>Thank you for completing the Initial Assessment & Service Agreement with Private In-Home Caregiver.</p>
+            <p>Our team will review your information and contact you shortly to discuss next steps.</p>
+            <p><strong>Service Start Date:</strong> ${formData.serviceStartDate}</p>
+            <p><strong>Care Level:</strong> ${formData.recommendedCareLevel}</p>
+            <p>If you have any questions, please contact us at (617) 686-0595.</p>
+            <p>Best regards,<br>Private In-Home Caregiver Team</p>
+          `
+        });
+      } catch (emailError) {
+        console.error("Failed to send confirmation email:", emailError);
+      }
+      
+      res.status(201).json({ success: true, id: assessment.id });
+    } catch (error: any) {
+      console.error("Initial assessment form error:", error);
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   app.get("/api/pages", async (req, res) => {
     try {
       const pages = await storage.listPageMeta();
