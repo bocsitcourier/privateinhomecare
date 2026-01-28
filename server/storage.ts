@@ -17,6 +17,7 @@ import {
   type CareTypePage, type InsertCareTypePage, type UpdateCareTypePage,
   type LocationFaq, type InsertLocationFaq, type UpdateLocationFaq,
   type LocationReview, type InsertLocationReview, type UpdateLocationReview,
+  type CityFaq, type InsertCityFaq, type UpdateCityFaq,
   type ServiceType, type InsertServiceType,
   type LocationService, type InsertLocationService,
   type CareType,
@@ -55,6 +56,7 @@ import {
   locationReviews,
   serviceTypes,
   locationServices,
+  cityFaqs,
   videos,
   podcasts,
   facilities,
@@ -194,6 +196,16 @@ export interface IStorage {
   createLocationReview(review: InsertLocationReview): Promise<LocationReview>;
   updateLocationReview(id: string, review: UpdateLocationReview): Promise<LocationReview | undefined>;
   deleteLocationReview(id: string): Promise<boolean>;
+  
+  // City FAQs (directly linked to locations)
+  listCityFaqs(locationId: string): Promise<CityFaq[]>;
+  getCityFaqsBySlug(slug: string): Promise<CityFaq[]>;
+  createCityFaq(faq: InsertCityFaq): Promise<CityFaq>;
+  updateCityFaq(id: string, faq: UpdateCityFaq): Promise<CityFaq | undefined>;
+  deleteCityFaq(id: string): Promise<boolean>;
+  
+  // Location enrichment
+  enrichLocationWithPlaces(id: string, data: { heroImageUrl?: string; galleryImages?: string[]; googlePlaceId?: string }): Promise<MaLocation | undefined>;
   
   listServiceTypes(category?: string): Promise<ServiceType[]>;
   createServiceType(service: InsertServiceType): Promise<ServiceType>;
@@ -1613,6 +1625,64 @@ export class MemStorage implements IStorage {
 
   async deleteLocationReview(id: string): Promise<boolean> {
     return this.locationReviewsMap.delete(id);
+  }
+
+  // City FAQs implementation
+  private cityFaqsMap = new Map<string, CityFaq>();
+
+  async listCityFaqs(locationId: string): Promise<CityFaq[]> {
+    return Array.from(this.cityFaqsMap.values())
+      .filter(f => f.locationId === locationId && f.isActive === "yes")
+      .sort((a, b) => a.sortOrder - b.sortOrder);
+  }
+
+  async getCityFaqsBySlug(slug: string): Promise<CityFaq[]> {
+    const location = await this.getMaLocationBySlug(slug);
+    if (!location) return [];
+    return this.listCityFaqs(location.id);
+  }
+
+  async createCityFaq(faq: InsertCityFaq): Promise<CityFaq> {
+    const id = randomUUID();
+    const now = new Date();
+    const newFaq: CityFaq = { 
+      id, 
+      ...faq, 
+      category: faq.category ?? "general",
+      sortOrder: faq.sortOrder ?? 0,
+      isActive: faq.isActive ?? "yes",
+      createdAt: now, 
+      updatedAt: now 
+    };
+    this.cityFaqsMap.set(id, newFaq);
+    return newFaq;
+  }
+
+  async updateCityFaq(id: string, faq: UpdateCityFaq): Promise<CityFaq | undefined> {
+    const existing = this.cityFaqsMap.get(id);
+    if (!existing) return undefined;
+    const updated: CityFaq = { ...existing, ...faq, updatedAt: new Date() };
+    this.cityFaqsMap.set(id, updated);
+    return updated;
+  }
+
+  async deleteCityFaq(id: string): Promise<boolean> {
+    return this.cityFaqsMap.delete(id);
+  }
+
+  async enrichLocationWithPlaces(id: string, data: { heroImageUrl?: string; galleryImages?: string[]; googlePlaceId?: string }): Promise<MaLocation | undefined> {
+    const existing = this.maLocationsMap.get(id);
+    if (!existing) return undefined;
+    const updated: MaLocation = { 
+      ...existing, 
+      heroImageUrl: data.heroImageUrl ?? existing.heroImageUrl,
+      galleryImages: data.galleryImages ?? existing.galleryImages,
+      googlePlaceId: data.googlePlaceId ?? existing.googlePlaceId,
+      lastEnrichedAt: new Date(),
+      updatedAt: new Date() 
+    };
+    this.maLocationsMap.set(id, updated);
+    return updated;
   }
 
   async listServiceTypes(category?: string): Promise<ServiceType[]> {
@@ -3423,6 +3493,45 @@ export class DbStorage implements IStorage {
   async deleteLocationReview(id: string): Promise<boolean> {
     const result = await this.db.delete(locationReviews).where(eq(locationReviews.id, id)).returning();
     return result.length > 0;
+  }
+
+  // City FAQs implementation
+  async listCityFaqs(locationId: string): Promise<CityFaq[]> {
+    return await this.db.select().from(cityFaqs)
+      .where(and(eq(cityFaqs.locationId, locationId), eq(cityFaqs.isActive, "yes")))
+      .orderBy(cityFaqs.sortOrder);
+  }
+
+  async getCityFaqsBySlug(slug: string): Promise<CityFaq[]> {
+    const location = await this.getMaLocationBySlug(slug);
+    if (!location) return [];
+    return this.listCityFaqs(location.id);
+  }
+
+  async createCityFaq(faq: InsertCityFaq): Promise<CityFaq> {
+    const result = await this.db.insert(cityFaqs).values(faq).returning();
+    return result[0];
+  }
+
+  async updateCityFaq(id: string, faq: UpdateCityFaq): Promise<CityFaq | undefined> {
+    const result = await this.db.update(cityFaqs).set({ ...faq, updatedAt: new Date() }).where(eq(cityFaqs.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteCityFaq(id: string): Promise<boolean> {
+    const result = await this.db.delete(cityFaqs).where(eq(cityFaqs.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async enrichLocationWithPlaces(id: string, data: { heroImageUrl?: string; galleryImages?: string[]; googlePlaceId?: string }): Promise<MaLocation | undefined> {
+    const result = await this.db.update(maLocations).set({
+      heroImageUrl: data.heroImageUrl,
+      galleryImages: data.galleryImages,
+      googlePlaceId: data.googlePlaceId,
+      lastEnrichedAt: new Date(),
+      updatedAt: new Date()
+    }).where(eq(maLocations.id, id)).returning();
+    return result[0];
   }
 
   async listServiceTypes(category?: string): Promise<ServiceType[]> {

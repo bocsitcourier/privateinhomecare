@@ -694,6 +694,12 @@ export const maLocations = pgTable("ma_locations", {
   isActive: text("is_active").notNull().default("yes"),
   latitude: text("latitude"),
   longitude: text("longitude"),
+  heroImageUrl: text("hero_image_url"),
+  galleryImages: jsonb("gallery_images").$type<string[]>().default([]),
+  googlePlaceId: text("google_place_id"),
+  description: text("description"),
+  highlights: jsonb("highlights").$type<string[]>().default([]),
+  lastEnrichedAt: timestamp("last_enriched_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -702,8 +708,11 @@ export const insertMaLocationSchema = createInsertSchema(maLocations).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+  lastEnrichedAt: true,
 }).extend({
   zipCodes: z.array(z.string()).default([]),
+  galleryImages: z.array(z.string()).default([]),
+  highlights: z.array(z.string()).default([]),
 });
 
 export const updateMaLocationSchema = insertMaLocationSchema.partial();
@@ -711,6 +720,31 @@ export const updateMaLocationSchema = insertMaLocationSchema.partial();
 export type InsertMaLocation = z.infer<typeof insertMaLocationSchema>;
 export type UpdateMaLocation = z.infer<typeof updateMaLocationSchema>;
 export type MaLocation = typeof maLocations.$inferSelect;
+
+// City-level FAQs (directly linked to locations, not through careTypePages)
+export const cityFaqs = pgTable("city_faqs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  locationId: varchar("location_id").notNull().references(() => maLocations.id),
+  question: text("question").notNull(),
+  answer: text("answer").notNull(),
+  category: text("category").notNull().default("general"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  isActive: text("is_active").notNull().default("yes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertCityFaqSchema = createInsertSchema(cityFaqs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateCityFaqSchema = insertCityFaqSchema.partial();
+
+export type InsertCityFaq = z.infer<typeof insertCityFaqSchema>;
+export type UpdateCityFaq = z.infer<typeof updateCityFaqSchema>;
+export type CityFaq = typeof cityFaqs.$inferSelect;
 
 // Care type pages (content for each location + care type combination)
 export const careTypePages = pgTable("care_type_pages", {
