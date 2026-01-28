@@ -21,6 +21,9 @@ import {
   insertVideoSchema, updateVideoSchema,
   insertPodcastSchema, updatePodcastSchema,
   insertFacilityFaqSchema, updateFacilityFaqSchema,
+  insertNonSolicitationSchema, updateNonSolicitationSchema,
+  insertInitialAssessmentSchema, updateInitialAssessmentSchema,
+  insertClientIntakeSchema, updateClientIntakeSchema,
   type PageMeta
 } from "@shared/schema";
 import DOMPurify from 'isomorphic-dompurify';
@@ -1720,6 +1723,333 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(log);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
+    }
+  });
+
+  // ===== Non-Solicitation Agreements =====
+  app.get("/api/admin/non-solicitation-agreements", requireAuth, async (req, res) => {
+    try {
+      const { status } = req.query;
+      const agreements = await storage.listNonSolicitationAgreements(status as string | undefined);
+      res.json(agreements);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/admin/non-solicitation-agreements/:id", requireAuth, async (req, res) => {
+    try {
+      const agreement = await storage.getNonSolicitationAgreement(req.params.id);
+      if (!agreement) {
+        return res.status(404).json({ error: "Non-solicitation agreement not found" });
+      }
+      res.json(agreement);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/non-solicitation-agreements", requireAuth, async (req, res) => {
+    try {
+      const { captchaToken, ...formData } = req.body;
+      
+      if (captchaToken) {
+        const captchaResult = await verifyCaptcha(captchaToken);
+        if (!captchaResult.success) {
+          return res.status(400).json({ error: "CAPTCHA verification failed" });
+        }
+      }
+      
+      const data = insertNonSolicitationSchema.omit({ captchaToken: true }).parse(formData);
+      const agreement = await storage.createNonSolicitationAgreement(data);
+      res.status(201).json(agreement);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.put("/api/admin/non-solicitation-agreements/:id", requireAuth, async (req, res) => {
+    try {
+      const data = updateNonSolicitationSchema.parse(req.body);
+      const agreement = await storage.updateNonSolicitationAgreement(req.params.id, data);
+      if (!agreement) {
+        return res.status(404).json({ error: "Non-solicitation agreement not found" });
+      }
+      res.json(agreement);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/admin/non-solicitation-agreements/:id", requireAuth, async (req, res) => {
+    try {
+      const success = await storage.deleteNonSolicitationAgreement(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Non-solicitation agreement not found" });
+      }
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/non-solicitation-agreements/:id/send-email", requireAuth, async (req, res) => {
+    try {
+      const agreement = await storage.getNonSolicitationAgreement(req.params.id);
+      if (!agreement) {
+        return res.status(404).json({ error: "Non-solicitation agreement not found" });
+      }
+
+      const { recipientEmail } = req.body;
+      const emailTo = recipientEmail || agreement.email;
+
+      await sendEmail({
+        to: emailTo,
+        subject: "Non-Solicitation & Placement Agreement - Private In-Home Caregiver",
+        html: `
+          <h2>Non-Solicitation & Placement Agreement</h2>
+          <p>Dear ${agreement.clientFullName},</p>
+          <p>Thank you for signing the Non-Solicitation & Placement Agreement with Private In-Home Caregiver.</p>
+          <h3>Agreement Details:</h3>
+          <ul>
+            <li><strong>Responsible Party:</strong> ${agreement.responsibleParty}</li>
+            <li><strong>Agreement Date:</strong> ${agreement.agreementDate}</li>
+            <li><strong>Placement Option:</strong> ${agreement.placementOption === 'option_a' ? 'Immediate Buyout Fee ($3,500.00)' : agreement.placementOption === 'option_b' ? 'Transition after 300 hours + $1,500.00 Fee' : '12-month Non-Solicitation Agreement'}</li>
+          </ul>
+          <p>If you have any questions, please contact us at info@privateinhomecaregiver.com or call 617-686-0595.</p>
+          <p>Sincerely,<br/>Private In-Home Caregiver Team</p>
+        `
+      });
+
+      await storage.markNonSolicitationEmailSent(req.params.id);
+      res.json({ success: true, message: "Email sent successfully" });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ===== Initial Assessments =====
+  app.get("/api/admin/initial-assessments", requireAuth, async (req, res) => {
+    try {
+      const { status } = req.query;
+      const assessments = await storage.listInitialAssessments(status as string | undefined);
+      res.json(assessments);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/admin/initial-assessments/:id", requireAuth, async (req, res) => {
+    try {
+      const assessment = await storage.getInitialAssessment(req.params.id);
+      if (!assessment) {
+        return res.status(404).json({ error: "Initial assessment not found" });
+      }
+      res.json(assessment);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/initial-assessments", requireAuth, async (req, res) => {
+    try {
+      const { captchaToken, ...formData } = req.body;
+      
+      if (captchaToken) {
+        const captchaResult = await verifyCaptcha(captchaToken);
+        if (!captchaResult.success) {
+          return res.status(400).json({ error: "CAPTCHA verification failed" });
+        }
+      }
+      
+      const data = insertInitialAssessmentSchema.omit({ captchaToken: true }).parse(formData);
+      const assessment = await storage.createInitialAssessment(data);
+      res.status(201).json(assessment);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.put("/api/admin/initial-assessments/:id", requireAuth, async (req, res) => {
+    try {
+      const data = updateInitialAssessmentSchema.parse(req.body);
+      const assessment = await storage.updateInitialAssessment(req.params.id, data);
+      if (!assessment) {
+        return res.status(404).json({ error: "Initial assessment not found" });
+      }
+      res.json(assessment);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/admin/initial-assessments/:id", requireAuth, async (req, res) => {
+    try {
+      const success = await storage.deleteInitialAssessment(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Initial assessment not found" });
+      }
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/initial-assessments/:id/send-email", requireAuth, async (req, res) => {
+    try {
+      const assessment = await storage.getInitialAssessment(req.params.id);
+      if (!assessment) {
+        return res.status(404).json({ error: "Initial assessment not found" });
+      }
+
+      const { recipientEmail } = req.body;
+      const emailTo = recipientEmail || assessment.email;
+
+      await sendEmail({
+        to: emailTo,
+        subject: "Initial Assessment & Service Agreement - Private In-Home Caregiver",
+        html: `
+          <h2>Initial Assessment & Service Agreement</h2>
+          <p>Dear ${assessment.responsiblePartyName},</p>
+          <p>Thank you for completing the Initial Assessment & Service Agreement for ${assessment.clientFullName}.</p>
+          <h3>Service Details:</h3>
+          <ul>
+            <li><strong>Client:</strong> ${assessment.clientFullName}</li>
+            <li><strong>Service Address:</strong> ${assessment.serviceAddress}</li>
+            <li><strong>Service Start Date:</strong> ${assessment.serviceSchedule.serviceStartDate}</li>
+            <li><strong>Service Days:</strong> ${assessment.serviceSchedule.serviceDays.join(', ')}</li>
+            <li><strong>Shift Hours:</strong> ${assessment.serviceSchedule.shiftHours}</li>
+            <li><strong>Level of Care:</strong> ${assessment.serviceSchedule.recommendedLevelOfCare}</li>
+          </ul>
+          <h3>Emergency Contact:</h3>
+          <ul>
+            <li><strong>Name:</strong> ${assessment.emergencyContact.emergencyContactName}</li>
+            <li><strong>Phone:</strong> ${assessment.emergencyContact.emergencyContactPhone}</li>
+            <li><strong>Preferred Hospital:</strong> ${assessment.emergencyContact.preferredHospital}</li>
+          </ul>
+          <p>We will be in touch shortly to confirm your caregiver assignment and schedule.</p>
+          <p>If you have any questions, please contact us at info@privateinhomecaregiver.com or call 617-686-0595.</p>
+          <p>Sincerely,<br/>Private In-Home Caregiver Team</p>
+        `
+      });
+
+      await storage.markInitialAssessmentEmailSent(req.params.id);
+      res.json({ success: true, message: "Email sent successfully" });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ===== Client Intakes (Admin) =====
+  app.get("/api/admin/client-intakes", requireAuth, async (req, res) => {
+    try {
+      const { status } = req.query;
+      const intakes = await storage.listClientIntakes(status as string | undefined);
+      res.json(intakes);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/admin/client-intakes/:id", requireAuth, async (req, res) => {
+    try {
+      const intake = await storage.getClientIntake(req.params.id);
+      if (!intake) {
+        return res.status(404).json({ error: "Client intake not found" });
+      }
+      res.json(intake);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/client-intakes", requireAuth, async (req, res) => {
+    try {
+      const { captchaToken, ...formData } = req.body;
+      
+      if (captchaToken) {
+        const captchaResult = await verifyCaptcha(captchaToken);
+        if (!captchaResult.success) {
+          return res.status(400).json({ error: "CAPTCHA verification failed" });
+        }
+      }
+      
+      const data = insertClientIntakeSchema.omit({ captchaToken: true }).parse(formData);
+      const intake = await storage.createClientIntake(data);
+      res.status(201).json(intake);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.put("/api/admin/client-intakes/:id", requireAuth, async (req, res) => {
+    try {
+      const data = updateClientIntakeSchema.parse(req.body);
+      const intake = await storage.updateClientIntake(req.params.id, data);
+      if (!intake) {
+        return res.status(404).json({ error: "Client intake not found" });
+      }
+      res.json(intake);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/admin/client-intakes/:id", requireAuth, async (req, res) => {
+    try {
+      const success = await storage.deleteClientIntake(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Client intake not found" });
+      }
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/client-intakes/:id/send-email", requireAuth, async (req, res) => {
+    try {
+      const intake = await storage.getClientIntake(req.params.id);
+      if (!intake) {
+        return res.status(404).json({ error: "Client intake not found" });
+      }
+
+      const { recipientEmail } = req.body;
+      const emailTo = recipientEmail || intake.clientEmail;
+
+      await sendEmail({
+        to: emailTo,
+        subject: "Client Intake Confirmation - Private In-Home Caregiver",
+        html: `
+          <h2>Client Intake Confirmation</h2>
+          <p>Dear ${intake.clientName},</p>
+          <p>Thank you for completing your client intake form with Private In-Home Caregiver.</p>
+          <h3>Your Information:</h3>
+          <ul>
+            <li><strong>Name:</strong> ${intake.clientName}</li>
+            <li><strong>Email:</strong> ${intake.clientEmail}</li>
+            <li><strong>Phone:</strong> ${intake.clientPhone}</li>
+            ${intake.address ? `<li><strong>Address:</strong> ${intake.address}</li>` : ''}
+            ${intake.preferredSchedule ? `<li><strong>Preferred Schedule:</strong> ${intake.preferredSchedule}</li>` : ''}
+          </ul>
+          ${intake.emergencyContactName ? `
+          <h3>Emergency Contact:</h3>
+          <ul>
+            <li><strong>Name:</strong> ${intake.emergencyContactName}</li>
+            <li><strong>Phone:</strong> ${intake.emergencyContactPhone}</li>
+            <li><strong>Relationship:</strong> ${intake.emergencyContactRelationship}</li>
+          </ul>
+          ` : ''}
+          <p>A member of our team will be in touch with you shortly to discuss your care needs and match you with an appropriate caregiver.</p>
+          <p>If you have any questions, please contact us at info@privateinhomecaregiver.com or call 617-686-0595.</p>
+          <p>Sincerely,<br/>Private In-Home Caregiver Team</p>
+        `
+      });
+
+      await storage.markClientIntakeEmailSent(req.params.id);
+      res.json({ success: true, message: "Email sent successfully" });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   });
 

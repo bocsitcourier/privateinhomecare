@@ -1451,3 +1451,256 @@ export const insertMediaEventSchema = createInsertSchema(mediaEvents).omit({
 
 export type InsertMediaEvent = z.infer<typeof insertMediaEventSchema>;
 export type MediaEvent = typeof mediaEvents.$inferSelect;
+
+// Non-Solicitation Agreement
+export const nonSolicitationAgreements = pgTable("non_solicitation_agreements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  clientFullName: text("client_full_name").notNull(),
+  responsibleParty: text("responsible_party").notNull(),
+  billingAddress: text("billing_address").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  placementOption: text("placement_option").notNull(), // 'option_a', 'option_b', 'no_hire'
+  agreementTerms: jsonb("agreement_terms").$type<{
+    noPrivateEmployment: boolean;
+    noReferralForPrivateHire: boolean;
+    understandUnderTablePayments: boolean;
+  }>().notNull(),
+  penaltyAcknowledgments: jsonb("penalty_acknowledgments").$type<{
+    agreedToLiquidatedDamages: boolean;
+    agreedToLegalFees: boolean;
+  }>().notNull(),
+  electronicSignature: text("electronic_signature").notNull(),
+  agreementDate: text("agreement_date").notNull(),
+  assignedClientId: varchar("assigned_client_id"),
+  status: text("status").notNull().default("active"), // 'active', 'converted', 'terminated'
+  emailSentAt: timestamp("email_sent_at"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertNonSolicitationSchema = createInsertSchema(nonSolicitationAgreements).omit({
+  id: true,
+  emailSentAt: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  email: z.string().trim().email("Valid email is required"),
+  captchaToken: z.string().min(1, "CAPTCHA verification required"),
+  agreementTerms: z.object({
+    noPrivateEmployment: z.boolean(),
+    noReferralForPrivateHire: z.boolean(),
+    understandUnderTablePayments: z.boolean(),
+  }),
+  penaltyAcknowledgments: z.object({
+    agreedToLiquidatedDamages: z.boolean(),
+    agreedToLegalFees: z.boolean(),
+  }),
+});
+
+export const updateNonSolicitationSchema = createInsertSchema(nonSolicitationAgreements).omit({
+  id: true,
+  createdAt: true,
+}).partial();
+
+export type InsertNonSolicitation = z.infer<typeof insertNonSolicitationSchema>;
+export type UpdateNonSolicitation = z.infer<typeof updateNonSolicitationSchema>;
+export type NonSolicitationAgreement = typeof nonSolicitationAgreements.$inferSelect;
+
+// Initial Assessment & Service Agreement
+export const initialAssessments = pgTable("initial_assessments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: text("email").notNull(),
+  
+  // Client & Responsible Party
+  clientFullName: text("client_full_name").notNull(),
+  clientDateOfBirth: text("client_date_of_birth").notNull(),
+  serviceAddress: text("service_address").notNull(),
+  responsiblePartyName: text("responsible_party_name").notNull(),
+  responsiblePartyRelationship: text("responsible_party_relationship").notNull(),
+  billingEmail: text("billing_email").notNull(),
+  primaryPhone: text("primary_phone").notNull(),
+  
+  // Care Assessment
+  careAssessment: jsonb("care_assessment").$type<{
+    primaryDiagnosis: string;
+    adlsRequired: string[];
+    iadlsRequired: string[];
+    medicalHistory: string;
+    currentMedications: string;
+  }>().notNull(),
+  
+  // Home Safety & Access
+  homeSafety: jsonb("home_safety").$type<{
+    homeAccessMethod: string;
+    keypadCodeOrKeyLocation: string;
+    petsInHome: string;
+    smokingPolicy: string;
+  }>().notNull(),
+  
+  // Service Schedule
+  serviceSchedule: jsonb("service_schedule").$type<{
+    serviceStartDate: string;
+    serviceDays: string[];
+    shiftHours: string;
+    guaranteedMinHours: string;
+    recommendedLevelOfCare: string;
+    careGoal: string;
+  }>().notNull(),
+  
+  // Financial Agreement
+  financialAgreement: jsonb("financial_agreement").$type<{
+    standardHourlyRate: boolean;
+    weekendHolidayRate: boolean;
+    initialRetainerFee: boolean;
+    additionalFees: string[];
+    preferredPaymentMethod: string;
+  }>().notNull(),
+  
+  // Legal Acknowledgments
+  legalAcknowledgments: jsonb("legal_acknowledgments").$type<{
+    agreedHipaa: boolean;
+    agreedPrivacyPolicy: boolean;
+    agreedTermsConditions: boolean;
+    agreedCancellationPolicy: boolean;
+    agreedNonSolicitation: boolean;
+    understandNonMedical: boolean;
+  }>().notNull(),
+  
+  // Emergency Authorization
+  emergencyContact: jsonb("emergency_contact").$type<{
+    emergencyContactName: string;
+    emergencyContactPhone: string;
+    additionalPhone: string;
+    preferredHospital: string;
+  }>().notNull(),
+  
+  electronicSignature: text("electronic_signature").notNull(),
+  signatureDate: text("signature_date").notNull(),
+  
+  assignedClientId: varchar("assigned_client_id"),
+  status: text("status").notNull().default("pending"), // 'pending', 'approved', 'active', 'completed'
+  emailSentAt: timestamp("email_sent_at"),
+  reviewedAt: timestamp("reviewed_at"),
+  reviewedBy: text("reviewed_by"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertInitialAssessmentSchema = createInsertSchema(initialAssessments).omit({
+  id: true,
+  emailSentAt: true,
+  reviewedAt: true,
+  reviewedBy: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  email: z.string().trim().email("Valid email is required"),
+  billingEmail: z.string().trim().email("Valid billing email is required"),
+  primaryPhone: z.string().trim().min(1, "Phone number is required"),
+  captchaToken: z.string().min(1, "CAPTCHA verification required"),
+  careAssessment: z.object({
+    primaryDiagnosis: z.string(),
+    adlsRequired: z.array(z.string()),
+    iadlsRequired: z.array(z.string()),
+    medicalHistory: z.string(),
+    currentMedications: z.string(),
+  }),
+  homeSafety: z.object({
+    homeAccessMethod: z.string(),
+    keypadCodeOrKeyLocation: z.string(),
+    petsInHome: z.string(),
+    smokingPolicy: z.string(),
+  }),
+  serviceSchedule: z.object({
+    serviceStartDate: z.string(),
+    serviceDays: z.array(z.string()),
+    shiftHours: z.string(),
+    guaranteedMinHours: z.string(),
+    recommendedLevelOfCare: z.string(),
+    careGoal: z.string(),
+  }),
+  financialAgreement: z.object({
+    standardHourlyRate: z.boolean(),
+    weekendHolidayRate: z.boolean(),
+    initialRetainerFee: z.boolean(),
+    additionalFees: z.array(z.string()),
+    preferredPaymentMethod: z.string(),
+  }),
+  legalAcknowledgments: z.object({
+    agreedHipaa: z.boolean(),
+    agreedPrivacyPolicy: z.boolean(),
+    agreedTermsConditions: z.boolean(),
+    agreedCancellationPolicy: z.boolean(),
+    agreedNonSolicitation: z.boolean(),
+    understandNonMedical: z.boolean(),
+  }),
+  emergencyContact: z.object({
+    emergencyContactName: z.string(),
+    emergencyContactPhone: z.string(),
+    additionalPhone: z.string(),
+    preferredHospital: z.string(),
+  }),
+});
+
+export const updateInitialAssessmentSchema = createInsertSchema(initialAssessments).omit({
+  id: true,
+  createdAt: true,
+}).partial();
+
+export type InsertInitialAssessment = z.infer<typeof insertInitialAssessmentSchema>;
+export type UpdateInitialAssessment = z.infer<typeof updateInitialAssessmentSchema>;
+export type InitialAssessment = typeof initialAssessments.$inferSelect;
+
+// Client Intake (admin version - for managing client onboarding)
+export const clientIntakes = pgTable("client_intakes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  clientName: text("client_name").notNull(),
+  clientEmail: text("client_email").notNull(),
+  clientPhone: text("client_phone").notNull(),
+  dateOfBirth: text("date_of_birth"),
+  address: text("address"),
+  emergencyContactName: text("emergency_contact_name"),
+  emergencyContactPhone: text("emergency_contact_phone"),
+  emergencyContactRelationship: text("emergency_contact_relationship"),
+  insuranceProvider: text("insurance_provider"),
+  insurancePolicyNumber: text("insurance_policy_number"),
+  primaryPhysician: text("primary_physician"),
+  physicianPhone: text("physician_phone"),
+  medicalConditions: text("medical_conditions"),
+  medications: text("medications"),
+  allergies: text("allergies"),
+  mobilityStatus: text("mobility_status"),
+  dietaryRestrictions: text("dietary_restrictions"),
+  careNeeds: jsonb("care_needs").$type<string[]>().default([]),
+  preferredSchedule: text("preferred_schedule"),
+  additionalNotes: text("additional_notes"),
+  assignedCaregiverId: varchar("assigned_caregiver_id"),
+  status: text("status").notNull().default("pending"), // 'pending', 'active', 'on_hold', 'discharged'
+  emailSentAt: timestamp("email_sent_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertClientIntakeSchema = createInsertSchema(clientIntakes).omit({
+  id: true,
+  emailSentAt: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  clientEmail: z.string().trim().email("Valid email is required"),
+  clientPhone: z.string().trim().min(1, "Phone number is required"),
+  careNeeds: z.array(z.string()).default([]),
+  captchaToken: z.string().min(1, "CAPTCHA verification required"),
+});
+
+export const updateClientIntakeSchema = createInsertSchema(clientIntakes).omit({
+  id: true,
+  createdAt: true,
+}).partial();
+
+export type InsertClientIntake = z.infer<typeof insertClientIntakeSchema>;
+export type UpdateClientIntake = z.infer<typeof updateClientIntakeSchema>;
+export type ClientIntake = typeof clientIntakes.$inferSelect;

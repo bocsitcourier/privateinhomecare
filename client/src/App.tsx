@@ -28,6 +28,7 @@ const CareersPage = lazy(() => import("@/pages/careers"));
 const ApplyPage = lazy(() => import("@/pages/apply"));
 const CityPage = lazy(() => import("@/pages/city"));
 const PrivacyPolicyPage = lazy(() => import("@/pages/privacy-policy"));
+const NonSolicitationPolicyPage = lazy(() => import("@/pages/non-solicitation-policy"));
 const IntakePage = lazy(() => import("@/pages/intake"));
 const CaregiverLogPage = lazy(() => import("@/pages/caregiver-log"));
 const HipaaAcknowledgmentPage = lazy(() => import("@/pages/hipaa-acknowledgment"));
@@ -102,6 +103,7 @@ function Router() {
         <Route path="/:careType/massachusetts/:citySlug" component={CareTypeLocationPage} />
         <Route path="/:careType/massachusetts" component={CareTypeStatePage} />
         <Route path="/privacy-policy" component={PrivacyPolicyPage} />
+        <Route path="/non-solicitation-policy" component={NonSolicitationPolicyPage} />
         <Route path="/terms-and-conditions" component={TermsAndConditionsPage} />
         <Route path="/intake" component={IntakePage} />
         <Route path="/caregiver-log" component={CaregiverLogPage} />

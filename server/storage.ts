@@ -32,6 +32,9 @@ import {
   type QuizWithQuestions, type QuizLeadWithResponses,
   type PageView, type InsertPageView,
   type MediaEvent, type InsertMediaEvent,
+  type NonSolicitationAgreement, type InsertNonSolicitation, type UpdateNonSolicitation,
+  type InitialAssessment, type InsertInitialAssessment, type UpdateInitialAssessment,
+  type ClientIntake, type InsertClientIntake, type UpdateClientIntake,
   users,
   recoveryCodes,
   jobs,
@@ -62,7 +65,10 @@ import {
   quizLeads,
   quizResponses,
   pageViews,
-  mediaEvents
+  mediaEvents,
+  nonSolicitationAgreements,
+  initialAssessments,
+  clientIntakes
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { slugify, generateUniqueSlug } from "@shared/utils";
@@ -287,6 +293,30 @@ export interface IStorage {
     dailyTraffic: { day: string; views: number }[];
     mediaPlays: { type: string; count: number }[];
   }>;
+  
+  // Non-Solicitation Agreements
+  listNonSolicitationAgreements(status?: string): Promise<NonSolicitationAgreement[]>;
+  getNonSolicitationAgreement(id: string): Promise<NonSolicitationAgreement | undefined>;
+  createNonSolicitationAgreement(agreement: Omit<InsertNonSolicitation, 'captchaToken'>): Promise<NonSolicitationAgreement>;
+  updateNonSolicitationAgreement(id: string, agreement: UpdateNonSolicitation): Promise<NonSolicitationAgreement | undefined>;
+  deleteNonSolicitationAgreement(id: string): Promise<boolean>;
+  markNonSolicitationEmailSent(id: string): Promise<NonSolicitationAgreement | undefined>;
+  
+  // Initial Assessments
+  listInitialAssessments(status?: string): Promise<InitialAssessment[]>;
+  getInitialAssessment(id: string): Promise<InitialAssessment | undefined>;
+  createInitialAssessment(assessment: Omit<InsertInitialAssessment, 'captchaToken'>): Promise<InitialAssessment>;
+  updateInitialAssessment(id: string, assessment: UpdateInitialAssessment): Promise<InitialAssessment | undefined>;
+  deleteInitialAssessment(id: string): Promise<boolean>;
+  markInitialAssessmentEmailSent(id: string): Promise<InitialAssessment | undefined>;
+  
+  // Client Intakes (admin)
+  listClientIntakes(status?: string): Promise<ClientIntake[]>;
+  getClientIntake(id: string): Promise<ClientIntake | undefined>;
+  createClientIntake(intake: Omit<InsertClientIntake, 'captchaToken'>): Promise<ClientIntake>;
+  updateClientIntake(id: string, intake: UpdateClientIntake): Promise<ClientIntake | undefined>;
+  deleteClientIntake(id: string): Promise<boolean>;
+  markClientIntakeEmailSent(id: string): Promise<ClientIntake | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -321,6 +351,9 @@ export class MemStorage implements IStorage {
   private quizResponsesMap: Map<string, QuizResponse>;
   private pageViewsMap: Map<string, PageView>;
   private mediaEventsMap: Map<string, MediaEvent>;
+  private nonSolicitationAgreementsMap: Map<string, NonSolicitationAgreement>;
+  private initialAssessmentsMap: Map<string, InitialAssessment>;
+  private clientIntakesMap: Map<string, ClientIntake>;
 
   constructor() {
     this.users = new Map();
@@ -354,6 +387,9 @@ export class MemStorage implements IStorage {
     this.quizResponsesMap = new Map();
     this.pageViewsMap = new Map();
     this.mediaEventsMap = new Map();
+    this.nonSolicitationAgreementsMap = new Map();
+    this.initialAssessmentsMap = new Map();
+    this.clientIntakesMap = new Map();
     
     this.seedDefaultData();
   }
@@ -2338,6 +2374,200 @@ export class MemStorage implements IStorage {
       mediaPlays,
     };
   }
+
+  // Non-Solicitation Agreements
+  async listNonSolicitationAgreements(status?: string): Promise<NonSolicitationAgreement[]> {
+    let agreements = Array.from(this.nonSolicitationAgreementsMap.values());
+    if (status) {
+      agreements = agreements.filter(a => a.status === status);
+    }
+    return agreements.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getNonSolicitationAgreement(id: string): Promise<NonSolicitationAgreement | undefined> {
+    return this.nonSolicitationAgreementsMap.get(id);
+  }
+
+  async createNonSolicitationAgreement(agreement: Omit<InsertNonSolicitation, 'captchaToken'>): Promise<NonSolicitationAgreement> {
+    const id = randomUUID();
+    const now = new Date();
+    const newAgreement: NonSolicitationAgreement = {
+      id,
+      clientFullName: agreement.clientFullName,
+      responsibleParty: agreement.responsibleParty,
+      billingAddress: agreement.billingAddress,
+      email: agreement.email,
+      phone: agreement.phone ?? null,
+      placementOption: agreement.placementOption,
+      agreementTerms: agreement.agreementTerms,
+      penaltyAcknowledgments: agreement.penaltyAcknowledgments,
+      electronicSignature: agreement.electronicSignature,
+      agreementDate: agreement.agreementDate,
+      assignedClientId: agreement.assignedClientId ?? null,
+      status: agreement.status || 'active',
+      emailSentAt: null,
+      notes: agreement.notes ?? null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.nonSolicitationAgreementsMap.set(id, newAgreement);
+    return newAgreement;
+  }
+
+  async updateNonSolicitationAgreement(id: string, agreement: UpdateNonSolicitation): Promise<NonSolicitationAgreement | undefined> {
+    const existing = this.nonSolicitationAgreementsMap.get(id);
+    if (!existing) return undefined;
+    const updated = { ...existing, ...agreement, updatedAt: new Date() };
+    this.nonSolicitationAgreementsMap.set(id, updated);
+    return updated;
+  }
+
+  async deleteNonSolicitationAgreement(id: string): Promise<boolean> {
+    return this.nonSolicitationAgreementsMap.delete(id);
+  }
+
+  async markNonSolicitationEmailSent(id: string): Promise<NonSolicitationAgreement | undefined> {
+    const existing = this.nonSolicitationAgreementsMap.get(id);
+    if (!existing) return undefined;
+    const updated = { ...existing, emailSentAt: new Date(), updatedAt: new Date() };
+    this.nonSolicitationAgreementsMap.set(id, updated);
+    return updated;
+  }
+
+  // Initial Assessments
+  async listInitialAssessments(status?: string): Promise<InitialAssessment[]> {
+    let assessments = Array.from(this.initialAssessmentsMap.values());
+    if (status) {
+      assessments = assessments.filter(a => a.status === status);
+    }
+    return assessments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getInitialAssessment(id: string): Promise<InitialAssessment | undefined> {
+    return this.initialAssessmentsMap.get(id);
+  }
+
+  async createInitialAssessment(assessment: Omit<InsertInitialAssessment, 'captchaToken'>): Promise<InitialAssessment> {
+    const id = randomUUID();
+    const now = new Date();
+    const newAssessment: InitialAssessment = {
+      id,
+      email: assessment.email,
+      clientFullName: assessment.clientFullName,
+      clientDateOfBirth: assessment.clientDateOfBirth,
+      serviceAddress: assessment.serviceAddress,
+      responsiblePartyName: assessment.responsiblePartyName,
+      responsiblePartyRelationship: assessment.responsiblePartyRelationship,
+      billingEmail: assessment.billingEmail,
+      primaryPhone: assessment.primaryPhone,
+      careAssessment: assessment.careAssessment,
+      homeSafety: assessment.homeSafety,
+      serviceSchedule: assessment.serviceSchedule,
+      financialAgreement: assessment.financialAgreement,
+      legalAcknowledgments: assessment.legalAcknowledgments,
+      emergencyContact: assessment.emergencyContact,
+      electronicSignature: assessment.electronicSignature,
+      signatureDate: assessment.signatureDate,
+      assignedClientId: assessment.assignedClientId ?? null,
+      status: assessment.status || 'pending',
+      emailSentAt: null,
+      reviewedAt: null,
+      reviewedBy: null,
+      notes: assessment.notes ?? null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.initialAssessmentsMap.set(id, newAssessment);
+    return newAssessment;
+  }
+
+  async updateInitialAssessment(id: string, assessment: UpdateInitialAssessment): Promise<InitialAssessment | undefined> {
+    const existing = this.initialAssessmentsMap.get(id);
+    if (!existing) return undefined;
+    const updated = { ...existing, ...assessment, updatedAt: new Date() };
+    this.initialAssessmentsMap.set(id, updated);
+    return updated;
+  }
+
+  async deleteInitialAssessment(id: string): Promise<boolean> {
+    return this.initialAssessmentsMap.delete(id);
+  }
+
+  async markInitialAssessmentEmailSent(id: string): Promise<InitialAssessment | undefined> {
+    const existing = this.initialAssessmentsMap.get(id);
+    if (!existing) return undefined;
+    const updated = { ...existing, emailSentAt: new Date(), updatedAt: new Date() };
+    this.initialAssessmentsMap.set(id, updated);
+    return updated;
+  }
+
+  // Client Intakes
+  async listClientIntakes(status?: string): Promise<ClientIntake[]> {
+    let intakes = Array.from(this.clientIntakesMap.values());
+    if (status) {
+      intakes = intakes.filter(i => i.status === status);
+    }
+    return intakes.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getClientIntake(id: string): Promise<ClientIntake | undefined> {
+    return this.clientIntakesMap.get(id);
+  }
+
+  async createClientIntake(intake: Omit<InsertClientIntake, 'captchaToken'>): Promise<ClientIntake> {
+    const id = randomUUID();
+    const now = new Date();
+    const newIntake: ClientIntake = {
+      id,
+      clientName: intake.clientName,
+      clientEmail: intake.clientEmail,
+      clientPhone: intake.clientPhone,
+      dateOfBirth: intake.dateOfBirth ?? null,
+      address: intake.address ?? null,
+      emergencyContactName: intake.emergencyContactName ?? null,
+      emergencyContactPhone: intake.emergencyContactPhone ?? null,
+      emergencyContactRelationship: intake.emergencyContactRelationship ?? null,
+      insuranceProvider: intake.insuranceProvider ?? null,
+      insurancePolicyNumber: intake.insurancePolicyNumber ?? null,
+      primaryPhysician: intake.primaryPhysician ?? null,
+      physicianPhone: intake.physicianPhone ?? null,
+      medicalConditions: intake.medicalConditions ?? null,
+      medications: intake.medications ?? null,
+      allergies: intake.allergies ?? null,
+      mobilityStatus: intake.mobilityStatus ?? null,
+      dietaryRestrictions: intake.dietaryRestrictions ?? null,
+      careNeeds: intake.careNeeds || [],
+      preferredSchedule: intake.preferredSchedule ?? null,
+      additionalNotes: intake.additionalNotes ?? null,
+      assignedCaregiverId: intake.assignedCaregiverId ?? null,
+      status: intake.status || 'pending',
+      emailSentAt: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.clientIntakesMap.set(id, newIntake);
+    return newIntake;
+  }
+
+  async updateClientIntake(id: string, intake: UpdateClientIntake): Promise<ClientIntake | undefined> {
+    const existing = this.clientIntakesMap.get(id);
+    if (!existing) return undefined;
+    const updated = { ...existing, ...intake, updatedAt: new Date() };
+    this.clientIntakesMap.set(id, updated);
+    return updated;
+  }
+
+  async deleteClientIntake(id: string): Promise<boolean> {
+    return this.clientIntakesMap.delete(id);
+  }
+
+  async markClientIntakeEmailSent(id: string): Promise<ClientIntake | undefined> {
+    const existing = this.clientIntakesMap.get(id);
+    if (!existing) return undefined;
+    const updated = { ...existing, emailSentAt: new Date(), updatedAt: new Date() };
+    this.clientIntakesMap.set(id, updated);
+    return updated;
+  }
 }
 
 export class DbStorage implements IStorage {
@@ -3720,6 +3950,135 @@ export class DbStorage implements IStorage {
       dailyTraffic,
       mediaPlays,
     };
+  }
+
+  // Non-Solicitation Agreements
+  async listNonSolicitationAgreements(status?: string): Promise<NonSolicitationAgreement[]> {
+    let query = this.db.select().from(nonSolicitationAgreements);
+    if (status) {
+      query = query.where(eq(nonSolicitationAgreements.status, status));
+    }
+    return await query.orderBy(desc(nonSolicitationAgreements.createdAt));
+  }
+
+  async getNonSolicitationAgreement(id: string): Promise<NonSolicitationAgreement | undefined> {
+    const result = await this.db.select().from(nonSolicitationAgreements)
+      .where(eq(nonSolicitationAgreements.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createNonSolicitationAgreement(agreement: Omit<InsertNonSolicitation, 'captchaToken'>): Promise<NonSolicitationAgreement> {
+    const result = await this.db.insert(nonSolicitationAgreements).values(agreement).returning();
+    return result[0];
+  }
+
+  async updateNonSolicitationAgreement(id: string, agreement: UpdateNonSolicitation): Promise<NonSolicitationAgreement | undefined> {
+    const result = await this.db.update(nonSolicitationAgreements)
+      .set({ ...agreement, updatedAt: new Date() })
+      .where(eq(nonSolicitationAgreements.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteNonSolicitationAgreement(id: string): Promise<boolean> {
+    const result = await this.db.delete(nonSolicitationAgreements)
+      .where(eq(nonSolicitationAgreements.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  async markNonSolicitationEmailSent(id: string): Promise<NonSolicitationAgreement | undefined> {
+    const result = await this.db.update(nonSolicitationAgreements)
+      .set({ emailSentAt: new Date(), updatedAt: new Date() })
+      .where(eq(nonSolicitationAgreements.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // Initial Assessments
+  async listInitialAssessments(status?: string): Promise<InitialAssessment[]> {
+    let query = this.db.select().from(initialAssessments);
+    if (status) {
+      query = query.where(eq(initialAssessments.status, status));
+    }
+    return await query.orderBy(desc(initialAssessments.createdAt));
+  }
+
+  async getInitialAssessment(id: string): Promise<InitialAssessment | undefined> {
+    const result = await this.db.select().from(initialAssessments)
+      .where(eq(initialAssessments.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createInitialAssessment(assessment: Omit<InsertInitialAssessment, 'captchaToken'>): Promise<InitialAssessment> {
+    const result = await this.db.insert(initialAssessments).values(assessment).returning();
+    return result[0];
+  }
+
+  async updateInitialAssessment(id: string, assessment: UpdateInitialAssessment): Promise<InitialAssessment | undefined> {
+    const result = await this.db.update(initialAssessments)
+      .set({ ...assessment, updatedAt: new Date() })
+      .where(eq(initialAssessments.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteInitialAssessment(id: string): Promise<boolean> {
+    const result = await this.db.delete(initialAssessments)
+      .where(eq(initialAssessments.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  async markInitialAssessmentEmailSent(id: string): Promise<InitialAssessment | undefined> {
+    const result = await this.db.update(initialAssessments)
+      .set({ emailSentAt: new Date(), updatedAt: new Date() })
+      .where(eq(initialAssessments.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // Client Intakes
+  async listClientIntakes(status?: string): Promise<ClientIntake[]> {
+    let query = this.db.select().from(clientIntakes);
+    if (status) {
+      query = query.where(eq(clientIntakes.status, status));
+    }
+    return await query.orderBy(desc(clientIntakes.createdAt));
+  }
+
+  async getClientIntake(id: string): Promise<ClientIntake | undefined> {
+    const result = await this.db.select().from(clientIntakes)
+      .where(eq(clientIntakes.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createClientIntake(intake: Omit<InsertClientIntake, 'captchaToken'>): Promise<ClientIntake> {
+    const result = await this.db.insert(clientIntakes).values(intake).returning();
+    return result[0];
+  }
+
+  async updateClientIntake(id: string, intake: UpdateClientIntake): Promise<ClientIntake | undefined> {
+    const result = await this.db.update(clientIntakes)
+      .set({ ...intake, updatedAt: new Date() })
+      .where(eq(clientIntakes.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteClientIntake(id: string): Promise<boolean> {
+    const result = await this.db.delete(clientIntakes)
+      .where(eq(clientIntakes.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  async markClientIntakeEmailSent(id: string): Promise<ClientIntake | undefined> {
+    const result = await this.db.update(clientIntakes)
+      .set({ emailSentAt: new Date(), updatedAt: new Date() })
+      .where(eq(clientIntakes.id, id))
+      .returning();
+    return result[0];
   }
 }
 

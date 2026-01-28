@@ -43,6 +43,9 @@ import AdminDashboard from "@/components/admin/AdminDashboard";
 import ApplicationsManagement from "@/components/admin/ApplicationsManagement";
 import ReferralsManagement from "@/components/admin/ReferralsManagement";
 import LocationsManagement from "@/components/admin/LocationsManagement";
+import ClientIntakesManagement from "@/components/admin/ClientIntakesManagement";
+import NonSolicitationManagement from "@/components/admin/NonSolicitationManagement";
+import InitialAssessmentsManagement from "@/components/admin/InitialAssessmentsManagement";
 import { VideosManagementContent } from "@/pages/admin/videos";
 import { PodcastsManagementContent } from "@/pages/admin/podcasts";
 import { FacilitiesManagementContent } from "@/pages/admin/facilities";
@@ -76,6 +79,15 @@ const NAV_GROUPS: NavGroup[] = [
       { id: "quizzes", label: "Quiz Leads", icon: <HelpCircle className="w-4 h-4" /> },
       { id: "intake", label: "Intake Forms", icon: <ClipboardList className="w-4 h-4" /> },
       { id: "referrals", label: "Referrals", icon: <Gift className="w-4 h-4" /> },
+    ]
+  },
+  {
+    title: "Client Management",
+    icon: <FileCheck className="w-4 h-4" />,
+    items: [
+      { id: "client-intakes", label: "Client Intakes", icon: <ClipboardList className="w-4 h-4" /> },
+      { id: "initial-assessments", label: "Assessments", icon: <FileText className="w-4 h-4" /> },
+      { id: "non-solicitation", label: "Agreements", icon: <FileCheck className="w-4 h-4" /> },
     ]
   },
   {
@@ -232,6 +244,9 @@ export default function AdminPage() {
       case "podcasts": return <PodcastsManagementContent />;
       case "facilities": return <FacilitiesManagementContent />;
       case "quizzes": return <QuizLeadsManagementContent />;
+      case "client-intakes": return <ClientIntakesManagement />;
+      case "initial-assessments": return <InitialAssessmentsManagement />;
+      case "non-solicitation": return <NonSolicitationManagement />;
       default: return <AdminDashboard />;
     }
   };
