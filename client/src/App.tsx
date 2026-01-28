@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ScheduleCallBanner from "@/components/ScheduleCallBanner";
 import ApplyJobBanner from "@/components/ApplyJobBanner";
+import Footer from "@/components/Footer";
 
 // Eager load critical pages
 import Home from "@/pages/home";
@@ -152,6 +153,7 @@ function App() {
         {!isAdminRoute && <ScheduleCallBanner />}
         {!isAdminRoute && <ApplyJobBanner />}
         <Router />
+        {!isAdminRoute && <Footer />}
       </TooltipProvider>
     </QueryClientProvider>
   );
