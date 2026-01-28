@@ -2828,7 +2828,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             zipCodes: location.zipCodes,
             population: location.population,
             isCity: location.isCity,
-            isActive: "yes"
+            isActive: "yes",
+            galleryImages: [],
+            highlights: []
           });
           locationsCreated++;
         }
@@ -3060,6 +3062,218 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error deleting location:", error);
       res.status(500).json({ message: "Failed to delete location" });
+    }
+  });
+
+  // =============================================
+  // City FAQs API Routes
+  // =============================================
+
+  // Public: Get city FAQs by location slug
+  app.get("/api/directory/locations/:slug/faqs", async (req: Request, res: Response) => {
+    try {
+      const { slug } = req.params;
+      const faqs = await storage.getCityFaqsBySlug(slug);
+      res.json(faqs);
+    } catch (error: any) {
+      console.error("Error getting city FAQs:", error);
+      res.status(500).json({ message: "Failed to get city FAQs" });
+    }
+  });
+
+  // Admin: Create city FAQ
+  app.post("/api/directory/city-faqs", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const faq = await storage.createCityFaq(req.body);
+      res.status(201).json(faq);
+    } catch (error: any) {
+      console.error("Error creating city FAQ:", error);
+      res.status(500).json({ message: "Failed to create city FAQ" });
+    }
+  });
+
+  // Admin: Update city FAQ
+  app.patch("/api/directory/city-faqs/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const updated = await storage.updateCityFaq(id, req.body);
+      if (!updated) {
+        return res.status(404).json({ message: "FAQ not found" });
+      }
+      res.json(updated);
+    } catch (error: any) {
+      console.error("Error updating city FAQ:", error);
+      res.status(500).json({ message: "Failed to update city FAQ" });
+    }
+  });
+
+  // Admin: Delete city FAQ
+  app.delete("/api/directory/city-faqs/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteCityFaq(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "FAQ not found" });
+      }
+      res.json({ message: "FAQ deleted" });
+    } catch (error: any) {
+      console.error("Error deleting city FAQ:", error);
+      res.status(500).json({ message: "Failed to delete city FAQ" });
+    }
+  });
+
+  // Admin: Enrich location with Google Places data
+  app.post("/api/directory/locations/:id/enrich", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const location = await storage.getMaLocation(id);
+      if (!location) {
+        return res.status(404).json({ message: "Location not found" });
+      }
+
+      const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
+      if (!GOOGLE_PLACES_API_KEY) {
+        return res.status(500).json({ message: "Google Places API key not configured" });
+      }
+
+      // Search for city images from Google Places
+      const searchQuery = `${location.name} Massachusetts landmarks scenic`;
+      const placesResponse = await fetch("https://places.googleapis.com/v1/places:searchText", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
+          "X-Goog-FieldMask": "places.id,places.photos,places.displayName",
+        },
+        body: JSON.stringify({
+          textQuery: searchQuery,
+          locationBias: {
+            rectangle: {
+              low: { latitude: 41.2, longitude: -73.5 },
+              high: { latitude: 42.9, longitude: -69.9 },
+            },
+          },
+          maxResultCount: 5,
+        }),
+      });
+
+      if (!placesResponse.ok) {
+        const errorText = await placesResponse.text();
+        console.error("Google Places API error:", errorText);
+        return res.status(500).json({ message: "Failed to fetch from Google Places" });
+      }
+
+      const placesData = await placesResponse.json();
+      const places = placesData.places || [];
+      
+      // Extract photo URLs
+      const galleryImages: string[] = [];
+      for (const place of places) {
+        if (place.photos && place.photos.length > 0) {
+          for (const photo of place.photos.slice(0, 3)) {
+            if (photo.name) {
+              const photoUrl = `https://places.googleapis.com/v1/${photo.name}/media?maxWidthPx=1200&key=${GOOGLE_PLACES_API_KEY}`;
+              galleryImages.push(photoUrl);
+            }
+          }
+        }
+      }
+
+      const heroImageUrl = galleryImages.length > 0 ? galleryImages[0] : null;
+      const googlePlaceId = places.length > 0 ? places[0].id : null;
+
+      const enrichedLocation = await storage.enrichLocationWithPlaces(id, {
+        heroImageUrl: heroImageUrl || undefined,
+        galleryImages,
+        googlePlaceId: googlePlaceId || undefined,
+      });
+
+      res.json(enrichedLocation);
+    } catch (error: any) {
+      console.error("Error enriching location:", error);
+      res.status(500).json({ message: "Failed to enrich location" });
+    }
+  });
+
+  // Admin: Seed city FAQs for a location
+  app.post("/api/directory/locations/:id/seed-faqs", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const location = await storage.getMaLocation(id);
+      if (!location) {
+        return res.status(404).json({ message: "Location not found" });
+      }
+
+      // Generate location-specific FAQs
+      const faqTemplates = [
+        {
+          question: `What types of in-home care services are available in ${location.name}, MA?`,
+          answer: `PrivateInHomeCareGiver offers comprehensive in-home care services throughout ${location.name}, Massachusetts, including personal care assistance, companion care, homemaking services, dementia and Alzheimer's care, respite care, and post-hospital recovery support. All our caregivers serving ${location.name} are thoroughly vetted, trained, and dedicated to providing compassionate care.`,
+          category: "services",
+          sortOrder: 0
+        },
+        {
+          question: `How much does private pay home care cost in ${location.name}?`,
+          answer: `Our private pay home care services in ${location.name} are competitively priced based on the level of care needed and hours of service. We offer flexible scheduling options from a few hours per week to 24/7 live-in care. Contact us for a free consultation and personalized care assessment to receive an accurate quote for your family's needs.`,
+          category: "pricing",
+          sortOrder: 1
+        },
+        {
+          question: `Do you provide caregivers who speak languages other than English in ${location.name}?`,
+          answer: `Yes! We understand the diverse communities in ${location.name} and ${location.county} County. We strive to match clients with caregivers who speak their preferred language whenever possible, including Spanish, Portuguese, Chinese, and other languages common in Massachusetts.`,
+          category: "caregivers",
+          sortOrder: 2
+        },
+        {
+          question: `How quickly can you start providing care in ${location.name}?`,
+          answer: `We can often begin providing care in ${location.name} within 24-48 hours of completing an initial assessment. For urgent situations, we may be able to arrange same-day care placement. Our team works diligently to match your loved one with the right caregiver as quickly as possible.`,
+          category: "availability",
+          sortOrder: 3
+        },
+        {
+          question: `Are your caregivers in ${location.name} licensed and insured?`,
+          answer: `Absolutely. All PrivateInHomeCareGiver caregivers serving ${location.name} undergo comprehensive background checks, are properly insured, and receive ongoing training. We ensure compliance with all Massachusetts state regulations for home care services.`,
+          category: "qualifications",
+          sortOrder: 4
+        },
+        {
+          question: `What areas in ${location.county} County do you serve besides ${location.name}?`,
+          answer: `In addition to ${location.name}, we provide in-home care services throughout ${location.county} County and neighboring areas. Our coverage extends across most of Massachusetts, ensuring families can receive quality care regardless of their location in the Commonwealth.`,
+          category: "coverage",
+          sortOrder: 5
+        },
+        {
+          question: `Do you accept Medicare or MassHealth for home care in ${location.name}?`,
+          answer: `PrivateInHomeCareGiver is a private pay agency, which means we do not accept Medicare or MassHealth (Medicaid). However, this allows us to offer personalized, flexible care without the restrictions of insurance programs. Long-term care insurance and veterans benefits may help cover the cost of our services.`,
+          category: "payment",
+          sortOrder: 6
+        },
+        {
+          question: `Can I meet the caregiver before they start working with my family in ${location.name}?`,
+          answer: `Yes, we encourage families in ${location.name} to meet potential caregivers before care begins. We arrange an introductory meeting so you can ensure the caregiver is a good fit for your loved one's personality, needs, and preferences.`,
+          category: "process",
+          sortOrder: 7
+        }
+      ];
+
+      // Create FAQs for this location
+      const createdFaqs = [];
+      for (const template of faqTemplates) {
+        const faq = await storage.createCityFaq({
+          locationId: location.id,
+          ...template,
+          isActive: "yes"
+        });
+        createdFaqs.push(faq);
+      }
+
+      res.status(201).json({
+        message: `Created ${createdFaqs.length} FAQs for ${location.name}`,
+        faqs: createdFaqs
+      });
+    } catch (error: any) {
+      console.error("Error seeding city FAQs:", error);
+      res.status(500).json({ message: "Failed to seed city FAQs" });
     }
   });
 
