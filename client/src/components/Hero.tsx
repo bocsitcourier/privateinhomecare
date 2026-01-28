@@ -10,10 +10,10 @@ export default function Hero() {
         <img 
           src={heroImage} 
           alt="Private in-home caregiver providing compassionate care to elderly patient"
-          className="w-full h-full object-cover object-center opacity-70"
+          className="w-full h-full object-cover object-center opacity-85"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 via-slate-900/50 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/50 via-slate-900/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent" />
       </div>
       
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
