@@ -479,10 +479,10 @@ export default function DirectoryPage() {
                   
                   <AccordionItem value="faq-2" data-testid="accordion-faq-general-2">
                     <AccordionTrigger className="text-left text-base font-medium hover:no-underline">
-                      Do you accept Medicare or MassHealth (Medicaid)?
+                      What payment options do you accept?
                     </AccordionTrigger>
                     <AccordionContent className="text-muted-foreground">
-                      PrivateInHomeCareGiver is exclusively a private pay agency. We do not accept Medicare or MassHealth (Medicaid). This allows us to offer more personalized care without the restrictions of government programs. However, long-term care insurance and veterans benefits (VA Aid & Attendance) may help cover our services. Contact us for a free consultation to discuss payment options.
+                      PrivateInHomeCareGiver is exclusively a private pay home care agency. We accept private payment, long-term care insurance, and veterans benefits (VA Aid & Attendance). This allows us to offer more personalized, flexible care without the restrictions of government programs. Contact us for a free consultation to discuss payment options.
                     </AccordionContent>
                   </AccordionItem>
                   

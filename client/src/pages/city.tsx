@@ -184,13 +184,12 @@ export default function CityPage() {
         }
       ],
       serviceArea: {
-        "@type": "GeoCircle",
-        geoMidpoint: {
-          "@type": "GeoCoordinates",
-          addressLocality: cityName,
-          addressRegion: "MA"
-        },
-        geoRadius: "25 miles"
+        "@type": "AdministrativeArea",
+        name: `${cityName} and surrounding communities`,
+        containedInPlace: {
+          "@type": "State",
+          name: "Massachusetts"
+        }
       },
       priceRange: "$$-$$$",
       openingHoursSpecification: {
