@@ -49,7 +49,9 @@ import {
   DollarSign,
   Send,
   Shield,
-  AlertTriangle
+  AlertTriangle,
+  Link2,
+  Copy
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -167,6 +169,13 @@ export default function NonSolicitationManagement() {
     },
   });
 
+  const copyFormLink = () => {
+    const baseUrl = window.location.origin;
+    const formUrl = `${baseUrl}/non-solicitation-agreement`;
+    navigator.clipboard.writeText(formUrl);
+    toast({ title: "Link Copied!", description: "Form link copied to clipboard. Share it with your client." });
+  };
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
       active: "default",
@@ -207,12 +216,18 @@ export default function NonSolicitationManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-2">
         <h2 className="text-2xl font-bold" data-testid="text-page-title">Non-Solicitation Agreements</h2>
-        <Button onClick={() => setIsCreateDialogOpen(true)} data-testid="button-new-agreement">
-          <Plus className="w-4 h-4 mr-2" />
-          New Agreement
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={copyFormLink} data-testid="button-copy-form-link">
+            <Link2 className="w-4 h-4 mr-2" />
+            Copy Form Link
+          </Button>
+          <Button onClick={() => setIsCreateDialogOpen(true)} data-testid="button-new-agreement">
+            <Plus className="w-4 h-4 mr-2" />
+            New Agreement
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

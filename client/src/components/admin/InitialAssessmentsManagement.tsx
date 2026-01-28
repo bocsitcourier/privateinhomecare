@@ -53,7 +53,8 @@ import {
   Home,
   DollarSign,
   Shield,
-  AlertTriangle
+  AlertTriangle,
+  Link2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -271,6 +272,13 @@ export default function InitialAssessmentsManagement() {
     },
   });
 
+  const copyFormLink = () => {
+    const baseUrl = window.location.origin;
+    const formUrl = `${baseUrl}/initial-assessment`;
+    navigator.clipboard.writeText(formUrl);
+    toast({ title: "Link Copied!", description: "Form link copied to clipboard. Share it with your client." });
+  };
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; icon: any }> = {
       pending: { variant: "outline", icon: Clock },
@@ -305,12 +313,18 @@ export default function InitialAssessmentsManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-2">
         <h2 className="text-2xl font-bold" data-testid="text-page-title">Initial Assessments</h2>
-        <Button onClick={() => setIsCreateDialogOpen(true)} data-testid="button-new-assessment">
-          <Plus className="w-4 h-4 mr-2" />
-          New Assessment
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={copyFormLink} data-testid="button-copy-form-link">
+            <Link2 className="w-4 h-4 mr-2" />
+            Copy Form Link
+          </Button>
+          <Button onClick={() => setIsCreateDialogOpen(true)} data-testid="button-new-assessment">
+            <Plus className="w-4 h-4 mr-2" />
+            New Assessment
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
