@@ -14,32 +14,40 @@ export default function ReviewCard({ name, city, rating, text, image }: ReviewCa
   const initials = name.split(' ').map(n => n[0]).join('');
 
   return (
-    <Card className="relative pt-16" data-testid={`card-review-${name.toLowerCase().replace(/\s+/g, '-')}`}>
-      <CardContent className="p-6 text-center">
-        <Avatar className="w-32 h-32 mx-auto -mt-24 mb-4 border-4 border-background">
-          <AvatarImage src={image} alt={`${name} from ${city} - Private InHome CareGiver MA client testimonial`} className="object-cover" />
-          <AvatarFallback className="bg-primary/10 text-primary font-semibold text-2xl">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-        
-        <div className="font-semibold text-lg text-foreground mb-1" data-testid={`text-reviewer-name-${name.toLowerCase().replace(/\s+/g, '-')}`}>
-          {name}
+    <Card 
+      className="group relative bg-card/80 backdrop-blur-sm border-2 border-white/20 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2"
+      data-testid={`card-review-${name.toLowerCase().replace(/\s+/g, '-')}`}
+    >
+      <div className="absolute -top-6 left-1/2 -translate-x-1/2">
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+          <Quote className="w-5 h-5 text-white" />
         </div>
-        <div className="text-sm text-muted-foreground mb-4">{city}</div>
-
-        <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center">
-            <Quote className="w-8 h-8 text-primary-foreground" />
-          </div>
-        </div>
+      </div>
+      
+      <CardContent className="p-8 pt-10 text-center">
+        <p className="text-foreground/90 leading-relaxed mb-6 text-base italic">
+          "{text}"
+        </p>
         
-        <p className="text-sm text-foreground/80 leading-relaxed mb-4">{text}</p>
-        
-        <div className="flex justify-center gap-1" aria-label={`Rating: ${rating} out of 5 stars`}>
+        <div className="flex justify-center gap-1 mb-6" aria-label={`Rating: ${rating} out of 5 stars`}>
           {Array.from({ length: rating }).map((_, i) => (
-            <Star key={i} className="w-5 h-5 fill-chart-4 text-chart-4" />
+            <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
           ))}
+        </div>
+        
+        <div className="flex items-center justify-center gap-4">
+          <Avatar className="w-14 h-14 border-2 border-primary/20 shadow-md">
+            <AvatarImage src={image} alt={`${name} from ${city} - Private InHome CareGiver MA client testimonial`} className="object-cover" />
+            <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/5 text-primary font-bold text-lg">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="text-left">
+            <div className="font-bold text-foreground" data-testid={`text-reviewer-name-${name.toLowerCase().replace(/\s+/g, '-')}`}>
+              {name}
+            </div>
+            <div className="text-sm text-muted-foreground">{city}</div>
+          </div>
         </div>
       </CardContent>
     </Card>
