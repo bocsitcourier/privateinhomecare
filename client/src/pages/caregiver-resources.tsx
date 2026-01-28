@@ -66,7 +66,7 @@ const resourceCategories = [
     bgColor: "bg-green-50 dark:bg-green-950",
     articles: [
       { title: "How Much Does In-Home Care Cost in MA?", slug: "home-care-cost-massachusetts" },
-      { title: "MassHealth Home Care Programs Explained", slug: "masshealth-home-care-programs" },
+      { title: "Private Pay vs Insurance: Payment Options Guide", slug: "private-pay-insurance-payment-guide" },
       { title: "Veterans Benefits for Home Care", slug: "veterans-benefits-home-care" },
       { title: "Long-Term Care Insurance Guide", slug: "long-term-care-insurance-guide" }
     ]

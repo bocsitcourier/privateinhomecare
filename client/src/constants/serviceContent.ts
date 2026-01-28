@@ -61,7 +61,7 @@ export const SERVICE_CONTENT: Record<string, ServiceContent> = {
       "Specialized training in dementia and cognitive care",
       "Regular performance evaluations and quality checks"
     ],
-    pricingInfo: "Personal care services typically range from $28-$38 per hour depending on the level of care needed and scheduling requirements. We work with MassHealth PCA programs, long-term care insurance, and offer private pay options. Contact us for a free care assessment and personalized quote.",
+    pricingInfo: "Personal care services typically range from $28-$38 per hour depending on the level of care needed and scheduling requirements. We offer private pay options and work with long-term care insurance policies. Contact us for a free care assessment and personalized quote.",
     coverageAreas: [
       "Boston", "Cambridge", "Somerville", "Brookline", "Newton", "Quincy",
       "Worcester", "Springfield", "Lowell", "Brockton", "New Bedford", "Fall River",
@@ -78,7 +78,7 @@ export const SERVICE_CONTENT: Record<string, ServiceContent> = {
       { question: "How quickly can personal care services begin?", answer: "In most cases, we can begin personal care services within 24-72 hours of your initial consultation. Emergency situations may be accommodated same-day. We prioritize matching you with a caregiver whose skills and personality fit your needs." },
       { question: "Can personal care assistants help with medication?", answer: "Our PCAs can provide medication reminders and help organize medications, but they cannot administer medications. For medication administration, a licensed nurse or certified medication aide is required under Massachusetts regulations." },
       { question: "What happens if my regular caregiver is unavailable?", answer: "We maintain a team of qualified backup caregivers who are familiar with your care plan. If your regular caregiver is unavailable, we ensure continuity of care by sending a trained replacement who has been briefed on your specific needs." },
-      { question: "Does MassHealth cover personal care services?", answer: "Yes, MassHealth covers personal care services through the PCA program for eligible individuals. We can help you navigate the application process and determine your eligibility. We also accept long-term care insurance and private pay." },
+      { question: "What payment options do you accept for personal care services?", answer: "We are a private pay agency specializing in personalized, high-quality care. We accept private pay and work with most long-term care insurance policies. We can help you understand your insurance benefits and provide documentation for reimbursement." },
       { question: "How do you ensure quality and safety in personal care?", answer: "All caregivers undergo rigorous background checks, skills assessments, and ongoing training. We conduct regular supervisory visits, gather client feedback, and maintain 24/7 on-call support for any concerns or emergencies." }
     ]
   },
@@ -135,7 +135,7 @@ export const SERVICE_CONTENT: Record<string, ServiceContent> = {
       { question: "Can companions provide transportation to appointments?", answer: "Yes, our companions can drive clients to medical appointments, social events, shopping, and other activities. All companions who provide transportation have clean driving records and are insured. We can use your vehicle or ours." },
       { question: "How do you match companions with clients?", answer: "We carefully consider personality, interests, communication style, and care needs when matching companions with clients. We encourage a trial period and will make adjustments if the initial match isn't ideal. Your satisfaction is our priority." },
       { question: "Can companion care help with early-stage dementia?", answer: "Absolutely. Our companions are trained in dementia-friendly communication and engagement techniques. Consistent companionship can help maintain cognitive function, reduce anxiety, and provide valuable structure and routine." },
-      { question: "Is companion care covered by insurance?", answer: "Some long-term care insurance policies cover companion care. Medicare typically does not cover non-medical companion services, but Medicaid waiver programs may. We help families understand their coverage options and offer competitive private pay rates." },
+      { question: "Is companion care covered by insurance?", answer: "Some long-term care insurance policies cover companion care. We are a private pay agency offering competitive rates and personalized care. We help families understand their long-term care insurance benefits and provide documentation for reimbursement." },
       { question: "What if my loved one is reluctant to accept a companion?", answer: "Reluctance is common. We recommend introducing the companion as a 'helper' or 'friend' rather than a caregiver. Starting with short visits and shared activities often helps. Our experienced companions are skilled at building rapport and trust gradually." }
     ]
   },
@@ -175,7 +175,7 @@ export const SERVICE_CONTENT: Record<string, ServiceContent> = {
       "Respectful of client privacy and personal belongings",
       "Regular quality assurance visits"
     ],
-    pricingInfo: "Homemaking services typically range from $24-$30 per hour. We offer packages for weekly, bi-weekly, or daily assistance. MassHealth and some long-term care insurance policies may cover homemaking services. Contact us for a free home assessment.",
+    pricingInfo: "Homemaking services typically range from $24-$30 per hour. We offer packages for weekly, bi-weekly, or daily assistance. Some long-term care insurance policies cover homemaking services. Contact us for a free home assessment.",
     coverageAreas: [
       "Boston", "Cambridge", "Somerville", "Brookline", "Newton", "Quincy",
       "Worcester", "Springfield", "Lowell", "Brockton", "New Bedford", "Fall River",
@@ -192,7 +192,7 @@ export const SERVICE_CONTENT: Record<string, ServiceContent> = {
       { question: "Can homemakers prepare meals for special diets?", answer: "Yes, our homemakers are trained in preparing meals for diabetic, low-sodium, heart-healthy, and other special diets. We work with your dietary requirements and can follow specific recipes or physician recommendations." },
       { question: "How is homemaking different from a cleaning service?", answer: "Homemaking is person-centered care that adapts to the client's needs and may include companionship, medication reminders, and personal assistance alongside household tasks. Traditional cleaning services focus solely on the home, not the person." },
       { question: "Can homemakers do heavy cleaning or yard work?", answer: "Our homemakers handle light housekeeping and maintenance tasks. Heavy cleaning, major yard work, or home repairs require specialized services. We can help coordinate these additional services if needed." },
-      { question: "Does MassHealth cover homemaking services?", answer: "MassHealth may cover homemaking services through certain waiver programs for eligible individuals. We help clients understand their coverage options and complete necessary applications. We also accept private pay and long-term care insurance." },
+      { question: "What are the payment options for homemaking services?", answer: "We are a private pay agency offering flexible payment options. We also work with most long-term care insurance policies and can provide documentation for reimbursement. Contact us to discuss your specific needs and budget." },
       { question: "Can I combine homemaking with other care services?", answer: "Absolutely. Many clients benefit from a combination of homemaking, companion care, and personal care services. We create comprehensive care plans that address all of your loved one's needs through one reliable provider." }
     ]
   },
@@ -249,7 +249,7 @@ export const SERVICE_CONTENT: Record<string, ServiceContent> = {
       { question: "Can dementia care help keep my loved one at home longer?", answer: "Yes, professional dementia care often allows individuals to remain safely at home much longer than they could without support. We provide the supervision, structure, and specialized care that maintains safety while preserving familiar surroundings and routines." },
       { question: "How do you handle behavioral symptoms like agitation?", answer: "Our caregivers are trained in non-pharmacological approaches to behavioral symptoms, including redirection, validation, environmental modifications, and identifying triggers. We work closely with healthcare providers and families to develop effective strategies." },
       { question: "What about wandering and safety concerns?", answer: "We implement comprehensive safety protocols including constant supervision, door alarms, GPS tracking options, and environmental modifications. We conduct thorough home safety assessments and create individualized prevention plans." },
-      { question: "Is dementia care covered by Medicare or insurance?", answer: "Medicare covers limited home health services but typically not custodial dementia care. Long-term care insurance often covers dementia care. Massachusetts Medicaid waiver programs may provide coverage for eligible individuals. We help families navigate their options." },
+      { question: "What are the payment options for dementia care?", answer: "We are a private pay agency specializing in personalized dementia care. Long-term care insurance often covers in-home dementia care, and we help families understand their benefits and provide documentation for reimbursement." },
       { question: "How do you support family caregivers?", answer: "We provide respite care so family caregivers can rest and maintain their own health. We also offer education about dementia progression, coping strategies, and community resources. Our care coordinators are available to support the entire family." }
     ]
   },
@@ -289,7 +289,7 @@ export const SERVICE_CONTENT: Record<string, ServiceContent> = {
       "Ability to quickly build rapport with new clients",
       "Commitment to following established care plans"
     ],
-    pricingInfo: "Respite care rates vary based on the level of care needed, typically ranging from $26-$40 per hour. We offer discounted rates for extended respite periods. Some long-term care insurance policies and Medicaid waiver programs cover respite care. Contact us for options.",
+    pricingInfo: "Respite care rates vary based on the level of care needed, typically ranging from $26-$40 per hour. We offer discounted rates for extended respite periods. Some long-term care insurance policies cover respite care. Contact us for options.",
     coverageAreas: [
       "Boston", "Cambridge", "Somerville", "Brookline", "Newton", "Quincy",
       "Worcester", "Springfield", "Lowell", "Brockton", "New Bedford", "Fall River",
@@ -306,7 +306,7 @@ export const SERVICE_CONTENT: Record<string, ServiceContent> = {
       { question: "Will the respite caregiver follow our care routine?", answer: "Absolutely. We conduct a thorough intake process to document your loved one's routine, preferences, medications, and care needs. Our caregivers follow your established schedule and report back on the care period." },
       { question: "Can I use respite care for an extended vacation?", answer: "Yes, we provide extended respite care for vacations, family events, or any extended time away. We can arrange 24-hour care or live-in caregivers for trips lasting from a weekend to several weeks." },
       { question: "What if my loved one doesn't adjust well to a new caregiver?", answer: "We introduce respite caregivers gradually when possible, allowing your loved one to become comfortable. If the initial match isn't ideal, we'll work with you to find a better fit. Our goal is a seamless transition." },
-      { question: "Does insurance cover respite care?", answer: "Many long-term care insurance policies cover respite care. Massachusetts Medicaid waiver programs may also provide respite benefits for eligible individuals. We help families understand and maximize their coverage options." },
+      { question: "Does insurance cover respite care?", answer: "Many long-term care insurance policies cover respite care. We are a private pay agency and help families understand their long-term care insurance benefits. Contact us to discuss your coverage options." },
       { question: "How do I know my loved one is being cared for properly?", answer: "We provide detailed care notes after each respite period, documenting activities, meals, medications, and any observations. Our caregivers are reachable during the care period, and supervisors are available 24/7 for questions or concerns." }
     ]
   },
@@ -364,7 +364,7 @@ export const SERVICE_CONTENT: Record<string, ServiceContent> = {
       { question: "What if I need to change live-in caregivers?", answer: "We understand that caregiver compatibility is essential. If the relationship isn't working, we'll work quickly to find a better match. We also arrange scheduled breaks for live-in caregivers with trained relief caregivers." },
       { question: "Can live-in caregivers handle medical emergencies?", answer: "Our live-in caregivers are CPR and First Aid certified and trained in emergency response. They can recognize warning signs, call 911, and provide first aid. However, they are not medical professionals and do not provide skilled nursing care." },
       { question: "How do live-in caregivers get time off?", answer: "Live-in caregivers typically work Monday through Friday or on a rotation schedule. We provide trained relief caregivers for weekends, vacations, and days off to ensure continuous, quality care for your loved one." },
-      { question: "Is live-in care covered by insurance?", answer: "Many long-term care insurance policies cover live-in care. Medicare does not cover custodial live-in care, but Medicaid waiver programs may provide benefits for eligible individuals. We help families navigate coverage options." }
+      { question: "Is live-in care covered by insurance?", answer: "Many long-term care insurance policies cover live-in care. We are a private pay agency and can help you understand your long-term care insurance benefits and provide documentation for reimbursement claims." }
     ]
   },
   "overnight-care": {

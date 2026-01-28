@@ -55,8 +55,8 @@ const faqs = [
     answer: "Home care in Massachusetts typically costs $30-$35 per hour, with daily rates around $250-$350. Live-in care ranges from $350-$450 per day. Costs vary based on the level of care needed and location within the state."
   },
   {
-    question: "Does MassHealth cover home care?",
-    answer: "Yes, MassHealth offers several programs that cover home care services, including the PCA (Personal Care Attendant) Program, PACE, and various home and community-based waivers. Eligibility depends on income, assets, and care needs."
+    question: "What payment options are available for home care?",
+    answer: "Private pay is the most common option for home care services. Long-term care insurance often covers in-home care. Some families also use veterans benefits or savings. Private care offers flexibility and personalized service without program restrictions."
   },
   {
     question: "What's the difference between home care and home health care?",

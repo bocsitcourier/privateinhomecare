@@ -209,7 +209,7 @@ export const SERVICE_FAQS: Record<string, ServiceFAQ[]> = {
     },
     {
       question: "Is hospice care covered by insurance?",
-      answer: "Medicare, Medicaid, and most private insurance cover hospice medical services. Our companion and personal care services are typically private pay, though some long-term care insurance policies may cover them. We help families understand their options during consultations."
+      answer: "Our companion and personal care services are private pay, though some long-term care insurance policies may cover them. We help families understand their coverage options during consultations and provide documentation for reimbursement."
     }
   ]
 };
@@ -225,7 +225,7 @@ export const HOMEPAGE_FAQS: ServiceFAQ[] = [
   },
   {
     question: "How much does home care cost in Massachusetts?",
-    answer: "Home care costs in Massachusetts typically range from $25-40 per hour depending on the level of care, caregiver qualifications, and scheduling needs. Live-in care ranges from $350-450 per day. We offer flexible packages from a few hours weekly to 24/7 care. Our private pay model means no Medicaid or insurance restrictions—just quality care tailored to your needs."
+    answer: "Home care costs in Massachusetts typically range from $25-40 per hour depending on the level of care, caregiver qualifications, and scheduling needs. Live-in care ranges from $350-450 per day. We offer flexible packages from a few hours weekly to 24/7 care. Our private pay model means quality care tailored to your needs without restrictions."
   },
   {
     question: "How do I get started with home care services?",
@@ -237,7 +237,7 @@ export const HOMEPAGE_FAQS: ServiceFAQ[] = [
   },
   {
     question: "What makes PrivateInHomeCareGiver different from other agencies?",
-    answer: "Our Platinum Standard approach means personalized matching based on personality and care needs, continuous quality monitoring, 24/7 support availability, and caregivers who become like extended family. As a private pay agency, we offer flexible scheduling without Medicaid restrictions, ensuring your loved one receives exactly the care they need."
+    answer: "Our Platinum Standard approach means personalized matching based on personality and care needs, continuous quality monitoring, 24/7 support availability, and caregivers who become like extended family. As a private pay agency, we offer flexible scheduling and personalized care, ensuring your loved one receives exactly the care they need."
   },
   {
     question: "Can you provide care for someone with Alzheimer's or dementia?",

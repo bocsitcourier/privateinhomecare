@@ -35,6 +35,22 @@ const iconMap: Record<string, React.ReactNode> = {
   "smile": <Heart className="w-6 h-6" />,
 };
 
+// Premium hero images for each service type - seniors only, no babies
+const serviceHeroImages: Record<string, string> = {
+  "personal-care": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1600&q=80",
+  "companionship": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=1600&q=80",
+  "homemaking": "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1600&q=80",
+  "dementia-care": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=1600&q=80",
+  "respite-care": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1600&q=80",
+  "live-in-care": "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1600&q=80",
+  "overnight-care": "https://images.unsplash.com/photo-1586105251261-72a756497a11?w=1600&q=80",
+  "post-hospital-care": "https://images.unsplash.com/photo-1631815589968-fdb09a223b1e?w=1600&q=80",
+};
+
+function getServiceHeroImage(serviceKey: string): string {
+  return serviceHeroImages[serviceKey] || "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1600&q=80";
+}
+
 export default function ServiceDetailPage() {
   const [, params] = useRoute("/:serviceKey/massachusetts");
   const serviceKey = params?.serviceKey || "";
@@ -119,33 +135,40 @@ export default function ServiceDetailPage() {
       <Header />
 
       <main>
-        {/* Hero Section */}
-        <section className="relative py-20 md:py-28 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
-          <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-0 left-0 w-96 h-96 bg-primary/30 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
+        {/* Premium Hero Section with Real Images */}
+        <section className="relative min-h-[60vh] flex items-center overflow-hidden">
+          {/* Background Image */}
+          <div className="absolute inset-0">
+            <img 
+              src={getServiceHeroImage(serviceKey)}
+              alt={service.title}
+              className="w-full h-full object-cover"
+              data-testid="img-service-hero"
+            />
+            {/* Lighter gradient overlay - 50% opacity for better visibility */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent" />
           </div>
           
-          <div className="relative z-10 max-w-7xl mx-auto px-4">
-            <div className="max-w-3xl animate-fade-in-up">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/20 backdrop-blur-sm rounded-full border border-primary/30 mb-6">
-                <Sparkles className="w-4 h-4 text-primary" />
-                <span className="text-sm font-semibold text-white">Massachusetts Coverage</span>
+          <div className="relative z-10 max-w-7xl mx-auto px-4 py-20">
+            <div className="max-w-2xl animate-fade-in-up">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-md rounded-full border border-white/30 mb-6">
+                <Sparkles className="w-4 h-4 text-white" />
+                <span className="text-sm font-semibold text-white">Private Care Throughout Massachusetts</span>
               </div>
               
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight drop-shadow-lg">
                 {service.title}
-                <span className="block text-2xl md:text-3xl font-normal text-white/60 mt-4">
+                <span className="block text-2xl md:text-3xl font-normal text-white/80 mt-4">
                   {service.tagline}
                 </span>
               </h1>
               
-              <p className="text-lg md:text-xl text-white/70 mb-8 leading-relaxed">
+              <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed drop-shadow">
                 {service.heroDescription}
               </p>
               
               <div className="flex flex-wrap gap-4">
-                <Button size="lg" className="text-base px-8" asChild>
+                <Button size="lg" className="text-base px-8 shadow-xl" asChild>
                   <a href="#contact" data-testid="button-get-started">
                     Get Free Consultation
                     <ArrowRight className="w-5 h-5 ml-2" />
