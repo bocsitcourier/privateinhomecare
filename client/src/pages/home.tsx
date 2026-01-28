@@ -10,7 +10,9 @@ import PageSEO from "@/components/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Heart, Users, Home as HomeIcon, Brain, Phone, Mail, MapPin, ArrowRight, Clock, DollarSign, Building2, BookOpen, ClipboardCheck, Play, Mic, Shield, Hospital, Leaf } from "lucide-react";
+import { Heart, Users, Home as HomeIcon, Brain, Phone, Mail, MapPin, ArrowRight, Clock, DollarSign, Building2, BookOpen, ClipboardCheck, Play, Mic, Shield, Hospital, Leaf, HelpCircle, ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { HOMEPAGE_FAQS } from "@/constants/serviceFaqs";
 import type { Article, Job, Video } from "@shared/schema";
 import caregiverImage from "@assets/compassionate inhome care_1760033982348.webp";
 import careCoordinatorImage from "@assets/Private inhome care in MA_1760035857926.png";
@@ -113,6 +115,104 @@ const SERVICES = [
 const CITIES = [
   "Andover","Arlington","Barnstable","Berkshires","Beverly","Boston","Brookline","Charlestown","Chatham","Falmouth","Gloucester","Haverhill","Lexington","Lowell","Marblehead","Mashpee","Melrose","Methuen","Newton","Northborough","Plymouth","Quincy","Salem","Seacoast","Somerville","Springfield","Waltham","Wellesley","Westport","Worcester"
 ].sort();
+
+function HomeFAQSection() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": "#home-faq",
+    "mainEntity": HOMEPAGE_FAQS.map(faq => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  };
+
+  return (
+    <section id="faq" className="bg-muted/20 py-16 md:py-20" data-testid="home-faq-section">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <div className="max-w-4xl mx-auto px-4">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-4">
+            <HelpCircle className="w-4 h-4 text-primary" />
+            <span className="text-sm font-medium text-primary">Frequently Asked Questions</span>
+          </div>
+          <h3 className="text-2xl md:text-3xl font-bold text-primary mb-3">
+            Questions About Our Home Care Services
+          </h3>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Get answers to the most common questions about private in-home care in Massachusetts
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {HOMEPAGE_FAQS.map((faq, index) => (
+            <div
+              key={index}
+              className={cn(
+                "bg-card border border-border rounded-xl overflow-hidden transition-all duration-300",
+                openIndex === index ? "shadow-lg" : "shadow-sm hover:shadow-md"
+              )}
+            >
+              <button
+                onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                className="w-full px-6 py-5 flex items-center justify-between text-left"
+                aria-expanded={openIndex === index}
+                data-testid={`home-faq-toggle-${index}`}
+              >
+                <span className="font-semibold text-foreground pr-4">{faq.question}</span>
+                <ChevronDown
+                  className={cn(
+                    "w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform duration-300",
+                    openIndex === index && "rotate-180"
+                  )}
+                />
+              </button>
+              <div
+                className={cn(
+                  "overflow-hidden transition-all duration-300",
+                  openIndex === index ? "max-h-96" : "max-h-0"
+                )}
+              >
+                <div className="px-6 pb-5 text-muted-foreground leading-relaxed">
+                  {faq.answer}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="text-center mt-10">
+          <p className="text-muted-foreground mb-4">
+            Still have questions? We're here to help.
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Button asChild data-testid="button-faq-consultation">
+              <Link href="/consultation">
+                Request Free Consultation
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Link>
+            </Button>
+            <Button variant="outline" asChild data-testid="button-faq-call">
+              <a href="tel:+16176860595">
+                <Phone className="w-4 h-4 mr-2" />
+                Call (617) 686-0595
+              </a>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function Home() {
   const [selectedService, setSelectedService] = useState("");
@@ -701,6 +801,8 @@ export default function Home() {
             })}
           </Tabs>
         </section>
+
+        <HomeFAQSection />
 
         <section id="contact" ref={contactRef} className="max-w-7xl mx-auto px-4 py-12 md:py-16">
           <h3 className="text-2xl md:text-3xl font-bold text-center text-primary mb-4">

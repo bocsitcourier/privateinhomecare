@@ -214,6 +214,41 @@ export const SERVICE_FAQS: Record<string, ServiceFAQ[]> = {
   ]
 };
 
+export const HOMEPAGE_FAQS: ServiceFAQ[] = [
+  {
+    question: "What is PrivateInHomeCareGiver?",
+    answer: "PrivateInHomeCareGiver is a Massachusetts-based private home care agency that connects families with professional, compassionate Personal Care Assistants (PCAs). We provide personalized in-home care services including personal care, companionship, homemaking, dementia care, respite care, and 24/7 live-in support to help seniors age safely and comfortably at home."
+  },
+  {
+    question: "What areas in Massachusetts do you serve?",
+    answer: "We serve families throughout Massachusetts, including Greater Boston, Cambridge, Brookline, Newton, Wellesley, Lexington, Arlington, Somerville, Quincy, Worcester, Springfield, and over 60 other communities across all 14 Massachusetts counties. Contact us to confirm service availability in your specific location."
+  },
+  {
+    question: "How much does home care cost in Massachusetts?",
+    answer: "Home care costs in Massachusetts typically range from $25-40 per hour depending on the level of care, caregiver qualifications, and scheduling needs. Live-in care ranges from $350-450 per day. We offer flexible packages from a few hours weekly to 24/7 care. Our private pay model means no Medicaid or insurance restrictions—just quality care tailored to your needs."
+  },
+  {
+    question: "How do I get started with home care services?",
+    answer: "Getting started is easy. Call us at (617) 686-0595 or submit an online consultation request. We'll schedule a free, no-obligation in-home assessment to understand your loved one's needs, then create a personalized care plan and match you with a qualified, compatible caregiver—often within 24-48 hours."
+  },
+  {
+    question: "Are your caregivers background checked and insured?",
+    answer: "Yes, absolutely. Every caregiver undergoes comprehensive CORI background checks, reference verification, and skills assessments before joining our team. We are fully licensed, bonded, and insured with liability and workers' compensation coverage for your complete peace of mind."
+  },
+  {
+    question: "What makes PrivateInHomeCareGiver different from other agencies?",
+    answer: "Our Platinum Standard approach means personalized matching based on personality and care needs, continuous quality monitoring, 24/7 support availability, and caregivers who become like extended family. As a private pay agency, we offer flexible scheduling without Medicaid restrictions, ensuring your loved one receives exactly the care they need."
+  },
+  {
+    question: "Can you provide care for someone with Alzheimer's or dementia?",
+    answer: "Yes, we specialize in dementia and Alzheimer's care. Our caregivers receive specialized training in memory care, including communication techniques, behavioral management, safety protocols, and cognitive stimulation activities. We create structured routines that reduce anxiety and enhance quality of life for individuals with memory conditions."
+  },
+  {
+    question: "Do you offer 24-hour or live-in care?",
+    answer: "Yes, we offer both 24-hour shift care with rotating caregivers and live-in care with a dedicated caregiver who resides in your home. Live-in care provides continuous presence at a more affordable daily rate, while 24-hour care ensures awake caregivers around the clock for those with intensive overnight needs."
+  }
+];
+
 export const GENERAL_HOME_CARE_FAQS: ServiceFAQ[] = [
   {
     question: "How do I know if my loved one needs in-home care?",
