@@ -2,10 +2,11 @@ import { useRoute } from "wouter";
 import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import PageSEO from "@/components/PageSEO";
-import { MapPin, Phone, Mail, Heart, Users, Home as HomeIcon, Brain, Clock, Shield, Award, Star, CheckCircle2, Quote } from "lucide-react";
+import { MapPin, Phone, Mail, Heart, Users, Home as HomeIcon, Brain, Clock, Shield, Award, Star, CheckCircle2, Quote, ChevronDown, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import Header from "@/components/Header";
 
 interface LocationData {
@@ -17,6 +18,19 @@ interface LocationData {
   zipCodes: string[];
   population: number | null;
   isCity: string;
+  heroImageUrl?: string | null;
+  galleryImages?: string[];
+  description?: string | null;
+  highlights?: string[];
+}
+
+interface CityFaq {
+  id: string;
+  locationId: string;
+  question: string;
+  answer: string;
+  category: string;
+  sortOrder: number;
 }
 
 const SERVICES = [
@@ -121,15 +135,17 @@ export default function CityPage() {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
-  const { data: locationData } = useQuery<LocationData>({
-    queryKey: ["/api/directory/locations", citySlug],
-    queryFn: async () => {
-      const res = await fetch(`/api/directory/locations/${citySlug}`);
-      if (!res.ok) return null;
-      return res.json();
-    },
+  const { data: locationData, isLoading: isLoadingLocation } = useQuery<LocationData>({
+    queryKey: [`/api/directory/locations/${citySlug}`],
     enabled: !!citySlug,
   });
+
+  const { data: cityFaqs, isLoading: isLoadingFaqs } = useQuery<CityFaq[]>({
+    queryKey: [`/api/directory/locations/${citySlug}/faqs`],
+    enabled: !!citySlug,
+  });
+
+  const heroImageUrl = locationData?.heroImageUrl;
 
   const schemaJson = useMemo(() => {
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://privateinhomecaregiver.com";
@@ -244,43 +260,95 @@ export default function CityPage() {
       <Header />
 
       <main className="min-h-screen bg-background">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-br from-primary/10 via-secondary/5 to-background py-16 md:py-24">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center gap-2 text-primary mb-4">
-              <MapPin className="w-5 h-5" />
-              <span className="text-sm font-medium uppercase tracking-wide">{cityName}, Massachusetts</span>
+        {/* Hero Section with Location Image */}
+        <section className="relative overflow-hidden">
+          {heroImageUrl ? (
+            <>
+              <div className="absolute inset-0 z-0">
+                <img 
+                  src={heroImageUrl} 
+                  alt={`${cityName}, Massachusetts`}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40" />
+              </div>
+              <div className="relative z-10 py-20 md:py-32">
+                <div className="max-w-7xl mx-auto px-4">
+                  <div className="flex items-center gap-2 text-white/90 mb-4">
+                    <MapPin className="w-5 h-5" />
+                    <span className="text-sm font-medium uppercase tracking-wide">{cityName}, Massachusetts</span>
+                  </div>
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-white">
+                    Trusted In-Home Care Services in {cityName}
+                  </h1>
+                  <p className="text-xl text-white/85 max-w-3xl mb-6">
+                    Compassionate, professional caregivers providing personalized care for your loved ones in the comfort of home. 
+                    Proudly serving {cityName} families with dignity, respect, and excellence.
+                  </p>
+                  <div className="flex flex-wrap gap-3 mb-8">
+                    <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30 px-3 py-1 text-sm" data-testid="badge-background-checked">
+                      <CheckCircle2 className="w-4 h-4 mr-1" />
+                      Background Checked
+                    </Badge>
+                    <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30 px-3 py-1 text-sm" data-testid="badge-licensed">
+                      <CheckCircle2 className="w-4 h-4 mr-1" />
+                      Licensed & Insured
+                    </Badge>
+                    <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30 px-3 py-1 text-sm" data-testid="badge-247">
+                      <CheckCircle2 className="w-4 h-4 mr-1" />
+                      24/7 Availability
+                    </Badge>
+                  </div>
+                  <div className="flex flex-wrap gap-4">
+                    <Button size="lg" asChild data-testid="button-contact">
+                      <a href="/consultation">Request Free Consultation</a>
+                    </Button>
+                    <Button size="lg" variant="outline" className="bg-white/10 backdrop-blur-sm border-white/30 text-white" asChild data-testid="button-caregivers">
+                      <a href="/caregivers">Meet Our Caregivers</a>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="bg-gradient-to-br from-primary/10 via-secondary/5 to-background py-16 md:py-24">
+              <div className="max-w-7xl mx-auto px-4">
+                <div className="flex items-center gap-2 text-primary mb-4">
+                  <MapPin className="w-5 h-5" />
+                  <span className="text-sm font-medium uppercase tracking-wide">{cityName}, Massachusetts</span>
+                </div>
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+                  Trusted In-Home Care Services in {cityName}
+                </h1>
+                <p className="text-xl text-muted-foreground max-w-3xl mb-6">
+                  Compassionate, professional caregivers providing personalized care for your loved ones in the comfort of home. 
+                  Proudly serving {cityName} families with dignity, respect, and excellence.
+                </p>
+                <div className="flex flex-wrap gap-3 mb-8">
+                  <Badge variant="secondary" className="px-3 py-1 text-sm" data-testid="badge-background-checked">
+                    <CheckCircle2 className="w-4 h-4 mr-1" />
+                    Background Checked
+                  </Badge>
+                  <Badge variant="secondary" className="px-3 py-1 text-sm" data-testid="badge-licensed">
+                    <CheckCircle2 className="w-4 h-4 mr-1" />
+                    Licensed & Insured
+                  </Badge>
+                  <Badge variant="secondary" className="px-3 py-1 text-sm" data-testid="badge-247">
+                    <CheckCircle2 className="w-4 h-4 mr-1" />
+                    24/7 Availability
+                  </Badge>
+                </div>
+                <div className="flex flex-wrap gap-4">
+                  <Button size="lg" asChild data-testid="button-contact">
+                    <a href="/consultation">Request Free Consultation</a>
+                  </Button>
+                  <Button size="lg" variant="outline" asChild data-testid="button-caregivers">
+                    <a href="/caregivers">Meet Our Caregivers</a>
+                  </Button>
+                </div>
+              </div>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              Trusted In-Home Care Services in {cityName}
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mb-6">
-              Compassionate, professional caregivers providing personalized care for your loved ones in the comfort of home. 
-              Proudly serving {cityName} families with dignity, respect, and excellence.
-            </p>
-            <div className="flex flex-wrap gap-3 mb-8">
-              <Badge variant="secondary" className="px-3 py-1 text-sm" data-testid="badge-background-checked">
-                <CheckCircle2 className="w-4 h-4 mr-1" />
-                Background Checked
-              </Badge>
-              <Badge variant="secondary" className="px-3 py-1 text-sm" data-testid="badge-licensed">
-                <CheckCircle2 className="w-4 h-4 mr-1" />
-                Licensed & Insured
-              </Badge>
-              <Badge variant="secondary" className="px-3 py-1 text-sm" data-testid="badge-247">
-                <CheckCircle2 className="w-4 h-4 mr-1" />
-                24/7 Availability
-              </Badge>
-            </div>
-            <div className="flex flex-wrap gap-4">
-              <Button size="lg" asChild data-testid="button-contact">
-                <a href="/consultation">Request Free Consultation</a>
-              </Button>
-              <Button size="lg" variant="outline" asChild data-testid="button-caregivers">
-                <a href="/caregivers">Meet Our Caregivers</a>
-              </Button>
-            </div>
-          </div>
+          )}
         </section>
 
         {/* Trust Stats Section */}
@@ -485,6 +553,63 @@ export default function CityPage() {
             </Card>
           </div>
         </section>
+
+        {/* Location-Specific FAQ Section */}
+        {(isLoadingFaqs || (cityFaqs && cityFaqs.length > 0)) && (
+          <section className="py-16 md:py-20 bg-muted/30">
+            <div className="max-w-4xl mx-auto px-4">
+              <div className="text-center mb-12">
+                <div className="flex items-center justify-center gap-2 text-primary mb-4">
+                  <HelpCircle className="w-6 h-6" />
+                  <span className="text-sm font-medium uppercase tracking-wide">FAQ</span>
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                  Frequently Asked Questions About Senior Care in {cityName}
+                </h2>
+                <p className="text-lg text-muted-foreground">
+                  Get answers to common questions about our private pay senior care services in {cityName}, Massachusetts
+                </p>
+              </div>
+              
+              <Card>
+                <CardContent className="p-6">
+                  {isLoadingFaqs ? (
+                    <div className="space-y-4">
+                      {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="animate-pulse">
+                          <div className="h-6 bg-muted rounded w-3/4 mb-2" />
+                          <div className="h-4 bg-muted rounded w-1/2" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : cityFaqs && cityFaqs.length > 0 ? (
+                    <Accordion type="single" collapsible className="w-full">
+                      {cityFaqs.map((faq, index) => (
+                        <AccordionItem key={faq.id} value={`faq-${index}`} data-testid={`accordion-faq-${index}`}>
+                          <AccordionTrigger className="text-left text-base font-medium hover:no-underline">
+                            {faq.question}
+                          </AccordionTrigger>
+                          <AccordionContent className="text-muted-foreground">
+                            {faq.answer}
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  ) : null}
+                </CardContent>
+              </Card>
+              
+              <div className="mt-8 text-center">
+                <p className="text-muted-foreground mb-4">
+                  Have more questions about senior care in {cityName}? We're here to help.
+                </p>
+                <Button asChild data-testid="button-contact-questions">
+                  <a href="/consultation">Contact Us Today</a>
+                </Button>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* CTA Section */}
         <section className="py-16 md:py-20 bg-gradient-to-br from-primary/10 via-secondary/5 to-background">

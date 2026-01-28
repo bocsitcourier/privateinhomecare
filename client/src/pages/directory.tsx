@@ -26,8 +26,10 @@ import {
   ChevronRight,
   Star,
   Shield,
-  Clock
+  Clock,
+  HelpCircle
 } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 import heroImage from "@assets/stock_images/elderly_care_caregiv_e43826bf.jpg";
 import careImage1 from "@assets/stock_images/professional_home_ca_b42d5493.jpg";
@@ -439,6 +441,93 @@ export default function DirectoryPage() {
           </div>
         </section>
 
+        {/* Massachusetts In-Home Care FAQ Section */}
+        <section className="py-16 md:py-20 bg-muted/30">
+          <div className="max-w-4xl mx-auto px-4">
+            <div className="text-center mb-12">
+              <div className="flex items-center justify-center gap-2 text-primary mb-4">
+                <HelpCircle className="w-6 h-6" />
+                <span className="text-sm font-medium uppercase tracking-wide">Frequently Asked Questions</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Common Questions About Senior Care in Massachusetts
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                Find answers to common questions about our private pay senior care services
+              </p>
+            </div>
+            
+            <Card>
+              <CardContent className="p-6">
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="faq-1" data-testid="accordion-faq-general-1">
+                    <AccordionTrigger className="text-left text-base font-medium hover:no-underline">
+                      What areas of Massachusetts do you serve?
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      PrivateInHomeCareGiver provides comprehensive in-home care services throughout Massachusetts. We serve all 14 counties including Middlesex, Essex, Suffolk, Worcester, Norfolk, Bristol, Plymouth, Hampden, Hampshire, Berkshire, Franklin, Barnstable, Dukes, and Nantucket. Whether you're in Boston, Worcester, Springfield, or any community in between, we have local caregivers ready to help.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="faq-2" data-testid="accordion-faq-general-2">
+                    <AccordionTrigger className="text-left text-base font-medium hover:no-underline">
+                      Do you accept Medicare or MassHealth (Medicaid)?
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      PrivateInHomeCareGiver is exclusively a private pay agency. We do not accept Medicare or MassHealth (Medicaid). This allows us to offer more personalized care without the restrictions of government programs. However, long-term care insurance and veterans benefits (VA Aid & Attendance) may help cover our services. Contact us for a free consultation to discuss payment options.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="faq-3" data-testid="accordion-faq-general-3">
+                    <AccordionTrigger className="text-left text-base font-medium hover:no-underline">
+                      What types of in-home care services do you offer?
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      We provide comprehensive care services including: Personal Care (bathing, grooming, dressing, toileting assistance), Companionship (conversation, activities, outings), Homemaking (meal preparation, light housekeeping, laundry), Dementia and Alzheimer's Care, Respite Care (giving family caregivers a break), Post-Hospital Recovery Support, and 24/7 Live-In Care. All services are tailored to your loved one's unique needs.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="faq-4" data-testid="accordion-faq-general-4">
+                    <AccordionTrigger className="text-left text-base font-medium hover:no-underline">
+                      How are your caregivers screened and trained?
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      All PrivateInHomeCareGiver caregivers undergo comprehensive background checks including criminal history, sex offender registry, and reference verification. They receive ongoing training in dementia care, safety protocols, and compassionate communication. Our caregivers are insured and bonded, giving families complete peace of mind.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="faq-5" data-testid="accordion-faq-general-5">
+                    <AccordionTrigger className="text-left text-base font-medium hover:no-underline">
+                      How much does private pay home care cost in Massachusetts?
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      Pricing varies based on the level of care needed, hours of service, and location within Massachusetts. We offer flexible scheduling from a few hours per week to 24/7 live-in care. Contact us for a free, no-obligation assessment to receive a personalized quote. We're committed to making quality care accessible for your budget.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="faq-6" data-testid="accordion-faq-general-6">
+                    <AccordionTrigger className="text-left text-base font-medium hover:no-underline">
+                      Can I choose or change my caregiver?
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      Absolutely! We believe the right caregiver match is essential for quality care. We arrange introductions before care begins so you can ensure compatibility. If at any time you'd like to change caregivers, we'll work quickly to find a better match at no additional cost.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="faq-7" data-testid="accordion-faq-general-7">
+                    <AccordionTrigger className="text-left text-base font-medium hover:no-underline">
+                      How quickly can care begin?
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      We can often begin providing care within 24-48 hours of completing an initial assessment. For urgent situations, such as hospital discharges, we may be able to arrange same-day care placement. Our team works diligently to match your loved one with the right caregiver as quickly as possible.
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
         <section className="py-16 bg-primary text-primary-foreground">
           <div className="max-w-4xl mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -452,7 +541,7 @@ export default function DirectoryPage() {
                 <a href="/consultation">Schedule Free Consultation</a>
               </Button>
               <Button size="lg" variant="outline" className="bg-transparent border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10" asChild>
-                <a href="tel:508-XXX-XXXX">
+                <a href="tel:617-686-0595">
                   <Phone className="w-4 h-4 mr-2" />
                   Call Us Now
                 </a>
