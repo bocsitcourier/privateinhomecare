@@ -59,6 +59,7 @@ const AdminVideos = lazy(() => import("@/pages/admin/videos"));
 const AdminPodcasts = lazy(() => import("@/pages/admin/podcasts"));
 const AgingResourcesPage = lazy(() => import("@/pages/aging-resources"));
 const FindHospitalPage = lazy(() => import("@/pages/find-hospital"));
+const ServiceDetailPage = lazy(() => import("@/pages/service-detail"));
 
 // Loading fallback component
 function PageLoader() {
@@ -98,6 +99,14 @@ function Router() {
         <Route path="/independent-living/massachusetts" component={IndependentLivingPage} />
         <Route path="/home-care/massachusetts" component={HomeCareOverviewPage} />
         <Route path="/hospice-palliative-care/massachusetts" component={HospicePalliativeCarePage} />
+        <Route path="/personal-care/massachusetts" component={ServiceDetailPage} />
+        <Route path="/companionship/massachusetts" component={ServiceDetailPage} />
+        <Route path="/homemaking/massachusetts" component={ServiceDetailPage} />
+        <Route path="/dementia-care/massachusetts" component={ServiceDetailPage} />
+        <Route path="/respite-care/massachusetts" component={ServiceDetailPage} />
+        <Route path="/live-in-care/massachusetts" component={ServiceDetailPage} />
+        <Route path="/overnight-care/massachusetts" component={ServiceDetailPage} />
+        <Route path="/post-hospital-care/massachusetts" component={ServiceDetailPage} />
         <Route path="/facilities" component={FacilityDirectoryPage} />
         <Route path="/facilities/:type" component={FacilityDirectoryPage} />
         <Route path="/facility/:slug" component={FacilityDetailPage} />
