@@ -157,6 +157,53 @@ const LEVELS_OF_CARE = [
   "24-Hour / Live-In Care"
 ];
 
+const HOME_ACCESS_OPTIONS = [
+  "Lockbox",
+  "Hidden Key",
+  "Family will be present",
+  "Key provided to Agency",
+  "Keypad Code",
+  "Other"
+];
+
+const PET_OPTIONS = [
+  "None",
+  "Dog(s) - Friendly",
+  "Dog(s) - Will be kenneled",
+  "Cat(s)",
+  "Other"
+];
+
+const SMOKING_OPTIONS = [
+  "Non-smoking household",
+  "Smoking permitted outdoors only",
+  "Smoking permitted indoors"
+];
+
+const CARE_GOALS = [
+  "Short-term recovery",
+  "Long-term support",
+  "Transitional/post-discharge",
+  "Other"
+];
+
+const PAYMENT_METHODS = [
+  "ACH / Bank Transfer",
+  "Credit/Debit Card (3% processing fee)",
+  "Check"
+];
+
+const ADDITIONAL_FEES = [
+  "Additional hours (current rate)",
+  "Overnight differential $2.50 per Hour",
+  "Weekend/Holiday rate $2.50 per Hour",
+  "Short-notice / urgent start fee $3.50 per Hour",
+  "Parking fee (going rate for particular location)",
+  "Late payment fee 2.5% of Invoice (charged after 7 days receipt of invoice)"
+];
+
+const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
 export default function InitialAssessmentsManagement() {
   const [selectedAssessment, setSelectedAssessment] = useState<InitialAssessment | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -569,164 +616,657 @@ export default function InitialAssessmentsManagement() {
         )}
       </PrintableFormDialog>
 
-      {/* Create Dialog - Simplified for admin entry */}
+      {/* Create Dialog - Complete form with all sections */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>New Initial Assessment</DialogTitle>
-            <DialogDescription>Enter client assessment and service agreement details</DialogDescription>
+            <DialogTitle>New Initial Assessment & Service Agreement</DialogTitle>
+            <DialogDescription>Complete all sections to create a comprehensive assessment</DialogDescription>
           </DialogHeader>
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="clientFullName">Client Full Name *</Label>
-                <Input
-                  id="clientFullName"
-                  value={formData.clientFullName || ""}
-                  onChange={(e) => setFormData({ ...formData, clientFullName: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="clientDateOfBirth">Date of Birth *</Label>
-                <Input
-                  id="clientDateOfBirth"
-                  type="date"
-                  value={formData.clientDateOfBirth || ""}
-                  onChange={(e) => setFormData({ ...formData, clientDateOfBirth: e.target.value })}
-                />
-              </div>
-              <div className="col-span-2">
-                <Label htmlFor="serviceAddress">Service Address *</Label>
-                <Input
-                  id="serviceAddress"
-                  value={formData.serviceAddress || ""}
-                  onChange={(e) => setFormData({ ...formData, serviceAddress: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="email">Email *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email || ""}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="primaryPhone">Primary Phone *</Label>
-                <Input
-                  id="primaryPhone"
-                  value={formData.primaryPhone || ""}
-                  onChange={(e) => setFormData({ ...formData, primaryPhone: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="responsiblePartyName">Responsible Party Name *</Label>
-                <Input
-                  id="responsiblePartyName"
-                  value={formData.responsiblePartyName || ""}
-                  onChange={(e) => setFormData({ ...formData, responsiblePartyName: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="responsiblePartyRelationship">Relationship *</Label>
-                <Input
-                  id="responsiblePartyRelationship"
-                  value={formData.responsiblePartyRelationship || ""}
-                  onChange={(e) => setFormData({ ...formData, responsiblePartyRelationship: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="billingEmail">Billing Email *</Label>
-                <Input
-                  id="billingEmail"
-                  type="email"
-                  value={formData.billingEmail || ""}
-                  onChange={(e) => setFormData({ ...formData, billingEmail: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Primary Diagnosis *</Label>
-                <Select
-                  value={formData.careAssessment?.primaryDiagnosis}
-                  onValueChange={(value) => setFormData({
-                    ...formData,
-                    careAssessment: { ...formData.careAssessment!, primaryDiagnosis: value }
-                  })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select diagnosis" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PRIMARY_DIAGNOSES.map(d => (
-                      <SelectItem key={d} value={d}>{d}</SelectItem>
+          
+          <Accordion type="multiple" defaultValue={["client", "care", "home", "schedule", "financial", "legal", "emergency"]} className="w-full">
+            {/* Section 1: Client Information */}
+            <AccordionItem value="client">
+              <AccordionTrigger className="text-base font-semibold">
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  1. Client & Responsible Party Information
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-4 pt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="clientFullName">Client Full Name *</Label>
+                    <Input
+                      id="clientFullName"
+                      value={formData.clientFullName || ""}
+                      onChange={(e) => setFormData({ ...formData, clientFullName: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="clientDateOfBirth">Date of Birth *</Label>
+                    <Input
+                      id="clientDateOfBirth"
+                      type="date"
+                      value={formData.clientDateOfBirth || ""}
+                      onChange={(e) => setFormData({ ...formData, clientDateOfBirth: e.target.value })}
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <Label htmlFor="serviceAddress">Service Address *</Label>
+                    <Input
+                      id="serviceAddress"
+                      value={formData.serviceAddress || ""}
+                      onChange={(e) => setFormData({ ...formData, serviceAddress: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Email *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email || ""}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="primaryPhone">Primary Phone *</Label>
+                    <Input
+                      id="primaryPhone"
+                      value={formData.primaryPhone || ""}
+                      onChange={(e) => setFormData({ ...formData, primaryPhone: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="responsiblePartyName">Responsible Party Name *</Label>
+                    <Input
+                      id="responsiblePartyName"
+                      value={formData.responsiblePartyName || ""}
+                      onChange={(e) => setFormData({ ...formData, responsiblePartyName: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="responsiblePartyRelationship">Relationship *</Label>
+                    <Input
+                      id="responsiblePartyRelationship"
+                      value={formData.responsiblePartyRelationship || ""}
+                      onChange={(e) => setFormData({ ...formData, responsiblePartyRelationship: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="billingEmail">Billing Email *</Label>
+                    <Input
+                      id="billingEmail"
+                      type="email"
+                      value={formData.billingEmail || ""}
+                      onChange={(e) => setFormData({ ...formData, billingEmail: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Section 2: Care Assessment */}
+            <AccordionItem value="care">
+              <AccordionTrigger className="text-base font-semibold">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  2. Care Assessment
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-4 pt-4">
+                <div>
+                  <Label>Primary Diagnosis *</Label>
+                  <Select
+                    value={formData.careAssessment?.primaryDiagnosis}
+                    onValueChange={(value) => setFormData({
+                      ...formData,
+                      careAssessment: { ...formData.careAssessment!, primaryDiagnosis: value }
+                    })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select diagnosis" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PRIMARY_DIAGNOSES.map(d => (
+                        <SelectItem key={d} value={d}>{d}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label className="mb-2 block">Activities of Daily Living (ADLs) *</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {ADLS.map((adl) => (
+                      <div key={adl} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`adl-${adl}`}
+                          checked={formData.careAssessment?.adlsRequired?.includes(adl)}
+                          onCheckedChange={(checked) => {
+                            const current = formData.careAssessment?.adlsRequired || [];
+                            setFormData({
+                              ...formData,
+                              careAssessment: {
+                                ...formData.careAssessment!,
+                                adlsRequired: checked 
+                                  ? [...current, adl]
+                                  : current.filter(a => a !== adl)
+                              }
+                            });
+                          }}
+                        />
+                        <label htmlFor={`adl-${adl}`} className="text-sm">{adl}</label>
+                      </div>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Level of Care *</Label>
-                <Select
-                  value={formData.serviceSchedule?.recommendedLevelOfCare}
-                  onValueChange={(value) => setFormData({
-                    ...formData,
-                    serviceSchedule: { ...formData.serviceSchedule!, recommendedLevelOfCare: value }
-                  })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LEVELS_OF_CARE.map(l => (
-                      <SelectItem key={l} value={l}>{l}</SelectItem>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="mb-2 block">Instrumental ADLs (IADLs) *</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {IADLS.map((iadl) => (
+                      <div key={iadl} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`iadl-${iadl}`}
+                          checked={formData.careAssessment?.iadlsRequired?.includes(iadl)}
+                          onCheckedChange={(checked) => {
+                            const current = formData.careAssessment?.iadlsRequired || [];
+                            setFormData({
+                              ...formData,
+                              careAssessment: {
+                                ...formData.careAssessment!,
+                                iadlsRequired: checked 
+                                  ? [...current, iadl]
+                                  : current.filter(i => i !== iadl)
+                              }
+                            });
+                          }}
+                        />
+                        <label htmlFor={`iadl-${iadl}`} className="text-sm">{iadl}</label>
+                      </div>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="serviceStartDate">Service Start Date *</Label>
-                <Input
-                  id="serviceStartDate"
-                  type="date"
-                  value={formData.serviceSchedule?.serviceStartDate || ""}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    serviceSchedule: { ...formData.serviceSchedule!, serviceStartDate: e.target.value }
-                  })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="shiftHours">Shift Hours *</Label>
-                <Input
-                  id="shiftHours"
-                  placeholder="e.g., 8:00 AM - 12:00 PM"
-                  value={formData.serviceSchedule?.shiftHours || ""}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    serviceSchedule: { ...formData.serviceSchedule!, shiftHours: e.target.value }
-                  })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="electronicSignature">Electronic Signature *</Label>
-                <Input
-                  id="electronicSignature"
-                  value={formData.electronicSignature || ""}
-                  onChange={(e) => setFormData({ ...formData, electronicSignature: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="signatureDate">Signature Date *</Label>
-                <Input
-                  id="signatureDate"
-                  type="date"
-                  value={formData.signatureDate || ""}
-                  onChange={(e) => setFormData({ ...formData, signatureDate: e.target.value })}
-                />
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="medicalHistory">Medical History & Allergies *</Label>
+                  <Textarea
+                    id="medicalHistory"
+                    rows={3}
+                    value={formData.careAssessment?.medicalHistory || ""}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      careAssessment: { ...formData.careAssessment!, medicalHistory: e.target.value }
+                    })}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="currentMedications">Current Medications *</Label>
+                  <Textarea
+                    id="currentMedications"
+                    rows={3}
+                    value={formData.careAssessment?.currentMedications || ""}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      careAssessment: { ...formData.careAssessment!, currentMedications: e.target.value }
+                    })}
+                  />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Section 3: Home Safety */}
+            <AccordionItem value="home">
+              <AccordionTrigger className="text-base font-semibold">
+                <div className="flex items-center gap-2">
+                  <Home className="h-4 w-4" />
+                  3. Home Safety & Access
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-4 pt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Home Access Method *</Label>
+                    <Select
+                      value={formData.homeSafety?.homeAccessMethod}
+                      onValueChange={(value) => setFormData({
+                        ...formData,
+                        homeSafety: { ...formData.homeSafety!, homeAccessMethod: value }
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select access method" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {HOME_ACCESS_OPTIONS.map(opt => (
+                          <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="keyLocation">Keypad Code / Key Location</Label>
+                    <Input
+                      id="keyLocation"
+                      value={formData.homeSafety?.keypadCodeOrKeyLocation || ""}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        homeSafety: { ...formData.homeSafety!, keypadCodeOrKeyLocation: e.target.value }
+                      })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Pets in Home *</Label>
+                    <Select
+                      value={formData.homeSafety?.petsInHome}
+                      onValueChange={(value) => setFormData({
+                        ...formData,
+                        homeSafety: { ...formData.homeSafety!, petsInHome: value }
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select pet status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PET_OPTIONS.map(opt => (
+                          <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Smoking Policy *</Label>
+                    <Select
+                      value={formData.homeSafety?.smokingPolicy}
+                      onValueChange={(value) => setFormData({
+                        ...formData,
+                        homeSafety: { ...formData.homeSafety!, smokingPolicy: value }
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select smoking policy" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SMOKING_OPTIONS.map(opt => (
+                          <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Section 4: Service Schedule */}
+            <AccordionItem value="schedule">
+              <AccordionTrigger className="text-base font-semibold">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  4. Service Schedule
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-4 pt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="serviceStartDate">Service Start Date *</Label>
+                    <Input
+                      id="serviceStartDate"
+                      type="date"
+                      value={formData.serviceSchedule?.serviceStartDate || ""}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        serviceSchedule: { ...formData.serviceSchedule!, serviceStartDate: e.target.value }
+                      })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="shiftHours">Shift Hours *</Label>
+                    <Input
+                      id="shiftHours"
+                      placeholder="e.g., 8:00 AM - 12:00 PM"
+                      value={formData.serviceSchedule?.shiftHours || ""}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        serviceSchedule: { ...formData.serviceSchedule!, shiftHours: e.target.value }
+                      })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="guaranteedMinHours">Guaranteed Min Hours/Week</Label>
+                    <Input
+                      id="guaranteedMinHours"
+                      placeholder="e.g., 20"
+                      value={formData.serviceSchedule?.guaranteedMinHours || ""}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        serviceSchedule: { ...formData.serviceSchedule!, guaranteedMinHours: e.target.value }
+                      })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Level of Care *</Label>
+                    <Select
+                      value={formData.serviceSchedule?.recommendedLevelOfCare}
+                      onValueChange={(value) => setFormData({
+                        ...formData,
+                        serviceSchedule: { ...formData.serviceSchedule!, recommendedLevelOfCare: value }
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LEVELS_OF_CARE.map(l => (
+                          <SelectItem key={l} value={l}>{l}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="mb-2 block">Service Days *</Label>
+                  <div className="flex flex-wrap gap-3">
+                    {DAYS_OF_WEEK.map((day) => (
+                      <div key={day} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`day-${day}`}
+                          checked={formData.serviceSchedule?.serviceDays?.includes(day)}
+                          onCheckedChange={(checked) => {
+                            const current = formData.serviceSchedule?.serviceDays || [];
+                            setFormData({
+                              ...formData,
+                              serviceSchedule: {
+                                ...formData.serviceSchedule!,
+                                serviceDays: checked 
+                                  ? [...current, day]
+                                  : current.filter(d => d !== day)
+                              }
+                            });
+                          }}
+                        />
+                        <label htmlFor={`day-${day}`} className="text-sm">{day}</label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Care Goal *</Label>
+                  <Select
+                    value={formData.serviceSchedule?.careGoal}
+                    onValueChange={(value) => setFormData({
+                      ...formData,
+                      serviceSchedule: { ...formData.serviceSchedule!, careGoal: value }
+                    })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select care goal" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CARE_GOALS.map(g => (
+                        <SelectItem key={g} value={g}>{g}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Section 5: Financial Agreement */}
+            <AccordionItem value="financial">
+              <AccordionTrigger className="text-base font-semibold">
+                <div className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  5. Financial Agreement
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-4 pt-4">
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="standardRate"
+                      checked={formData.financialAgreement?.standardHourlyRate}
+                      onCheckedChange={(checked) => setFormData({
+                        ...formData,
+                        financialAgreement: { ...formData.financialAgreement!, standardHourlyRate: checked as boolean }
+                      })}
+                    />
+                    <label htmlFor="standardRate" className="text-sm font-medium">Standard Hourly Rate ($35.00/hr)</label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="weekendRate"
+                      checked={formData.financialAgreement?.weekendHolidayRate}
+                      onCheckedChange={(checked) => setFormData({
+                        ...formData,
+                        financialAgreement: { ...formData.financialAgreement!, weekendHolidayRate: checked as boolean }
+                      })}
+                    />
+                    <label htmlFor="weekendRate" className="text-sm font-medium">Weekend/Holiday Rate ($37.50/hr)</label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="retainer"
+                      checked={formData.financialAgreement?.initialRetainerFee}
+                      onCheckedChange={(checked) => setFormData({
+                        ...formData,
+                        financialAgreement: { ...formData.financialAgreement!, initialRetainerFee: checked as boolean }
+                      })}
+                    />
+                    <label htmlFor="retainer" className="text-sm font-medium">Initial Retainer Fee ($1,225)</label>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="mb-2 block">Additional Fees (if applicable)</Label>
+                  <div className="space-y-2">
+                    {ADDITIONAL_FEES.map((fee) => (
+                      <div key={fee} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`fee-${fee}`}
+                          checked={formData.financialAgreement?.additionalFees?.includes(fee)}
+                          onCheckedChange={(checked) => {
+                            const current = formData.financialAgreement?.additionalFees || [];
+                            setFormData({
+                              ...formData,
+                              financialAgreement: {
+                                ...formData.financialAgreement!,
+                                additionalFees: checked 
+                                  ? [...current, fee]
+                                  : current.filter(f => f !== fee)
+                              }
+                            });
+                          }}
+                        />
+                        <label htmlFor={`fee-${fee}`} className="text-sm">{fee}</label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Preferred Payment Method *</Label>
+                  <Select
+                    value={formData.financialAgreement?.preferredPaymentMethod}
+                    onValueChange={(value) => setFormData({
+                      ...formData,
+                      financialAgreement: { ...formData.financialAgreement!, preferredPaymentMethod: value }
+                    })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select payment method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PAYMENT_METHODS.map(m => (
+                        <SelectItem key={m} value={m}>{m}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Section 6: Legal Acknowledgments */}
+            <AccordionItem value="legal">
+              <AccordionTrigger className="text-base font-semibold">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  6. Legal Acknowledgments
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-3 pt-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="hipaa"
+                    checked={formData.legalAcknowledgments?.agreedHipaa}
+                    onCheckedChange={(checked) => setFormData({
+                      ...formData,
+                      legalAcknowledgments: { ...formData.legalAcknowledgments!, agreedHipaa: checked as boolean }
+                    })}
+                  />
+                  <label htmlFor="hipaa" className="text-sm">I acknowledge the HIPAA Notice of Privacy Practices</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="privacy"
+                    checked={formData.legalAcknowledgments?.agreedPrivacyPolicy}
+                    onCheckedChange={(checked) => setFormData({
+                      ...formData,
+                      legalAcknowledgments: { ...formData.legalAcknowledgments!, agreedPrivacyPolicy: checked as boolean }
+                    })}
+                  />
+                  <label htmlFor="privacy" className="text-sm">I agree to the Privacy Policy</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="terms"
+                    checked={formData.legalAcknowledgments?.agreedTermsConditions}
+                    onCheckedChange={(checked) => setFormData({
+                      ...formData,
+                      legalAcknowledgments: { ...formData.legalAcknowledgments!, agreedTermsConditions: checked as boolean }
+                    })}
+                  />
+                  <label htmlFor="terms" className="text-sm">I agree to the Terms & Conditions</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="cancellation"
+                    checked={formData.legalAcknowledgments?.agreedCancellationPolicy}
+                    onCheckedChange={(checked) => setFormData({
+                      ...formData,
+                      legalAcknowledgments: { ...formData.legalAcknowledgments!, agreedCancellationPolicy: checked as boolean }
+                    })}
+                  />
+                  <label htmlFor="cancellation" className="text-sm">I agree to the Cancellation Policy (24-hour notice)</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="nonSolicitation"
+                    checked={formData.legalAcknowledgments?.agreedNonSolicitation}
+                    onCheckedChange={(checked) => setFormData({
+                      ...formData,
+                      legalAcknowledgments: { ...formData.legalAcknowledgments!, agreedNonSolicitation: checked as boolean }
+                    })}
+                  />
+                  <label htmlFor="nonSolicitation" className="text-sm">I agree to the Non-Solicitation Agreement</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="nonMedical"
+                    checked={formData.legalAcknowledgments?.understandNonMedical}
+                    onCheckedChange={(checked) => setFormData({
+                      ...formData,
+                      legalAcknowledgments: { ...formData.legalAcknowledgments!, understandNonMedical: checked as boolean }
+                    })}
+                  />
+                  <label htmlFor="nonMedical" className="text-sm">I understand services are non-medical personal care only</label>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Section 7: Emergency Contact & Signature */}
+            <AccordionItem value="emergency">
+              <AccordionTrigger className="text-base font-semibold">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  7. Emergency Contact & Signature
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-4 pt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="emergencyContactName">Emergency Contact Name *</Label>
+                    <Input
+                      id="emergencyContactName"
+                      value={formData.emergencyContact?.emergencyContactName || ""}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        emergencyContact: { ...formData.emergencyContact!, emergencyContactName: e.target.value }
+                      })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="emergencyContactPhone">Emergency Phone *</Label>
+                    <Input
+                      id="emergencyContactPhone"
+                      value={formData.emergencyContact?.emergencyContactPhone || ""}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        emergencyContact: { ...formData.emergencyContact!, emergencyContactPhone: e.target.value }
+                      })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="additionalPhone">Additional Phone</Label>
+                    <Input
+                      id="additionalPhone"
+                      value={formData.emergencyContact?.additionalPhone || ""}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        emergencyContact: { ...formData.emergencyContact!, additionalPhone: e.target.value }
+                      })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="preferredHospital">Preferred Hospital *</Label>
+                    <Input
+                      id="preferredHospital"
+                      value={formData.emergencyContact?.preferredHospital || ""}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        emergencyContact: { ...formData.emergencyContact!, preferredHospital: e.target.value }
+                      })}
+                    />
+                  </div>
+                </div>
+
+                <div className="border-t pt-4 grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="electronicSignature">Electronic Signature (Full Name) *</Label>
+                    <Input
+                      id="electronicSignature"
+                      value={formData.electronicSignature || ""}
+                      onChange={(e) => setFormData({ ...formData, electronicSignature: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="signatureDate">Signature Date *</Label>
+                    <Input
+                      id="signatureDate"
+                      type="date"
+                      value={formData.signatureDate || ""}
+                      onChange={(e) => setFormData({ ...formData, signatureDate: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+
+          <DialogFooter className="mt-6">
             <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>Cancel</Button>
             <Button
               onClick={() => createMutation.mutate(formData)}

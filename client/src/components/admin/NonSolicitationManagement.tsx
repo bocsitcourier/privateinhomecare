@@ -30,6 +30,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import PrintableFormDialog, { FormSection, FormField, FormFieldGrid } from "@/components/PrintableFormDialog";
 import { format } from "date-fns";
 import { 
@@ -42,7 +48,8 @@ import {
   FileCheck,
   DollarSign,
   Send,
-  Shield
+  Shield,
+  AlertTriangle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -425,179 +432,283 @@ export default function NonSolicitationManagement() {
         )}
       </PrintableFormDialog>
 
-      {/* Create Dialog */}
+      {/* Create Dialog - Complete 5-Step Form */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>New Non-Solicitation Agreement</DialogTitle>
-            <DialogDescription>Create a new non-solicitation and placement agreement</DialogDescription>
+            <DialogTitle>New Non-Solicitation & Placement Agreement</DialogTitle>
+            <DialogDescription>Complete all 5 sections to create a comprehensive agreement</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="clientFullName">Client Full Name *</Label>
-                <Input
-                  id="clientFullName"
-                  value={formData.clientFullName || ""}
-                  onChange={(e) => setFormData({ ...formData, clientFullName: e.target.value })}
-                  data-testid="input-client-name"
-                />
-              </div>
-              <div>
-                <Label htmlFor="responsibleParty">Responsible Party *</Label>
-                <Input
-                  id="responsibleParty"
-                  value={formData.responsibleParty || ""}
-                  onChange={(e) => setFormData({ ...formData, responsibleParty: e.target.value })}
-                  data-testid="input-responsible-party"
-                />
-              </div>
-              <div>
-                <Label htmlFor="email">Email *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email || ""}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  data-testid="input-email"
-                />
-              </div>
-              <div>
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  value={formData.phone || ""}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  data-testid="input-phone"
-                />
-              </div>
-              <div className="col-span-2">
-                <Label htmlFor="billingAddress">Billing Address *</Label>
-                <Input
-                  id="billingAddress"
-                  value={formData.billingAddress || ""}
-                  onChange={(e) => setFormData({ ...formData, billingAddress: e.target.value })}
-                  data-testid="input-billing-address"
-                />
-              </div>
-              <div className="col-span-2">
-                <Label>Placement Option *</Label>
-                <Select
-                  value={formData.placementOption}
-                  onValueChange={(value) => setFormData({ ...formData, placementOption: value })}
-                >
-                  <SelectTrigger className="mt-1" data-testid="select-placement-option">
-                    <SelectValue placeholder="Select placement option" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="option_a">Option A: Immediate Buyout Fee ($3,500.00)</SelectItem>
-                    <SelectItem value="option_b">Option B: Transition after 300 hours + $1,500.00 Fee</SelectItem>
-                    <SelectItem value="no_hire">I do not intend to hire directly (12-month non-solicitation)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+          
+          <Accordion type="multiple" defaultValue={["client", "terms", "placement", "penalties", "signature"]} className="w-full">
+            {/* Section 1: Client Information */}
+            <AccordionItem value="client">
+              <AccordionTrigger className="text-base font-semibold">
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  1. Client & Responsible Party Information
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-4 pt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="clientFullName">Client Full Name *</Label>
+                    <Input
+                      id="clientFullName"
+                      value={formData.clientFullName || ""}
+                      onChange={(e) => setFormData({ ...formData, clientFullName: e.target.value })}
+                      data-testid="input-client-name"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="responsibleParty">Responsible Party Name *</Label>
+                    <Input
+                      id="responsibleParty"
+                      value={formData.responsibleParty || ""}
+                      onChange={(e) => setFormData({ ...formData, responsibleParty: e.target.value })}
+                      data-testid="input-responsible-party"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Email Address *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email || ""}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      data-testid="input-email"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      value={formData.phone || ""}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      data-testid="input-phone"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <Label htmlFor="billingAddress">Billing Address *</Label>
+                    <Input
+                      id="billingAddress"
+                      placeholder="Full street address, city, state, zip"
+                      value={formData.billingAddress || ""}
+                      onChange={(e) => setFormData({ ...formData, billingAddress: e.target.value })}
+                      data-testid="input-billing-address"
+                    />
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
 
-            <div className="space-y-2">
-              <Label>Agreement Terms *</Label>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="noPrivateEmployment"
-                    checked={formData.agreementTerms?.noPrivateEmployment}
-                    onCheckedChange={(checked) => setFormData({
-                      ...formData,
-                      agreementTerms: { ...formData.agreementTerms!, noPrivateEmployment: checked as boolean }
-                    })}
-                  />
-                  <label htmlFor="noPrivateEmployment" className="text-sm">
-                    I will not offer private employment to Agency caregivers
-                  </label>
+            {/* Section 2: Non-Solicitation Terms */}
+            <AccordionItem value="terms">
+              <AccordionTrigger className="text-base font-semibold">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  2. Non-Solicitation Agreement Terms
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="noReferral"
-                    checked={formData.agreementTerms?.noReferralForPrivateHire}
-                    onCheckedChange={(checked) => setFormData({
-                      ...formData,
-                      agreementTerms: { ...formData.agreementTerms!, noReferralForPrivateHire: checked as boolean }
-                    })}
-                  />
-                  <label htmlFor="noReferral" className="text-sm">
-                    I will not refer Agency caregivers to other families for private hire
-                  </label>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-4 pt-4">
+                <p className="text-sm text-muted-foreground mb-4">
+                  By checking the boxes below, the Client/Responsible Party agrees to the following terms during the service period and for 12 months after termination:
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-start space-x-3 p-3 bg-muted/50 rounded-lg">
+                    <Checkbox
+                      id="noPrivateEmployment"
+                      checked={formData.agreementTerms?.noPrivateEmployment}
+                      onCheckedChange={(checked) => setFormData({
+                        ...formData,
+                        agreementTerms: { ...formData.agreementTerms!, noPrivateEmployment: checked as boolean }
+                      })}
+                    />
+                    <label htmlFor="noPrivateEmployment" className="text-sm leading-relaxed">
+                      <strong>No Private Employment:</strong> I will not directly or indirectly hire, employ, or engage any caregiver introduced by PrivateInHomeCareGiver LLC for private employment.
+                    </label>
+                  </div>
+                  <div className="flex items-start space-x-3 p-3 bg-muted/50 rounded-lg">
+                    <Checkbox
+                      id="noReferral"
+                      checked={formData.agreementTerms?.noReferralForPrivateHire}
+                      onCheckedChange={(checked) => setFormData({
+                        ...formData,
+                        agreementTerms: { ...formData.agreementTerms!, noReferralForPrivateHire: checked as boolean }
+                      })}
+                    />
+                    <label htmlFor="noReferral" className="text-sm leading-relaxed">
+                      <strong>No Referrals:</strong> I will not refer, recommend, or facilitate the employment of any Agency caregiver to other families, individuals, or organizations for private hire.
+                    </label>
+                  </div>
+                  <div className="flex items-start space-x-3 p-3 bg-muted/50 rounded-lg">
+                    <Checkbox
+                      id="understandPayments"
+                      checked={formData.agreementTerms?.understandUnderTablePayments}
+                      onCheckedChange={(checked) => setFormData({
+                        ...formData,
+                        agreementTerms: { ...formData.agreementTerms!, understandUnderTablePayments: checked as boolean }
+                      })}
+                    />
+                    <label htmlFor="understandPayments" className="text-sm leading-relaxed">
+                      <strong>No Under-the-Table Payments:</strong> I understand that paying caregivers directly ("under-the-table") constitutes a breach of contract and may result in immediate termination of services and legal action.
+                    </label>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="understandPayments"
-                    checked={formData.agreementTerms?.understandUnderTablePayments}
-                    onCheckedChange={(checked) => setFormData({
-                      ...formData,
-                      agreementTerms: { ...formData.agreementTerms!, understandUnderTablePayments: checked as boolean }
-                    })}
-                  />
-                  <label htmlFor="understandPayments" className="text-sm">
-                    I understand that &quot;under-the-table&quot; payments are a breach of contract
-                  </label>
-                </div>
-              </div>
-            </div>
+              </AccordionContent>
+            </AccordionItem>
 
-            <div className="space-y-2">
-              <Label>Penalty Acknowledgments *</Label>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="liquidatedDamages"
-                    checked={formData.penaltyAcknowledgments?.agreedToLiquidatedDamages}
-                    onCheckedChange={(checked) => setFormData({
-                      ...formData,
-                      penaltyAcknowledgments: { ...formData.penaltyAcknowledgments!, agreedToLiquidatedDamages: checked as boolean }
-                    })}
-                  />
-                  <label htmlFor="liquidatedDamages" className="text-sm">
-                    I agree that a breach will result in a $5,000 Liquidated Damages penalty
-                  </label>
+            {/* Section 3: Placement Options */}
+            <AccordionItem value="placement">
+              <AccordionTrigger className="text-base font-semibold">
+                <div className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  3. Direct Hire Placement Options
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="legalFees"
-                    checked={formData.penaltyAcknowledgments?.agreedToLegalFees}
-                    onCheckedChange={(checked) => setFormData({
-                      ...formData,
-                      penaltyAcknowledgments: { ...formData.penaltyAcknowledgments!, agreedToLegalFees: checked as boolean }
-                    })}
-                  />
-                  <label htmlFor="legalFees" className="text-sm">
-                    I agree to pay all legal and collection fees incurred to enforce this agreement
-                  </label>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-4 pt-4">
+                <p className="text-sm text-muted-foreground mb-4">
+                  If you wish to hire a caregiver directly, you must select one of the following placement options:
+                </p>
+                <div className="space-y-3">
+                  <div 
+                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${formData.placementOption === 'option_a' ? 'border-primary bg-primary/5' : 'hover:border-muted-foreground/50'}`}
+                    onClick={() => setFormData({ ...formData, placementOption: 'option_a' })}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input 
+                        type="radio" 
+                        checked={formData.placementOption === 'option_a'} 
+                        onChange={() => setFormData({ ...formData, placementOption: 'option_a' })}
+                        className="h-4 w-4"
+                      />
+                      <div>
+                        <p className="font-semibold">Option A: Immediate Buyout</p>
+                        <p className="text-sm text-muted-foreground">One-time fee of $3,500.00 to immediately hire the caregiver</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div 
+                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${formData.placementOption === 'option_b' ? 'border-primary bg-primary/5' : 'hover:border-muted-foreground/50'}`}
+                    onClick={() => setFormData({ ...formData, placementOption: 'option_b' })}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input 
+                        type="radio" 
+                        checked={formData.placementOption === 'option_b'} 
+                        onChange={() => setFormData({ ...formData, placementOption: 'option_b' })}
+                        className="h-4 w-4"
+                      />
+                      <div>
+                        <p className="font-semibold">Option B: Transition After 300 Hours</p>
+                        <p className="text-sm text-muted-foreground">Complete 300 service hours through Agency, then pay $1,500.00 placement fee</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div 
+                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${formData.placementOption === 'no_hire' ? 'border-primary bg-primary/5' : 'hover:border-muted-foreground/50'}`}
+                    onClick={() => setFormData({ ...formData, placementOption: 'no_hire' })}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input 
+                        type="radio" 
+                        checked={formData.placementOption === 'no_hire'} 
+                        onChange={() => setFormData({ ...formData, placementOption: 'no_hire' })}
+                        className="h-4 w-4"
+                      />
+                      <div>
+                        <p className="font-semibold">No Intent to Hire Directly</p>
+                        <p className="text-sm text-muted-foreground">I do not intend to hire the caregiver directly (12-month non-solicitation period applies)</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </AccordionContent>
+            </AccordionItem>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="electronicSignature">Electronic Signature (Full Name) *</Label>
-                <Input
-                  id="electronicSignature"
-                  value={formData.electronicSignature || ""}
-                  onChange={(e) => setFormData({ ...formData, electronicSignature: e.target.value })}
-                  data-testid="input-signature"
-                />
-              </div>
-              <div>
-                <Label htmlFor="agreementDate">Agreement Date *</Label>
-                <Input
-                  id="agreementDate"
-                  type="date"
-                  value={formData.agreementDate || ""}
-                  onChange={(e) => setFormData({ ...formData, agreementDate: e.target.value })}
-                  data-testid="input-agreement-date"
-                />
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
+            {/* Section 4: Penalty Acknowledgments */}
+            <AccordionItem value="penalties">
+              <AccordionTrigger className="text-base font-semibold">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  4. Breach & Penalty Acknowledgments
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-4 pt-4">
+                <p className="text-sm text-muted-foreground mb-4">
+                  By checking the boxes below, you acknowledge and agree to the following penalty provisions:
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-start space-x-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                    <Checkbox
+                      id="liquidatedDamages"
+                      checked={formData.penaltyAcknowledgments?.agreedToLiquidatedDamages}
+                      onCheckedChange={(checked) => setFormData({
+                        ...formData,
+                        penaltyAcknowledgments: { ...formData.penaltyAcknowledgments!, agreedToLiquidatedDamages: checked as boolean }
+                      })}
+                    />
+                    <label htmlFor="liquidatedDamages" className="text-sm leading-relaxed">
+                      <strong>Liquidated Damages:</strong> I understand and agree that any breach of this Non-Solicitation Agreement will result in <strong>$5,000.00 in liquidated damages</strong>, payable immediately upon breach, in addition to any applicable placement fees.
+                    </label>
+                  </div>
+                  <div className="flex items-start space-x-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                    <Checkbox
+                      id="legalFees"
+                      checked={formData.penaltyAcknowledgments?.agreedToLegalFees}
+                      onCheckedChange={(checked) => setFormData({
+                        ...formData,
+                        penaltyAcknowledgments: { ...formData.penaltyAcknowledgments!, agreedToLegalFees: checked as boolean }
+                      })}
+                    />
+                    <label htmlFor="legalFees" className="text-sm leading-relaxed">
+                      <strong>Legal & Collection Fees:</strong> I agree to pay all reasonable attorney fees, court costs, and collection expenses incurred by PrivateInHomeCareGiver LLC to enforce this agreement.
+                    </label>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Section 5: Signature */}
+            <AccordionItem value="signature">
+              <AccordionTrigger className="text-base font-semibold">
+                <div className="flex items-center gap-2">
+                  <FileCheck className="h-4 w-4" />
+                  5. Electronic Signature
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-4 pt-4">
+                <p className="text-sm text-muted-foreground mb-4">
+                  By typing your full legal name below, you are electronically signing this agreement and acknowledging that you have read, understood, and agree to all terms and conditions stated herein.
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="electronicSignature">Full Legal Name *</Label>
+                    <Input
+                      id="electronicSignature"
+                      placeholder="Type your full legal name"
+                      value={formData.electronicSignature || ""}
+                      onChange={(e) => setFormData({ ...formData, electronicSignature: e.target.value })}
+                      className="font-semibold italic"
+                      data-testid="input-signature"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="agreementDate">Date Signed *</Label>
+                    <Input
+                      id="agreementDate"
+                      type="date"
+                      value={formData.agreementDate || new Date().toISOString().split('T')[0]}
+                      onChange={(e) => setFormData({ ...formData, agreementDate: e.target.value })}
+                      data-testid="input-agreement-date"
+                    />
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+
+          <DialogFooter className="mt-6">
             <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>Cancel</Button>
             <Button
               onClick={() => createMutation.mutate(formData)}
