@@ -193,7 +193,7 @@ export default function DirectoryPage() {
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${heroImage})` }}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/30 to-black/20" />
           </div>
           
           <div className="relative max-w-7xl mx-auto px-4">

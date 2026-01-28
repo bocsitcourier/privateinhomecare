@@ -415,7 +415,7 @@ export default function FacilityDetailPage() {
             className="w-full h-full object-cover"
             data-testid="img-facility-hero"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/25 to-transparent" />
           
           {/* Hero Content Overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">

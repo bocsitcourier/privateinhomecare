@@ -154,7 +154,7 @@ export default function ServiceDetailPage() {
               data-testid="img-service-hero"
             />
             {/* Lighter gradient overlay - 50% opacity for better visibility */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/30 to-transparent" />
           </div>
           
           <div className="relative z-10 max-w-7xl mx-auto px-4 py-20">

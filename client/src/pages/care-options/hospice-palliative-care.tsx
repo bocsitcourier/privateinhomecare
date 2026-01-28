@@ -102,7 +102,7 @@ export default function HospicePalliativeCarePage() {
                 backgroundImage: `url('https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=1600&q=80')`
               }}
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/30 to-transparent" />
             <div className="relative z-10 container mx-auto px-4 max-w-6xl py-16">
               <div className="max-w-2xl">
                 <Badge className="mb-4 bg-primary/90 text-primary-foreground border-0">Massachusetts Care Options</Badge>
