@@ -37,6 +37,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import PrintableFormDialog, { FormSection, FormField, FormFieldGrid } from "@/components/PrintableFormDialog";
 import { format } from "date-fns";
 import { 
   Plus, 
@@ -376,287 +377,197 @@ export default function InitialAssessmentsManagement() {
       </Card>
 
       {/* View Dialog */}
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Initial Assessment Details</DialogTitle>
-            <DialogDescription>View comprehensive assessment and service agreement</DialogDescription>
-          </DialogHeader>
-          {selectedAssessment && (
-            <Accordion type="multiple" defaultValue={["client", "care", "schedule", "financial"]} className="w-full">
-              <AccordionItem value="client">
-                <AccordionTrigger>
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    Client & Responsible Party Information
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="grid grid-cols-2 gap-4 p-4">
-                    <div>
-                      <Label>Client Name</Label>
-                      <p className="text-sm">{selectedAssessment.clientFullName}</p>
-                    </div>
-                    <div>
-                      <Label>Date of Birth</Label>
-                      <p className="text-sm">{selectedAssessment.clientDateOfBirth}</p>
-                    </div>
-                    <div className="col-span-2">
-                      <Label>Service Address</Label>
-                      <p className="text-sm">{selectedAssessment.serviceAddress}</p>
-                    </div>
-                    <div>
-                      <Label>Responsible Party</Label>
-                      <p className="text-sm">{selectedAssessment.responsiblePartyName}</p>
-                    </div>
-                    <div>
-                      <Label>Relationship</Label>
-                      <p className="text-sm">{selectedAssessment.responsiblePartyRelationship}</p>
-                    </div>
-                    <div>
-                      <Label>Billing Email</Label>
-                      <p className="text-sm">{selectedAssessment.billingEmail}</p>
-                    </div>
-                    <div>
-                      <Label>Primary Phone</Label>
-                      <p className="text-sm">{selectedAssessment.primaryPhone}</p>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
+      <PrintableFormDialog
+        open={isViewDialogOpen}
+        onOpenChange={setIsViewDialogOpen}
+        title="Initial Assessment & Service Agreement"
+        subtitle={selectedAssessment ? `Client: ${selectedAssessment.clientFullName}` : undefined}
+        formId={selectedAssessment?.id}
+      >
+        {selectedAssessment && (
+          <div className="space-y-6">
+            <FormSection title="Client & Responsible Party Information">
+              <FormFieldGrid>
+                <FormField label="Client Name" value={selectedAssessment.clientFullName} />
+                <FormField label="Date of Birth" value={selectedAssessment.clientDateOfBirth} />
+                <FormField label="Responsible Party" value={selectedAssessment.responsiblePartyName} />
+                <FormField label="Relationship" value={selectedAssessment.responsiblePartyRelationship} />
+                <FormField
+                  label="Billing Email"
+                  value={
+                    <a href={`mailto:${selectedAssessment.billingEmail}`} className="text-primary hover:underline">
+                      {selectedAssessment.billingEmail}
+                    </a>
+                  }
+                />
+                <FormField
+                  label="Primary Phone"
+                  value={
+                    <a href={`tel:${selectedAssessment.primaryPhone}`} className="text-primary hover:underline">
+                      {selectedAssessment.primaryPhone}
+                    </a>
+                  }
+                />
+              </FormFieldGrid>
+              <div className="mt-4">
+                <FormField label="Service Address" value={selectedAssessment.serviceAddress} />
+              </div>
+            </FormSection>
 
-              <AccordionItem value="care">
-                <AccordionTrigger>
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    Care Assessment
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-4 p-4">
-                    <div>
-                      <Label>Primary Diagnosis</Label>
-                      <p className="text-sm">{selectedAssessment.careAssessment.primaryDiagnosis}</p>
-                    </div>
-                    <div>
-                      <Label>Activities of Daily Living (ADLs) Required</Label>
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {selectedAssessment.careAssessment.adlsRequired?.map((adl, i) => (
-                          <Badge key={i} variant="secondary">{adl}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <Label>Instrumental ADLs Required</Label>
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {selectedAssessment.careAssessment.iadlsRequired?.map((iadl, i) => (
-                          <Badge key={i} variant="outline">{iadl}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <Label>Medical History & Allergies</Label>
-                      <p className="text-sm whitespace-pre-wrap">{selectedAssessment.careAssessment.medicalHistory}</p>
-                    </div>
-                    <div>
-                      <Label>Current Medications</Label>
-                      <p className="text-sm whitespace-pre-wrap">{selectedAssessment.careAssessment.currentMedications}</p>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="home">
-                <AccordionTrigger>
-                  <div className="flex items-center gap-2">
-                    <Home className="h-4 w-4" />
-                    Home Safety & Access
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="grid grid-cols-2 gap-4 p-4">
-                    <div>
-                      <Label>Home Access Method</Label>
-                      <p className="text-sm">{selectedAssessment.homeSafety.homeAccessMethod}</p>
-                    </div>
-                    <div>
-                      <Label>Keypad Code / Key Location</Label>
-                      <p className="text-sm">{selectedAssessment.homeSafety.keypadCodeOrKeyLocation}</p>
-                    </div>
-                    <div>
-                      <Label>Pets in Home</Label>
-                      <p className="text-sm">{selectedAssessment.homeSafety.petsInHome}</p>
-                    </div>
-                    <div>
-                      <Label>Smoking Policy</Label>
-                      <p className="text-sm">{selectedAssessment.homeSafety.smokingPolicy}</p>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="schedule">
-                <AccordionTrigger>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    Service Schedule
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="grid grid-cols-2 gap-4 p-4">
-                    <div>
-                      <Label>Start Date</Label>
-                      <p className="text-sm">{selectedAssessment.serviceSchedule.serviceStartDate}</p>
-                    </div>
-                    <div>
-                      <Label>Service Days</Label>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {selectedAssessment.serviceSchedule.serviceDays?.map((day, i) => (
-                          <Badge key={i} variant="secondary" className="text-xs">{day}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <Label>Shift Hours</Label>
-                      <p className="text-sm">{selectedAssessment.serviceSchedule.shiftHours}</p>
-                    </div>
-                    <div>
-                      <Label>Guaranteed Minimum Hours/Week</Label>
-                      <p className="text-sm">{selectedAssessment.serviceSchedule.guaranteedMinHours || "N/A"}</p>
-                    </div>
-                    <div>
-                      <Label>Level of Care</Label>
-                      <p className="text-sm font-medium">{selectedAssessment.serviceSchedule.recommendedLevelOfCare}</p>
-                    </div>
-                    <div>
-                      <Label>Care Goal</Label>
-                      <p className="text-sm">{selectedAssessment.serviceSchedule.careGoal}</p>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="financial">
-                <AccordionTrigger>
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4" />
-                    Financial Agreement
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-4 p-4">
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="flex items-center gap-2">
-                        {selectedAssessment.financialAgreement.standardHourlyRate ? <CheckCircle className="h-4 w-4 text-green-600" /> : <XCircle className="h-4 w-4 text-red-600" />}
-                        <span className="text-sm">Standard Rate ($35.00/hr)</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {selectedAssessment.financialAgreement.weekendHolidayRate ? <CheckCircle className="h-4 w-4 text-green-600" /> : <XCircle className="h-4 w-4 text-red-600" />}
-                        <span className="text-sm">Weekend/Holiday Rate ($37.50/hr)</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {selectedAssessment.financialAgreement.initialRetainerFee ? <CheckCircle className="h-4 w-4 text-green-600" /> : <XCircle className="h-4 w-4 text-red-600" />}
-                        <span className="text-sm">Initial Retainer ($1,225.00)</span>
-                      </div>
-                    </div>
-                    <div>
-                      <Label>Additional Fees</Label>
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {selectedAssessment.financialAgreement.additionalFees?.map((fee, i) => (
-                          <Badge key={i} variant="outline">{fee}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <Label>Preferred Payment Method</Label>
-                      <p className="text-sm">{selectedAssessment.financialAgreement.preferredPaymentMethod}</p>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="legal">
-                <AccordionTrigger>
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4" />
-                    Legal Acknowledgments
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-2 p-4">
-                    {Object.entries(selectedAssessment.legalAcknowledgments).map(([key, value]) => (
-                      <div key={key} className="flex items-center gap-2">
-                        {value ? <CheckCircle className="h-4 w-4 text-green-600" /> : <XCircle className="h-4 w-4 text-red-600" />}
-                        <span className="text-sm">{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</span>
-                      </div>
+            <FormSection title="Care Assessment">
+              <FormFieldGrid>
+                <FormField label="Primary Diagnosis" value={selectedAssessment.careAssessment.primaryDiagnosis} />
+              </FormFieldGrid>
+              {selectedAssessment.careAssessment.adlsRequired?.length > 0 && (
+                <div className="mt-4">
+                  <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Activities of Daily Living (ADLs)</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedAssessment.careAssessment.adlsRequired.map((adl, i) => (
+                      <Badge key={i} variant="secondary">{adl}</Badge>
                     ))}
                   </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="emergency">
-                <AccordionTrigger>
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4" />
-                    Emergency Contact
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="grid grid-cols-2 gap-4 p-4">
-                    <div>
-                      <Label>Emergency Contact Name</Label>
-                      <p className="text-sm">{selectedAssessment.emergencyContact.emergencyContactName}</p>
-                    </div>
-                    <div>
-                      <Label>Emergency Phone</Label>
-                      <p className="text-sm">{selectedAssessment.emergencyContact.emergencyContactPhone}</p>
-                    </div>
-                    <div>
-                      <Label>Additional Phone</Label>
-                      <p className="text-sm">{selectedAssessment.emergencyContact.additionalPhone}</p>
-                    </div>
-                    <div>
-                      <Label>Preferred Hospital</Label>
-                      <p className="text-sm">{selectedAssessment.emergencyContact.preferredHospital}</p>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-          )}
-          {selectedAssessment && (
-            <div className="pt-4 border-t mt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Signature: </Label>
-                  <span className="text-sm font-medium">{selectedAssessment.electronicSignature}</span>
-                  <span className="text-sm text-muted-foreground ml-2">({selectedAssessment.signatureDate})</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Label>Status:</Label>
-                  <Select
-                    value={selectedAssessment.status}
-                    onValueChange={(value) => {
-                      updateMutation.mutate({ id: selectedAssessment.id, data: { status: value } });
-                      setSelectedAssessment({ ...selectedAssessment, status: value });
-                    }}
-                  >
-                    <SelectTrigger className="w-[150px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="approved">Approved</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                    </SelectContent>
-                  </Select>
+              )}
+              {selectedAssessment.careAssessment.iadlsRequired?.length > 0 && (
+                <div className="mt-4">
+                  <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Instrumental ADLs</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedAssessment.careAssessment.iadlsRequired.map((iadl, i) => (
+                      <Badge key={i} variant="outline">{iadl}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="mt-4 space-y-4">
+                <FormField label="Medical History & Allergies" value={selectedAssessment.careAssessment.medicalHistory} />
+                <FormField label="Current Medications" value={selectedAssessment.careAssessment.currentMedications} />
+              </div>
+            </FormSection>
+
+            <FormSection title="Home Safety & Access">
+              <FormFieldGrid>
+                <FormField label="Home Access Method" value={selectedAssessment.homeSafety.homeAccessMethod} />
+                <FormField label="Keypad Code / Key Location" value={selectedAssessment.homeSafety.keypadCodeOrKeyLocation} />
+                <FormField label="Pets in Home" value={selectedAssessment.homeSafety.petsInHome} />
+                <FormField label="Smoking Policy" value={selectedAssessment.homeSafety.smokingPolicy} />
+              </FormFieldGrid>
+            </FormSection>
+
+            <FormSection title="Service Schedule">
+              <FormFieldGrid>
+                <FormField label="Start Date" value={selectedAssessment.serviceSchedule.serviceStartDate} />
+                <FormField label="Shift Hours" value={selectedAssessment.serviceSchedule.shiftHours} />
+                <FormField label="Guaranteed Min Hours/Week" value={selectedAssessment.serviceSchedule.guaranteedMinHours || "N/A"} />
+                <FormField label="Level of Care" value={selectedAssessment.serviceSchedule.recommendedLevelOfCare} />
+              </FormFieldGrid>
+              {selectedAssessment.serviceSchedule.serviceDays?.length > 0 && (
+                <div className="mt-4">
+                  <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Service Days</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedAssessment.serviceSchedule.serviceDays.map((day, i) => (
+                      <Badge key={i} variant="secondary">{day}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="mt-4">
+                <FormField label="Care Goal" value={selectedAssessment.serviceSchedule.careGoal} />
+              </div>
+            </FormSection>
+
+            <FormSection title="Financial Agreement">
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div className="flex items-center gap-2 p-2 bg-muted/50 rounded">
+                  {selectedAssessment.financialAgreement.standardHourlyRate ? <CheckCircle className="h-4 w-4 text-green-600" /> : <XCircle className="h-4 w-4 text-red-600" />}
+                  <span>Standard Rate ($35.00/hr)</span>
+                </div>
+                <div className="flex items-center gap-2 p-2 bg-muted/50 rounded">
+                  {selectedAssessment.financialAgreement.weekendHolidayRate ? <CheckCircle className="h-4 w-4 text-green-600" /> : <XCircle className="h-4 w-4 text-red-600" />}
+                  <span>Weekend/Holiday ($37.50/hr)</span>
+                </div>
+                <div className="flex items-center gap-2 p-2 bg-muted/50 rounded">
+                  {selectedAssessment.financialAgreement.initialRetainerFee ? <CheckCircle className="h-4 w-4 text-green-600" /> : <XCircle className="h-4 w-4 text-red-600" />}
+                  <span>Initial Retainer ($1,225)</span>
                 </div>
               </div>
+              {selectedAssessment.financialAgreement.additionalFees?.length > 0 && (
+                <div className="mt-4">
+                  <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Additional Fees</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedAssessment.financialAgreement.additionalFees.map((fee, i) => (
+                      <Badge key={i} variant="outline">{fee}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="mt-4">
+                <FormField label="Preferred Payment Method" value={selectedAssessment.financialAgreement.preferredPaymentMethod} />
+              </div>
+            </FormSection>
+
+            <FormSection title="Legal Acknowledgments">
+              <div className="space-y-2 text-sm">
+                {Object.entries(selectedAssessment.legalAcknowledgments).map(([key, value]) => (
+                  <div key={key} className="flex items-center gap-2 p-2 bg-muted/50 rounded">
+                    {value ? <CheckCircle className="h-4 w-4 text-green-600" /> : <XCircle className="h-4 w-4 text-red-600" />}
+                    <span>{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</span>
+                  </div>
+                ))}
+              </div>
+            </FormSection>
+
+            <FormSection title="Emergency Contact">
+              <FormFieldGrid>
+                <FormField label="Contact Name" value={selectedAssessment.emergencyContact.emergencyContactName} />
+                <FormField
+                  label="Emergency Phone"
+                  value={
+                    selectedAssessment.emergencyContact.emergencyContactPhone ? (
+                      <a href={`tel:${selectedAssessment.emergencyContact.emergencyContactPhone}`} className="text-primary hover:underline">
+                        {selectedAssessment.emergencyContact.emergencyContactPhone}
+                      </a>
+                    ) : undefined
+                  }
+                />
+                <FormField label="Additional Phone" value={selectedAssessment.emergencyContact.additionalPhone} />
+                <FormField label="Preferred Hospital" value={selectedAssessment.emergencyContact.preferredHospital} />
+              </FormFieldGrid>
+            </FormSection>
+
+            <FormSection title="Signature & Status">
+              <FormFieldGrid>
+                <FormField label="Electronic Signature" value={<span className="font-semibold italic">{selectedAssessment.electronicSignature}</span>} />
+                <FormField label="Signature Date" value={selectedAssessment.signatureDate} />
+                <FormField label="Date Created" value={format(new Date(selectedAssessment.createdAt), "PPpp")} />
+                <FormField label="Current Status" value={getStatusBadge(selectedAssessment.status)} />
+              </FormFieldGrid>
+            </FormSection>
+
+            <div className="no-print border-t pt-4">
+              <div className="flex items-center gap-2">
+                <Label>Update Status:</Label>
+                <Select
+                  value={selectedAssessment.status}
+                  onValueChange={(value) => {
+                    updateMutation.mutate({ id: selectedAssessment.id, data: { status: value } });
+                    setSelectedAssessment({ ...selectedAssessment, status: value });
+                  }}
+                >
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        )}
+      </PrintableFormDialog>
 
       {/* Create Dialog - Simplified for admin entry */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>

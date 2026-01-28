@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import PrintableFormDialog, { FormSection, FormField, FormFieldGrid } from "@/components/PrintableFormDialog";
 import { format } from "date-fns";
 import { 
   Plus, 
@@ -296,79 +297,123 @@ export default function ClientIntakesManagement() {
       </Card>
 
       {/* View/Edit Dialog */}
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Client Intake Details</DialogTitle>
-            <DialogDescription>View and manage client intake information</DialogDescription>
-          </DialogHeader>
-          {selectedIntake && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Client Name</Label>
-                  <p className="text-sm">{selectedIntake.clientName}</p>
-                </div>
-                <div>
-                  <Label>Email</Label>
-                  <p className="text-sm">{selectedIntake.clientEmail}</p>
-                </div>
-                <div>
-                  <Label>Phone</Label>
-                  <p className="text-sm">{selectedIntake.clientPhone}</p>
-                </div>
-                <div>
-                  <Label>Date of Birth</Label>
-                  <p className="text-sm">{selectedIntake.dateOfBirth || "N/A"}</p>
-                </div>
-                <div className="col-span-2">
-                  <Label>Address</Label>
-                  <p className="text-sm">{selectedIntake.address || "N/A"}</p>
-                </div>
-                <div>
-                  <Label>Emergency Contact</Label>
-                  <p className="text-sm">{selectedIntake.emergencyContactName || "N/A"}</p>
-                </div>
-                <div>
-                  <Label>Emergency Phone</Label>
-                  <p className="text-sm">{selectedIntake.emergencyContactPhone || "N/A"}</p>
-                </div>
-                <div className="col-span-2">
-                  <Label>Medical Conditions</Label>
-                  <p className="text-sm">{selectedIntake.medicalConditions || "N/A"}</p>
-                </div>
-                <div className="col-span-2">
-                  <Label>Care Needs</Label>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {selectedIntake.careNeeds?.map((need, i) => (
+      <PrintableFormDialog
+        open={isViewDialogOpen}
+        onOpenChange={setIsViewDialogOpen}
+        title="Client Intake Form"
+        subtitle={selectedIntake ? `Client: ${selectedIntake.clientName}` : undefined}
+        formId={selectedIntake?.id}
+      >
+        {selectedIntake && (
+          <div className="space-y-6">
+            <FormSection title="Client Information">
+              <FormFieldGrid>
+                <FormField label="Client Name" value={selectedIntake.clientName} />
+                <FormField
+                  label="Email Address"
+                  value={
+                    <a href={`mailto:${selectedIntake.clientEmail}`} className="text-primary hover:underline">
+                      {selectedIntake.clientEmail}
+                    </a>
+                  }
+                />
+                <FormField
+                  label="Phone Number"
+                  value={
+                    <a href={`tel:${selectedIntake.clientPhone}`} className="text-primary hover:underline">
+                      {selectedIntake.clientPhone}
+                    </a>
+                  }
+                />
+                <FormField label="Date of Birth" value={selectedIntake.dateOfBirth} />
+              </FormFieldGrid>
+              <div className="mt-4">
+                <FormField label="Address" value={selectedIntake.address} />
+              </div>
+            </FormSection>
+
+            <FormSection title="Emergency Contact">
+              <FormFieldGrid>
+                <FormField label="Contact Name" value={selectedIntake.emergencyContactName} />
+                <FormField
+                  label="Contact Phone"
+                  value={
+                    selectedIntake.emergencyContactPhone ? (
+                      <a href={`tel:${selectedIntake.emergencyContactPhone}`} className="text-primary hover:underline">
+                        {selectedIntake.emergencyContactPhone}
+                      </a>
+                    ) : undefined
+                  }
+                />
+                <FormField label="Relationship" value={selectedIntake.emergencyContactRelationship} />
+              </FormFieldGrid>
+            </FormSection>
+
+            <FormSection title="Medical Information">
+              <FormFieldGrid>
+                <FormField label="Insurance Provider" value={selectedIntake.insuranceProvider} />
+                <FormField label="Policy Number" value={selectedIntake.insurancePolicyNumber} />
+                <FormField label="Primary Physician" value={selectedIntake.primaryPhysician} />
+                <FormField label="Physician Phone" value={selectedIntake.physicianPhone} />
+              </FormFieldGrid>
+              <div className="mt-4 space-y-4">
+                <FormField label="Medical Conditions" value={selectedIntake.medicalConditions} />
+                <FormField label="Current Medications" value={selectedIntake.medications} />
+                <FormField label="Allergies" value={selectedIntake.allergies} />
+                <FormField label="Mobility Status" value={selectedIntake.mobilityStatus} />
+                <FormField label="Dietary Restrictions" value={selectedIntake.dietaryRestrictions} />
+              </div>
+            </FormSection>
+
+            <FormSection title="Care Requirements">
+              <FormField label="Preferred Schedule" value={selectedIntake.preferredSchedule} />
+              {selectedIntake.careNeeds && selectedIntake.careNeeds.length > 0 && (
+                <div className="mt-4">
+                  <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Care Needs</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedIntake.careNeeds.map((need, i) => (
                       <Badge key={i} variant="secondary">{need}</Badge>
                     ))}
                   </div>
                 </div>
-              </div>
-              <div className="pt-4 border-t">
-                <Label>Status</Label>
-                <Select
-                  value={selectedIntake.status}
-                  onValueChange={(value) => {
-                    updateMutation.mutate({ id: selectedIntake.id, data: { status: value } });
-                  }}
-                >
-                  <SelectTrigger className="w-[200px] mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="on_hold">On Hold</SelectItem>
-                    <SelectItem value="discharged">Discharged</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              )}
+              {selectedIntake.additionalNotes && (
+                <div className="mt-4">
+                  <FormField label="Additional Notes" value={selectedIntake.additionalNotes} />
+                </div>
+              )}
+            </FormSection>
+
+            <FormSection title="Status & Tracking">
+              <FormFieldGrid>
+                <FormField label="Date Created" value={format(new Date(selectedIntake.createdAt), "PPpp")} />
+                <FormField label="Current Status" value={getStatusBadge(selectedIntake.status)} />
+                <FormField label="Email Sent" value={selectedIntake.emailSentAt ? format(new Date(selectedIntake.emailSentAt), "PPpp") : "Not sent"} />
+              </FormFieldGrid>
+            </FormSection>
+
+            <div className="no-print border-t pt-4">
+              <Label>Update Status</Label>
+              <Select
+                value={selectedIntake.status}
+                onValueChange={(value) => {
+                  updateMutation.mutate({ id: selectedIntake.id, data: { status: value } });
+                }}
+              >
+                <SelectTrigger className="w-[200px] mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="on_hold">On Hold</SelectItem>
+                  <SelectItem value="discharged">Discharged</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        )}
+      </PrintableFormDialog>
 
       {/* Create Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>

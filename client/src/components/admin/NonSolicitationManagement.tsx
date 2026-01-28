@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import PrintableFormDialog, { FormSection, FormField, FormFieldGrid } from "@/components/PrintableFormDialog";
 import { format } from "date-fns";
 import { 
   Plus, 
@@ -314,107 +315,115 @@ export default function NonSolicitationManagement() {
       </Card>
 
       {/* View Dialog */}
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Non-Solicitation Agreement Details</DialogTitle>
-            <DialogDescription>View agreement information and terms</DialogDescription>
-          </DialogHeader>
-          {selectedAgreement && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Client Name</Label>
-                  <p className="text-sm">{selectedAgreement.clientFullName}</p>
-                </div>
-                <div>
-                  <Label>Responsible Party</Label>
-                  <p className="text-sm">{selectedAgreement.responsibleParty}</p>
-                </div>
-                <div>
-                  <Label>Email</Label>
-                  <p className="text-sm">{selectedAgreement.email}</p>
-                </div>
-                <div>
-                  <Label>Phone</Label>
-                  <p className="text-sm">{selectedAgreement.phone || "N/A"}</p>
-                </div>
-                <div className="col-span-2">
-                  <Label>Billing Address</Label>
-                  <p className="text-sm">{selectedAgreement.billingAddress}</p>
-                </div>
-                <div className="col-span-2">
-                  <Label>Placement Option</Label>
-                  <p className="text-sm font-medium">{PLACEMENT_OPTIONS[selectedAgreement.placementOption as keyof typeof PLACEMENT_OPTIONS]}</p>
-                </div>
+      <PrintableFormDialog
+        open={isViewDialogOpen}
+        onOpenChange={setIsViewDialogOpen}
+        title="Non-Solicitation Agreement"
+        subtitle={selectedAgreement ? `Client: ${selectedAgreement.clientFullName}` : undefined}
+        formId={selectedAgreement?.id}
+      >
+        {selectedAgreement && (
+          <div className="space-y-6">
+            <FormSection title="Client Information">
+              <FormFieldGrid>
+                <FormField label="Client Name" value={selectedAgreement.clientFullName} />
+                <FormField label="Responsible Party" value={selectedAgreement.responsibleParty} />
+                <FormField
+                  label="Email Address"
+                  value={
+                    <a href={`mailto:${selectedAgreement.email}`} className="text-primary hover:underline">
+                      {selectedAgreement.email}
+                    </a>
+                  }
+                />
+                <FormField
+                  label="Phone Number"
+                  value={
+                    selectedAgreement.phone ? (
+                      <a href={`tel:${selectedAgreement.phone}`} className="text-primary hover:underline">
+                        {selectedAgreement.phone}
+                      </a>
+                    ) : undefined
+                  }
+                />
+              </FormFieldGrid>
+              <div className="mt-4">
+                <FormField label="Billing Address" value={selectedAgreement.billingAddress} />
               </div>
+            </FormSection>
 
-              <div className="space-y-2">
-                <Label>Agreement Terms</Label>
-                <div className="space-y-1 text-sm">
-                  <div className="flex items-center gap-2">
-                    {selectedAgreement.agreementTerms.noPrivateEmployment ? <FileCheck className="h-4 w-4 text-green-600" /> : <Shield className="h-4 w-4 text-red-600" />}
-                    <span>Will not offer private employment to Agency caregivers</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {selectedAgreement.agreementTerms.noReferralForPrivateHire ? <FileCheck className="h-4 w-4 text-green-600" /> : <Shield className="h-4 w-4 text-red-600" />}
-                    <span>Will not refer Agency caregivers to other families</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {selectedAgreement.agreementTerms.understandUnderTablePayments ? <FileCheck className="h-4 w-4 text-green-600" /> : <Shield className="h-4 w-4 text-red-600" />}
-                    <span>Understands under-the-table payments are a breach</span>
-                  </div>
-                </div>
-              </div>
+            <FormSection title="Placement Option">
+              <FormField
+                label="Selected Option"
+                value={
+                  <span className="font-medium">
+                    {PLACEMENT_OPTIONS[selectedAgreement.placementOption as keyof typeof PLACEMENT_OPTIONS]}
+                  </span>
+                }
+              />
+            </FormSection>
 
-              <div className="space-y-2">
-                <Label>Penalty Acknowledgments</Label>
-                <div className="space-y-1 text-sm">
-                  <div className="flex items-center gap-2">
-                    {selectedAgreement.penaltyAcknowledgments.agreedToLiquidatedDamages ? <FileCheck className="h-4 w-4 text-green-600" /> : <Shield className="h-4 w-4 text-red-600" />}
-                    <span>Agreed to $5,000 liquidated damages for breach</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {selectedAgreement.penaltyAcknowledgments.agreedToLegalFees ? <FileCheck className="h-4 w-4 text-green-600" /> : <Shield className="h-4 w-4 text-red-600" />}
-                    <span>Agreed to pay legal and collection fees</span>
-                  </div>
+            <FormSection title="Agreement Terms">
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2 p-2 bg-muted/50 rounded">
+                  {selectedAgreement.agreementTerms.noPrivateEmployment ? <FileCheck className="h-4 w-4 text-green-600" /> : <Shield className="h-4 w-4 text-red-600" />}
+                  <span>Will not offer private employment to Agency caregivers</span>
+                </div>
+                <div className="flex items-center gap-2 p-2 bg-muted/50 rounded">
+                  {selectedAgreement.agreementTerms.noReferralForPrivateHire ? <FileCheck className="h-4 w-4 text-green-600" /> : <Shield className="h-4 w-4 text-red-600" />}
+                  <span>Will not refer Agency caregivers to other families</span>
+                </div>
+                <div className="flex items-center gap-2 p-2 bg-muted/50 rounded">
+                  {selectedAgreement.agreementTerms.understandUnderTablePayments ? <FileCheck className="h-4 w-4 text-green-600" /> : <Shield className="h-4 w-4 text-red-600" />}
+                  <span>Understands under-the-table payments are a breach</span>
                 </div>
               </div>
+            </FormSection>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Electronic Signature</Label>
-                  <p className="text-sm font-medium">{selectedAgreement.electronicSignature}</p>
+            <FormSection title="Penalty Acknowledgments">
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2 p-2 bg-muted/50 rounded">
+                  {selectedAgreement.penaltyAcknowledgments.agreedToLiquidatedDamages ? <FileCheck className="h-4 w-4 text-green-600" /> : <Shield className="h-4 w-4 text-red-600" />}
+                  <span>Agreed to $5,000 liquidated damages for breach</span>
                 </div>
-                <div>
-                  <Label>Agreement Date</Label>
-                  <p className="text-sm">{selectedAgreement.agreementDate}</p>
+                <div className="flex items-center gap-2 p-2 bg-muted/50 rounded">
+                  {selectedAgreement.penaltyAcknowledgments.agreedToLegalFees ? <FileCheck className="h-4 w-4 text-green-600" /> : <Shield className="h-4 w-4 text-red-600" />}
+                  <span>Agreed to pay legal and collection fees</span>
                 </div>
               </div>
+            </FormSection>
 
-              <div className="pt-4 border-t">
-                <Label>Status</Label>
-                <Select
-                  value={selectedAgreement.status}
-                  onValueChange={(value) => {
-                    updateMutation.mutate({ id: selectedAgreement.id, data: { status: value } });
-                    setSelectedAgreement({ ...selectedAgreement, status: value });
-                  }}
-                >
-                  <SelectTrigger className="w-[200px] mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="converted">Converted</SelectItem>
-                    <SelectItem value="terminated">Terminated</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <FormSection title="Signature & Agreement">
+              <FormFieldGrid>
+                <FormField label="Electronic Signature" value={<span className="font-semibold italic">{selectedAgreement.electronicSignature}</span>} />
+                <FormField label="Agreement Date" value={selectedAgreement.agreementDate} />
+                <FormField label="Date Created" value={format(new Date(selectedAgreement.createdAt), "PPpp")} />
+                <FormField label="Current Status" value={getStatusBadge(selectedAgreement.status)} />
+              </FormFieldGrid>
+            </FormSection>
+
+            <div className="no-print border-t pt-4">
+              <Label>Update Status</Label>
+              <Select
+                value={selectedAgreement.status}
+                onValueChange={(value) => {
+                  updateMutation.mutate({ id: selectedAgreement.id, data: { status: value } });
+                  setSelectedAgreement({ ...selectedAgreement, status: value });
+                }}
+              >
+                <SelectTrigger className="w-[200px] mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="converted">Converted</SelectItem>
+                  <SelectItem value="terminated">Terminated</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        )}
+      </PrintableFormDialog>
 
       {/* Create Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
