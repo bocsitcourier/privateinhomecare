@@ -49,7 +49,7 @@ import {
 import { comprehensiveFacilities } from "./seed-facilities-data";
 import { hospitalSeedData } from "./seed-hospitals-data";
 import { enrichFacility, enrichFacilitiesBatch, createDataHash, type EnrichmentResult } from "./googlePlaces";
-import { fetchYouTubeVideoDetails, formatDuration } from "./youtube";
+import { fetchYouTubeVideoDetails, formatDuration, fetchChannelVideos } from "./youtube";
 import OpenAI from "openai";
 import crypto from "crypto";
 
@@ -6504,6 +6504,92 @@ ${faqJsonLd}
     } catch (error) {
       console.error("Error seeding videos:", error);
       res.status(500).json({ message: "Failed to seed videos", error: String(error) });
+    }
+  });
+
+  // Import videos from YouTube channel
+  app.post("/api/admin/videos/import-youtube-channel", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { channelUrl } = req.body;
+      
+      if (!channelUrl) {
+        return res.status(400).json({ message: "Channel URL is required" });
+      }
+
+      console.log("[YouTube Import] Fetching videos from channel:", channelUrl);
+      const channelVideos = await fetchChannelVideos(channelUrl);
+
+      if (channelVideos.length === 0) {
+        return res.status(404).json({ message: "No videos found in channel or channel not accessible" });
+      }
+
+      const existingVideos = await storage.listVideos();
+      const existingYouTubeIds = new Set(
+        existingVideos
+          .filter(v => v.embedUrl?.includes("youtube"))
+          .map(v => {
+            const match = v.embedUrl?.match(/embed\/([a-zA-Z0-9_-]+)/);
+            return match ? match[1] : null;
+          })
+          .filter(Boolean)
+      );
+
+      const importedVideos = [];
+      const skippedVideos = [];
+
+      for (const video of channelVideos) {
+        if (existingYouTubeIds.has(video.videoId)) {
+          skippedVideos.push({ title: video.title, reason: "Already exists" });
+          continue;
+        }
+
+        const slug = video.title
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .replace(/-+/g, "-")
+          .substring(0, 80);
+
+        const existingSlug = await storage.getVideoBySlug(slug);
+        const finalSlug = existingSlug ? `${slug}-${video.videoId.substring(0, 6)}` : slug;
+
+        const shortDescription = video.description.split("\n\n")[0].substring(0, 500);
+
+        const videoData = {
+          title: video.title,
+          slug: finalSlug,
+          description: shortDescription,
+          category: "care-tips",
+          videoType: "youtube",
+          embedUrl: `https://www.youtube.com/embed/${video.videoId}`,
+          thumbnailUrl: video.thumbnailUrl,
+          duration: video.duration,
+          speakerName: "PrivateInHomeCareGiver",
+          speakerTitle: "Massachusetts Home Care Experts",
+          topics: [],
+          targetAudience: "Families seeking senior care information",
+          learningObjectives: [],
+          metaTitle: video.title,
+          metaDescription: shortDescription.substring(0, 160),
+          keywords: ["senior care", "Massachusetts", "in-home care", "elder care"],
+          featured: "no",
+          sortOrder: 0,
+          status: "published",
+        };
+
+        const created = await storage.createVideo(videoData);
+        importedVideos.push({ title: created.title, slug: created.slug, videoId: video.videoId });
+      }
+
+      res.json({
+        message: `Imported ${importedVideos.length} videos, skipped ${skippedVideos.length}`,
+        imported: importedVideos,
+        skipped: skippedVideos,
+        total: channelVideos.length
+      });
+    } catch (error) {
+      console.error("Error importing YouTube channel:", error);
+      res.status(500).json({ message: "Failed to import videos", error: String(error) });
     }
   });
 
