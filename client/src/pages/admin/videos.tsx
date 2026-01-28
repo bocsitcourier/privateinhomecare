@@ -328,6 +328,45 @@ export function VideosManagementContent() {
   };
 
   const [isExtractingThumbnail, setIsExtractingThumbnail] = useState(false);
+  const [isFetchingYouTube, setIsFetchingYouTube] = useState(false);
+
+  const handleFetchYouTubeMetadata = async (videoId: string) => {
+    setIsFetchingYouTube(true);
+    try {
+      const response = await fetch(`/api/admin/videos/${videoId}/fetch-youtube-metadata`, {
+        method: "POST",
+        credentials: "include",
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to fetch YouTube metadata");
+      }
+      
+      const result = await response.json();
+      
+      setEditForm(prev => ({
+        ...prev,
+        duration: result.duration,
+        thumbnailUrl: result.thumbnailUrl,
+      }));
+      
+      queryClient.invalidateQueries({ queryKey: ["/api/videos"] });
+      
+      toast({
+        title: "YouTube Metadata Fetched",
+        description: `Duration: ${result.formattedDuration}. Thumbnail updated from YouTube.`,
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to fetch YouTube metadata.",
+      });
+    } finally {
+      setIsFetchingYouTube(false);
+    }
+  };
 
   const handleExtractThumbnail = async (videoId: string) => {
     setIsExtractingThumbnail(true);
@@ -922,6 +961,27 @@ export function VideosManagementContent() {
                           <>
                             <Camera className="h-4 w-4 mr-2" />
                             Snapshot
+                          </>
+                        )}
+                      </Button>
+                    )}
+                    {isEditing && selectedVideo && (editForm.videoType === "youtube" || editForm.embedUrl?.includes("youtube")) && (
+                      <Button
+                        type="button"
+                        variant="default"
+                        onClick={() => handleFetchYouTubeMetadata(String(selectedVideo.id))}
+                        disabled={isFetchingYouTube}
+                        data-testid="button-fetch-youtube"
+                      >
+                        {isFetchingYouTube ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Fetching...
+                          </>
+                        ) : (
+                          <>
+                            <Play className="h-4 w-4 mr-2" />
+                            Fetch from YouTube
                           </>
                         )}
                       </Button>

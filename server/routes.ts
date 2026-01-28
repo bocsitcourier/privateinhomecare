@@ -49,6 +49,7 @@ import {
 import { comprehensiveFacilities } from "./seed-facilities-data";
 import { hospitalSeedData } from "./seed-hospitals-data";
 import { enrichFacility, enrichFacilitiesBatch, createDataHash, type EnrichmentResult } from "./googlePlaces";
+import { fetchYouTubeVideoDetails, formatDuration } from "./youtube";
 import OpenAI from "openai";
 import crypto from "crypto";
 
@@ -3289,6 +3290,70 @@ Requirements: No text, photorealistic, welcoming, trustworthy, 16:9 aspect ratio
     } catch (error: any) {
       console.error("Video thumbnail extraction error:", error);
       res.status(500).json({ message: "Failed to extract thumbnail", error: error.message });
+    }
+  });
+
+  // Admin: Fetch YouTube video metadata (duration and thumbnail)
+  app.post("/api/admin/videos/:id/fetch-youtube-metadata", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const video = await storage.getVideo(req.params.id);
+      if (!video) {
+        return res.status(404).json({ message: "Video not found" });
+      }
+
+      // Get YouTube URL from embedUrl or videoUrl
+      const youtubeUrl = video.embedUrl || video.videoUrl;
+      if (!youtubeUrl) {
+        return res.status(400).json({ message: "No video URL found" });
+      }
+
+      const details = await fetchYouTubeVideoDetails(youtubeUrl);
+      if (!details) {
+        return res.status(400).json({ message: "Could not fetch YouTube video details. Make sure the URL is a valid YouTube video." });
+      }
+
+      // Update the video with correct duration and thumbnail
+      await storage.updateVideo(req.params.id, {
+        duration: details.duration,
+        thumbnailUrl: details.thumbnailUrl,
+      });
+
+      res.json({
+        duration: details.duration,
+        formattedDuration: formatDuration(details.duration),
+        thumbnailUrl: details.thumbnailUrl,
+        title: details.title,
+        message: "YouTube metadata fetched successfully"
+      });
+    } catch (error: any) {
+      console.error("YouTube metadata fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch YouTube metadata", error: error.message });
+    }
+  });
+
+  // Public: Fetch YouTube metadata for any URL (used by admin form)
+  app.post("/api/youtube/metadata", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { url } = req.body;
+      if (!url) {
+        return res.status(400).json({ message: "URL is required" });
+      }
+
+      const details = await fetchYouTubeVideoDetails(url);
+      if (!details) {
+        return res.status(400).json({ message: "Could not fetch YouTube video details" });
+      }
+
+      res.json({
+        duration: details.duration,
+        formattedDuration: formatDuration(details.duration),
+        thumbnailUrl: details.thumbnailUrl,
+        title: details.title,
+        description: details.description,
+      });
+    } catch (error: any) {
+      console.error("YouTube metadata fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch YouTube metadata", error: error.message });
     }
   });
 
