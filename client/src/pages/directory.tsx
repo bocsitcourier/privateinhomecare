@@ -549,53 +549,6 @@ export default function DirectoryPage() {
             </div>
           </div>
         </section>
-
-        <footer className="py-12 bg-muted/50">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="grid md:grid-cols-4 gap-8">
-              <div>
-                <h3 className="font-semibold mb-4">Private InHome CareGiver</h3>
-                <p className="text-sm text-muted-foreground">
-                  Massachusetts' trusted provider of compassionate in-home care services since 2014.
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-4">Our Services</h4>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li><a href="/services" className="hover:text-primary transition-colors">Personal Care</a></li>
-                  <li><a href="/services" className="hover:text-primary transition-colors">Companionship</a></li>
-                  <li><a href="/services" className="hover:text-primary transition-colors">Homemaking</a></li>
-                  <li><a href="/services" className="hover:text-primary transition-colors">Dementia Care</a></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-4">Quick Links</h4>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li><a href="/directory" className="hover:text-primary transition-colors">Service Areas</a></li>
-                  <li><a href="/caregivers" className="hover:text-primary transition-colors">Our Caregivers</a></li>
-                  <li><a href="/careers" className="hover:text-primary transition-colors">Join Our Team</a></li>
-                  <li><a href="/articles" className="hover:text-primary transition-colors">Resources</a></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-4">Contact Us</h4>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <Phone className="w-4 h-4" />
-                    <span>508-XXX-XXXX</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    <span>Massachusetts</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-            <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-              <p>&copy; {new Date().getFullYear()} Private InHome CareGiver. All rights reserved.</p>
-            </div>
-          </div>
-        </footer>
       </main>
     </>
   );

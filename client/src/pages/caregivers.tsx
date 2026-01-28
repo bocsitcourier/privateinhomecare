@@ -197,12 +197,6 @@ export default function CaregiversPage() {
           </Link>
         </div>
       </main>
-
-      <footer className="border-t mt-16 py-8 bg-card">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center text-sm text-muted-foreground">
-          <p>&copy; 2024 Private InHome CareGiver. Licensed and insured in Massachusetts.</p>
-        </div>
-      </footer>
     </div>
   );
 }

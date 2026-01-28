@@ -989,24 +989,6 @@ export default function AgingResourcesPage() {
             </div>
           </section>
         </main>
-        <footer className="bg-card border-t py-10" data-testid="footer-aging-resources">
-          <div className="container mx-auto px-4">
-            <div className="max-w-5xl mx-auto text-center text-sm text-muted-foreground">
-              <p>© 2025 Private InHome CareGiver. Serving communities across Massachusetts.</p>
-              <p className="mt-2">
-                Information on this page is sourced from{" "}
-                <a href="https://www.mass.gov/orgs/executive-office-of-aging-independence-age" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                  Mass.gov Executive Office of Aging & Independence
-                </a>
-              </p>
-              <div className="mt-4 flex flex-wrap justify-center gap-4">
-                <Link href="/privacy-policy" className="hover:text-primary" data-testid="link-footer-privacy">Privacy Policy</Link>
-                <Link href="/terms-and-conditions" className="hover:text-primary" data-testid="link-footer-terms">Terms & Conditions</Link>
-                <Link href="/consultation" className="hover:text-primary" data-testid="link-footer-contact">Contact Us</Link>
-              </div>
-            </div>
-          </div>
-        </footer>
       </div>
     </>
   );

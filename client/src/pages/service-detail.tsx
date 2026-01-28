@@ -434,49 +434,6 @@ export default function ServiceDetailPage() {
           </div>
         </section>
       </main>
-
-      {/* Footer */}
-      <footer className="bg-card border-t py-10">
-        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
-            <h4 className="font-semibold mb-4">Quick Links</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/" className="text-foreground/70 hover:text-primary">Home</Link></li>
-              <li><Link href="/services" className="text-foreground/70 hover:text-primary">Services</Link></li>
-              <li><Link href="/articles" className="text-foreground/70 hover:text-primary">Articles</Link></li>
-              <li><Link href="/consultation" className="text-foreground/70 hover:text-primary">Get Care</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-4">Resources</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/facilities" className="text-foreground/70 hover:text-primary">Facility Directory</Link></li>
-              <li><Link href="/caregiver-resources" className="text-foreground/70 hover:text-primary">Care Resources</Link></li>
-              <li><Link href="/videos" className="text-foreground/70 hover:text-primary">Videos</Link></li>
-              <li><Link href="/podcasts" className="text-foreground/70 hover:text-primary">Podcasts</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-4">Contact</h4>
-            <p className="text-sm text-foreground/70">
-              Phone: <a href="tel:+16176860595" className="text-primary hover:underline">+1 (617) 686-0595</a>
-            </p>
-            <p className="text-sm text-foreground/70 mt-2">
-              Email: <a href="mailto:info@privateinhomecaregiver.com" className="text-primary hover:underline">info@privateinhomecaregiver.com</a>
-            </p>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-4">Legal</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/privacy-policy" className="text-foreground/70 hover:text-primary">Privacy Policy</Link></li>
-              <li><Link href="/terms-and-conditions" className="text-foreground/70 hover:text-primary">Terms & Conditions</Link></li>
-            </ul>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto px-4 mt-8 pt-8 border-t border-border text-center text-sm text-foreground/50">
-          <p>&copy; {new Date().getFullYear()} Private InHome Caregiver. All rights reserved.</p>
-        </div>
-      </footer>
     </>
   );
 }
