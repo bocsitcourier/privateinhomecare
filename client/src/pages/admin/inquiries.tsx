@@ -12,13 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import PrintableFormDialog, { FormSection, FormField, FormFieldGrid } from "@/components/PrintableFormDialog";
 import { useState } from "react";
 import { format } from "date-fns";
 import { Mail, Phone, MessageSquare, Calendar, CheckCircle, Clock, XCircle } from "lucide-react";
@@ -232,106 +226,80 @@ export default function InquiriesPage() {
       </div>
 
       {/* Inquiry Detail Dialog */}
-      <Dialog open={!!selectedInquiry} onOpenChange={() => setSelectedInquiry(null)}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Inquiry Details</DialogTitle>
-            <DialogDescription>
-              Review and manage this consultation request
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedInquiry && (
-            <div className="space-y-6">
-              {/* Contact Information */}
-              <div className="space-y-3">
-                <h3 className="font-semibold">Contact Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Name</p>
-                    <p className="font-medium" data-testid="detail-name">{selectedInquiry.name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <a
-                      href={`mailto:${selectedInquiry.email}`}
-                      className="font-medium hover:underline"
-                      data-testid="detail-email"
-                    >
+      <PrintableFormDialog
+        open={!!selectedInquiry}
+        onOpenChange={() => setSelectedInquiry(null)}
+        title="Consultation Inquiry"
+        subtitle={selectedInquiry ? `Submitted by ${selectedInquiry.name}` : undefined}
+        formId={selectedInquiry?.id}
+      >
+        {selectedInquiry && (
+          <div className="space-y-6">
+            <FormSection title="Contact Information">
+              <FormFieldGrid>
+                <FormField label="Full Name" value={selectedInquiry.name} />
+                <FormField
+                  label="Email Address"
+                  value={
+                    <a href={`mailto:${selectedInquiry.email}`} className="text-primary hover:underline">
                       {selectedInquiry.email}
                     </a>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Phone</p>
-                    <a
-                      href={`tel:${selectedInquiry.phone}`}
-                      className="font-medium hover:underline"
-                      data-testid="detail-phone"
-                    >
+                  }
+                />
+                <FormField
+                  label="Phone Number"
+                  value={
+                    <a href={`tel:${selectedInquiry.phone}`} className="text-primary hover:underline">
                       {selectedInquiry.phone}
                     </a>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Service Interested</p>
-                    <p className="font-medium" data-testid="detail-service">
-                      {selectedInquiry.service || "Not specified"}
-                    </p>
-                  </div>
-                </div>
-              </div>
+                  }
+                />
+                <FormField label="Service Interested" value={selectedInquiry.service || "Not specified"} />
+              </FormFieldGrid>
+            </FormSection>
 
-              {/* Message */}
-              {selectedInquiry.message && (
-                <div className="space-y-2">
-                  <h3 className="font-semibold">Message</h3>
-                  <div className="bg-muted p-4 rounded-lg">
-                    <p className="whitespace-pre-wrap" data-testid="detail-message">{selectedInquiry.message}</p>
-                  </div>
+            {selectedInquiry.message && (
+              <FormSection title="Message">
+                <div className="bg-muted p-4 rounded-lg">
+                  <p className="whitespace-pre-wrap" data-testid="detail-message">{selectedInquiry.message}</p>
                 </div>
-              )}
+              </FormSection>
+            )}
 
-              {/* Metadata */}
-              <div className="space-y-3">
-                <h3 className="font-semibold">Additional Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Submitted</p>
-                    <p data-testid="detail-created">{format(new Date(selectedInquiry.createdAt), "PPpp")}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Current Status</p>
-                    <div data-testid="detail-status">{getStatusBadge(selectedInquiry.status)}</div>
-                  </div>
-                </div>
-              </div>
+            <FormSection title="Submission Details">
+              <FormFieldGrid>
+                <FormField label="Date Submitted" value={format(new Date(selectedInquiry.createdAt), "PPpp")} />
+                <FormField label="Current Status" value={getStatusBadge(selectedInquiry.status)} />
+                <FormField label="Agreed to Terms" value={selectedInquiry.agreedToTerms === "yes" ? "Yes" : "No"} />
+                <FormField label="Agreed to Privacy Policy" value={selectedInquiry.agreedToPolicy === "yes" ? "Yes" : "No"} />
+              </FormFieldGrid>
+            </FormSection>
 
-              {/* Status Actions */}
-              <div className="space-y-3">
-                <h3 className="font-semibold">Update Status</h3>
-                <div className="flex flex-wrap gap-2">
-                  {["pending", "contacted", "resolved", "closed"].map((status) => (
-                    <Button
-                      key={status}
-                      variant={selectedInquiry.status === status ? "default" : "outline"}
-                      size="sm"
-                      onClick={() =>
-                        updateStatusMutation.mutate({
-                          id: selectedInquiry.id,
-                          status,
-                        })
-                      }
-                      disabled={updateStatusMutation.isPending}
-                      data-testid={`button-status-${status}`}
-                    >
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Button>
-                  ))}
-                </div>
+            <div className="print:hidden border-t pt-4">
+              <h3 className="font-semibold mb-3">Update Status</h3>
+              <div className="flex flex-wrap gap-2">
+                {["pending", "contacted", "resolved", "closed"].map((status) => (
+                  <Button
+                    key={status}
+                    variant={selectedInquiry.status === status ? "default" : "outline"}
+                    size="sm"
+                    onClick={() =>
+                      updateStatusMutation.mutate({
+                        id: selectedInquiry.id,
+                        status,
+                      })
+                    }
+                    disabled={updateStatusMutation.isPending}
+                    data-testid={`button-status-${status}`}
+                  >
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </Button>
+                ))}
               </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        )}
+      </PrintableFormDialog>
     </AdminLayout>
   );
 }
