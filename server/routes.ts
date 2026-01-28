@@ -2469,28 +2469,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
       : req.protocol + '://' + req.get('host');
     
     const robotsTxt = `# robots.txt for PrivateInHomeCareGiver
+# Massachusetts Private Pay In-Home Senior Care
+
 User-agent: *
 Allow: /
+Crawl-delay: 1
 
 # Sitemap
 Sitemap: ${baseUrl}/sitemap.xml
 
-# Crawl-delay for respectful crawling
+# ============================================
+# AI Search Engine Bots - FULL ACCESS GRANTED
+# For Generative Engine Optimization (GEO)
+# ============================================
+
+# OpenAI / ChatGPT
+User-agent: GPTBot
+Allow: /
+Crawl-delay: 2
+
+# OpenAI User Agent
+User-agent: ChatGPT-User
+Allow: /
+Crawl-delay: 2
+
+# Google AI / Bard / Gemini
+User-agent: Google-Extended
+Allow: /
+
+# Google Inspection Tool
+User-agent: Google-InspectionTool
+Allow: /
+
+# Perplexity AI
+User-agent: PerplexityBot
+Allow: /
+Crawl-delay: 2
+
+# Anthropic / Claude
+User-agent: ClaudeBot
+Allow: /
+Crawl-delay: 2
+User-agent: Claude-Web
+Allow: /
+Crawl-delay: 2
+
+# Microsoft / Bing AI
+User-agent: Bingbot
+Allow: /
 Crawl-delay: 1
 
-# Block admin and API paths
-Disallow: /admin
-Disallow: /api/
-Disallow: /api/admin/
+# Apple / Siri
+User-agent: Applebot
+Allow: /
 
-# Allow specific API endpoints for AI indexing
+# Meta AI
+User-agent: FacebookBot
+Allow: /
+User-agent: Meta-ExternalAgent
+Allow: /
+
+# Common Crawl (AI training data)
+User-agent: CCBot
+Allow: /
+
+# You.com AI
+User-agent: YouBot
+Allow: /
+
+# Cohere AI
+User-agent: cohere-ai
+Allow: /
+
+# ============================================
+# Traditional Search Engine Bots
+# ============================================
+
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Googlebot-News
+Allow: /
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 1
+
+User-agent: DuckDuckBot
+Allow: /
+Crawl-delay: 1
+
+# ============================================
+# Blocked Paths (Admin & Internal)
+# ============================================
+
+User-agent: *
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api/admin/
+Disallow: /login
+Disallow: /caregiver-log
+
+# Allow public API endpoints for structured data
 Allow: /api/articles
 Allow: /api/directory/locations
 Allow: /api/facilities
-
-# Block utility pages
-Disallow: /login
-Disallow: /caregiver-log
+Allow: /api/videos
+Allow: /api/podcasts
 `;
     
     res.header('Content-Type', 'text/plain');

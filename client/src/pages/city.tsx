@@ -154,7 +154,7 @@ export default function CityPage() {
     
     const localBusinessSchema = {
       "@context": "https://schema.org",
-      "@type": ["HomeHealthCareService", "LocalBusiness", "MedicalBusiness"],
+      "@type": ["HomeHealthCareService", "LocalBusiness", "MedicalBusiness", "ProfessionalService"],
       "@id": `${baseUrl}/locations/${citySlug}`,
       name: `PrivateInHomeCareGiver - ${cityName} Senior Care`,
       alternateName: `Private Pay Home Care ${cityName} MA`,

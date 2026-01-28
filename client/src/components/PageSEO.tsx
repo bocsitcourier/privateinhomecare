@@ -97,7 +97,7 @@ export default function PageSEO({
   // Generate Organization Schema
   const organizationSchema = {
     "@context": "https://schema.org",
-    "@type": ["HomeHealthCareService", "LocalBusiness", "MedicalBusiness"],
+    "@type": ["HomeHealthCareService", "LocalBusiness", "MedicalBusiness", "ProfessionalService"],
     "@id": `${COMPANY_INFO.url}/#organization`,
     name: COMPANY_INFO.name,
     legalName: COMPANY_INFO.legalName,
