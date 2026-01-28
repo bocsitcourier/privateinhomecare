@@ -3277,6 +3277,231 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Seed endpoint: Enrich ALL locations with Google Places images (no auth for initial run)
+  app.post("/api/seed/enrich-locations", async (req: Request, res: Response) => {
+    try {
+      const skipEnriched = req.query.skipEnriched !== "false";
+      const batchSize = parseInt(req.query.batchSize as string) || 5;
+      const limit = parseInt(req.query.limit as string) || 100;
+      
+      const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
+      if (!GOOGLE_PLACES_API_KEY) {
+        return res.status(500).json({ message: "Google Places API key not configured" });
+      }
+      
+      // Get all locations
+      const allLocations = await storage.listMaLocations();
+      let locationsToEnrich = allLocations;
+      
+      if (skipEnriched) {
+        locationsToEnrich = allLocations.filter(l => !l.heroImageUrl);
+      }
+      
+      // Limit the number of locations to process
+      locationsToEnrich = locationsToEnrich.slice(0, limit);
+      
+      if (locationsToEnrich.length === 0) {
+        return res.json({
+          message: "No locations to enrich",
+          total: allLocations.length,
+          alreadyEnriched: allLocations.filter(l => l.heroImageUrl).length
+        });
+      }
+      
+      console.log(`Starting enrichment for ${locationsToEnrich.length} locations...`);
+      
+      let successful = 0;
+      let failed = 0;
+      const results: { name: string; success: boolean; error?: string }[] = [];
+      
+      for (let i = 0; i < locationsToEnrich.length; i++) {
+        const location = locationsToEnrich[i];
+        try {
+          const searchQuery = `${location.name}, Massachusetts, USA`;
+          
+          const placesResponse = await fetch("https://places.googleapis.com/v1/places:searchText", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
+              "X-Goog-FieldMask": "places.id,places.displayName,places.photos"
+            },
+            body: JSON.stringify({ textQuery: searchQuery, maxResultCount: 1 })
+          });
+          
+          if (!placesResponse.ok) {
+            const errorText = await placesResponse.text();
+            console.error(`Google Places API error for ${location.name}:`, errorText);
+            results.push({ name: location.name, success: false, error: "API error" });
+            failed++;
+            continue;
+          }
+          
+          const placesData = await placesResponse.json();
+          const places = placesData.places || [];
+          
+          let heroImageUrl: string | undefined;
+          let galleryImages: string[] = [];
+          
+          if (places.length > 0 && places[0].photos && places[0].photos.length > 0) {
+            const photos = places[0].photos.slice(0, 5);
+            for (const photo of photos) {
+              const photoUrl = `https://places.googleapis.com/v1/${photo.name}/media?maxWidthPx=1200&key=${GOOGLE_PLACES_API_KEY}`;
+              if (!heroImageUrl) {
+                heroImageUrl = photoUrl;
+              } else {
+                galleryImages.push(photoUrl);
+              }
+            }
+          }
+          
+          const googlePlaceId = places.length > 0 ? places[0].id : null;
+          
+          await storage.enrichLocationWithPlaces(location.id, {
+            heroImageUrl,
+            galleryImages,
+            googlePlaceId: googlePlaceId || undefined
+          });
+          
+          console.log(`[${i + 1}/${locationsToEnrich.length}] Enriched: ${location.name} - ${heroImageUrl ? 'Has image' : 'No image'}`);
+          results.push({ name: location.name, success: true });
+          successful++;
+          
+          // Rate limiting - wait between requests
+          if (i < locationsToEnrich.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 200));
+          }
+        } catch (error: any) {
+          console.error(`Error enriching ${location.name}:`, error.message);
+          results.push({ name: location.name, success: false, error: error.message });
+          failed++;
+        }
+      }
+      
+      res.json({
+        message: "Location enrichment complete",
+        total: locationsToEnrich.length,
+        successful,
+        failed,
+        results
+      });
+    } catch (error: any) {
+      console.error("Error in location enrichment:", error);
+      res.status(500).json({ message: "Failed to enrich locations", error: String(error) });
+    }
+  });
+
+  // Seed endpoint: Seed FAQs for ALL locations (no auth for initial run)
+  app.post("/api/seed/location-faqs", async (req: Request, res: Response) => {
+    try {
+      const skipExisting = req.query.skipExisting !== "false";
+      
+      // Get all locations
+      const allLocations = await storage.listMaLocations();
+      
+      let locationsToSeed = allLocations;
+      
+      if (skipExisting) {
+        // Check which locations already have FAQs
+        const locationsWithFaqs: string[] = [];
+        for (const loc of allLocations) {
+          const faqs = await storage.listCityFaqs(loc.id);
+          if (faqs.length > 0) {
+            locationsWithFaqs.push(loc.id);
+          }
+        }
+        locationsToSeed = allLocations.filter(l => !locationsWithFaqs.includes(l.id));
+      }
+      
+      if (locationsToSeed.length === 0) {
+        return res.json({
+          message: "No locations to seed FAQs for",
+          total: allLocations.length,
+          alreadyHaveFaqs: allLocations.length - locationsToSeed.length
+        });
+      }
+      
+      console.log(`Seeding FAQs for ${locationsToSeed.length} locations...`);
+      
+      let successful = 0;
+      let totalFaqs = 0;
+      
+      for (const location of locationsToSeed) {
+        const faqTemplates = [
+          {
+            question: `What types of senior care services are available in ${location.name}, MA?`,
+            answer: `PrivateInHomeCareGiver offers comprehensive private pay senior care services throughout ${location.name}, Massachusetts, including personal care assistance, companion care, homemaking services, dementia and Alzheimer's care, respite care, and post-hospital recovery support. All our caregivers serving ${location.name} seniors are thoroughly vetted, trained, and dedicated to providing compassionate care.`,
+            category: "services",
+            sortOrder: 0
+          },
+          {
+            question: `How much does private pay senior home care cost in ${location.name}?`,
+            answer: `Our private pay senior home care services in ${location.name} are competitively priced based on the level of care needed and hours of service. We offer flexible scheduling options from a few hours per week to 24/7 live-in care. Contact us for a free consultation and personalized care assessment to receive an accurate quote for your senior family member's needs.`,
+            category: "pricing",
+            sortOrder: 1
+          },
+          {
+            question: `Do you provide caregivers who speak languages other than English in ${location.name}?`,
+            answer: `Yes! We understand the diverse senior communities in ${location.name} and ${location.county} County. We strive to match elderly clients with caregivers who speak their preferred language whenever possible, including Spanish, Portuguese, Chinese, and other languages common in Massachusetts.`,
+            category: "caregivers",
+            sortOrder: 2
+          },
+          {
+            question: `How quickly can you start providing senior care in ${location.name}?`,
+            answer: `We can often begin providing senior care in ${location.name} within 24-48 hours of completing an initial assessment. For urgent situations, we may be able to arrange same-day care placement. Our team works diligently to match your elderly loved one with the right caregiver as quickly as possible.`,
+            category: "availability",
+            sortOrder: 3
+          },
+          {
+            question: `Are your senior caregivers in ${location.name} licensed and insured?`,
+            answer: `Absolutely. All PrivateInHomeCareGiver caregivers serving seniors in ${location.name} undergo comprehensive background checks, are properly insured, and receive ongoing training. We ensure compliance with all Massachusetts state regulations for home care services.`,
+            category: "qualifications",
+            sortOrder: 4
+          },
+          {
+            question: `What areas in ${location.county} County do you serve besides ${location.name}?`,
+            answer: `In addition to ${location.name}, we provide senior in-home care services throughout ${location.county} County and neighboring areas. Our coverage extends across most of Massachusetts, ensuring senior families can receive quality care regardless of their location in the Commonwealth.`,
+            category: "coverage",
+            sortOrder: 5
+          },
+          {
+            question: `Do you accept Medicare or MassHealth for senior care in ${location.name}?`,
+            answer: `PrivateInHomeCareGiver is exclusively a private pay senior care agency, which means we do not accept Medicare or MassHealth (Medicaid). However, this allows us to offer personalized, flexible care for seniors without the restrictions of government insurance programs. Long-term care insurance and veterans benefits (VA Aid & Attendance) may help cover the cost of our services.`,
+            category: "payment",
+            sortOrder: 6
+          },
+          {
+            question: `Can I meet the caregiver before they start working with my senior family member in ${location.name}?`,
+            answer: `Yes, we encourage families in ${location.name} to meet potential caregivers before care begins. We arrange an introductory meeting so you can ensure the caregiver is a good fit for your elderly loved one's personality, needs, and preferences.`,
+            category: "process",
+            sortOrder: 7
+          }
+        ];
+        
+        for (const template of faqTemplates) {
+          await storage.createCityFaq({
+            locationId: location.id,
+            ...template,
+            isActive: "yes"
+          });
+          totalFaqs++;
+        }
+        
+        successful++;
+        console.log(`Seeded FAQs for ${location.name} (${successful}/${locationsToSeed.length})`);
+      }
+      
+      res.json({
+        message: "FAQ seeding complete",
+        locationsSeeded: successful,
+        totalFaqsCreated: totalFaqs
+      });
+    } catch (error: any) {
+      console.error("Error seeding location FAQs:", error);
+      res.status(500).json({ message: "Failed to seed location FAQs", error: String(error) });
+    }
+  });
+
   // =============================================
   // Videos API Routes
   // =============================================
