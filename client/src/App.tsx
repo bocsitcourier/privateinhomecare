@@ -36,6 +36,7 @@ const ApplicationThankYouPage = lazy(() => import("@/pages/application-thank-you
 const ResourcesPage = lazy(() => import("@/pages/resources"));
 const TermsAndConditionsPage = lazy(() => import("@/pages/terms-and-conditions"));
 const ReferAFriendPage = lazy(() => import("@/pages/refer-a-friend"));
+const SystemRequirementsPDFPage = lazy(() => import("@/pages/system-requirements-pdf"));
 const DirectoryPage = lazy(() => import("@/pages/directory"));
 const CareTypeStatePage = lazy(() => import("@/pages/care-type-state"));
 const CareTypeLocationPage = lazy(() => import("@/pages/care-type-location"));
@@ -109,6 +110,7 @@ function Router() {
         <Route path="/caregiver-log" component={CaregiverLogPage} />
         <Route path="/hipaa-acknowledgment" component={HipaaAcknowledgmentPage} />
         <Route path="/refer-a-friend" component={ReferAFriendPage} />
+        <Route path="/system-requirements" component={SystemRequirementsPDFPage} />
         <Route path="/quiz/:slug" component={QuizPage} />
         <Route path="/admin/quiz-leads" component={AdminQuizLeads} />
         <Route path="/admin/articles" component={AdminArticles} />
