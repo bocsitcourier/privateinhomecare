@@ -38,11 +38,11 @@ const iconMap: Record<string, React.ReactNode> = {
 // Premium hero images for each service type - seniors only, appropriate care imagery
 const serviceHeroImages: Record<string, string> = {
   "personal-care": "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=1600&q=80",
-  "companionship": "https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=1600&q=80",
+  "companionship": "https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?w=1600&q=80",
   "homemaking": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1600&q=80",
   "dementia-care": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=1600&q=80",
   "respite-care": "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=1600&q=80",
-  "live-in-care": "https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=1600&q=80",
+  "live-in-care": "https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?w=1600&q=80",
   "overnight-care": "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=1600&q=80",
   "post-hospital-care": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=1600&q=80",
 };
