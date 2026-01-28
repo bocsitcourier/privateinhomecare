@@ -231,7 +231,7 @@ function ServiceFAQAccordion({ serviceKey }: { serviceKey: string }) {
         Frequently Asked Questions
       </h4>
       <div className="space-y-2">
-        {faqs.slice(0, 4).map((faq, index) => (
+        {faqs.map((faq, index) => (
           <div
             key={index}
             className="border border-border rounded-lg overflow-hidden"
@@ -253,7 +253,7 @@ function ServiceFAQAccordion({ serviceKey }: { serviceKey: string }) {
             <div
               className={cn(
                 "overflow-hidden transition-all duration-200",
-                openIndex === index ? "max-h-64" : "max-h-0"
+                openIndex === index ? "max-h-96" : "max-h-0"
               )}
             >
               <div className="px-4 py-3 text-sm text-muted-foreground leading-relaxed bg-background">
