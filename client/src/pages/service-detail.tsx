@@ -35,16 +35,24 @@ const iconMap: Record<string, React.ReactNode> = {
   "smile": <Heart className="w-6 h-6" />,
 };
 
-// Premium hero images for each service type - seniors only, appropriate care imagery
+// Premium hero images for each service type - seniors only, unique per service
 const serviceHeroImages: Record<string, string> = {
-  "personal-care": "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=1600&q=80",
-  "companionship": "https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?w=1600&q=80",
-  "homemaking": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1600&q=80",
-  "dementia-care": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=1600&q=80",
-  "respite-care": "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=1600&q=80",
-  "live-in-care": "https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?w=1600&q=80",
-  "overnight-care": "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=1600&q=80",
-  "post-hospital-care": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=1600&q=80",
+  // Personal Care: Caregiver helping elderly person with daily activities
+  "personal-care": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1600&q=80&auto=format&fit=crop",
+  // Companionship: Senior enjoying conversation/social engagement
+  "companionship": "https://images.unsplash.com/photo-1517849845537-4d257902454a?w=1600&q=80&auto=format&fit=crop",
+  // Homemaking: Clean, welcoming home environment
+  "homemaking": "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1600&q=80&auto=format&fit=crop",
+  // Dementia Care: Supportive memory care interaction
+  "dementia-care": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=1600&q=80&auto=format&fit=crop",
+  // Respite Care: Family caregiver getting relief/rest
+  "respite-care": "https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=1600&q=80&auto=format&fit=crop",
+  // Live-In Care: 24/7 presence in home setting
+  "live-in-care": "https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?w=1600&q=80&auto=format&fit=crop",
+  // Overnight Care: Peaceful nighttime/bedroom setting
+  "overnight-care": "https://images.unsplash.com/photo-1540518614846-7eded433c457?w=1600&q=80&auto=format&fit=crop",
+  // Post-Hospital Care: Recovery/rehabilitation support
+  "post-hospital-care": "https://images.unsplash.com/photo-1631815589968-fdb09a223b1e?w=1600&q=80&auto=format&fit=crop",
 };
 
 function getServiceHeroImage(serviceKey: string): string {
