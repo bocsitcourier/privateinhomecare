@@ -135,6 +135,12 @@ export default function Header() {
                       Find a Hospital
                     </Link>
                   </DropdownMenuItem>
+                  <div className="h-px bg-border my-1" />
+                  <DropdownMenuItem asChild>
+                    <Link href="/caregiver-log" data-testid="link-caregiver-log">
+                      Caregiver Log
+                    </Link>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               <Link href="/caregivers" data-testid="link-find-caregivers" className="text-foreground hover-elevate px-3 py-2 rounded-md transition">
@@ -301,6 +307,14 @@ export default function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Find a Hospital
+                  </Link>
+                  <Link
+                    href="/caregiver-log"
+                    className="text-foreground hover-elevate px-3 py-2 rounded-md text-sm"
+                    data-testid="link-caregiver-log-mobile"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Caregiver Log
                   </Link>
                 </div>
               </div>
