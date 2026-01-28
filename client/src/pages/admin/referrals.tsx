@@ -12,13 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import PrintableFormDialog, { FormSection, FormField, FormFieldGrid } from "@/components/PrintableFormDialog";
 import { useState } from "react";
 import { format } from "date-fns";
 import { Mail, Phone, Calendar, CheckCircle, Clock, XCircle, Gift, UserPlus } from "lucide-react";
@@ -277,144 +271,100 @@ export default function ReferralsPage() {
       </div>
 
       {/* Referral Detail Dialog */}
-      <Dialog open={!!selectedReferral} onOpenChange={() => setSelectedReferral(null)}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Referral Details</DialogTitle>
-            <DialogDescription>
-              Complete referral information and tracking
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedReferral && (
-            <div className="space-y-6">
-              {/* Referrer Information */}
-              <div className="space-y-3">
-                <h3 className="font-semibold flex items-center gap-2">
-                  <UserPlus className="h-5 w-5" />
-                  Referrer Information
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Name</p>
-                    <p className="font-medium" data-testid="detail-referrer-name">{selectedReferral.referrerName}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <a
-                      href={`mailto:${selectedReferral.referrerEmail}`}
-                      className="font-medium hover:underline"
-                      data-testid="detail-referrer-email"
-                    >
+      <PrintableFormDialog
+        open={!!selectedReferral}
+        onOpenChange={() => setSelectedReferral(null)}
+        title="Referral Submission"
+        subtitle={selectedReferral ? `Referred by ${selectedReferral.referrerName}` : undefined}
+        formId={selectedReferral?.id}
+      >
+        {selectedReferral && (
+          <div className="space-y-6">
+            <FormSection title="Referrer Information">
+              <FormFieldGrid>
+                <FormField label="Full Name" value={selectedReferral.referrerName} />
+                <FormField
+                  label="Email Address"
+                  value={
+                    <a href={`mailto:${selectedReferral.referrerEmail}`} className="text-primary hover:underline">
                       {selectedReferral.referrerEmail}
                     </a>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Phone</p>
-                    <a
-                      href={`tel:${selectedReferral.referrerPhone}`}
-                      className="font-medium hover:underline"
-                      data-testid="detail-referrer-phone"
-                    >
+                  }
+                />
+                <FormField
+                  label="Phone Number"
+                  value={
+                    <a href={`tel:${selectedReferral.referrerPhone}`} className="text-primary hover:underline">
                       {selectedReferral.referrerPhone}
                     </a>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Relationship</p>
-                    <Badge variant="outline" data-testid="detail-relationship">
-                      {selectedReferral.relationshipToReferred}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
+                  }
+                />
+                <FormField
+                  label="Relationship to Referred"
+                  value={<Badge variant="outline">{selectedReferral.relationshipToReferred}</Badge>}
+                />
+              </FormFieldGrid>
+            </FormSection>
 
-              {/* Referred Person Information */}
-              <div className="space-y-3">
-                <h3 className="font-semibold flex items-center gap-2">
-                  <UserPlus className="h-5 w-5" />
-                  Referred Person Information
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Name</p>
-                    <p className="font-medium" data-testid="detail-referred-name">{selectedReferral.referredName}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Phone</p>
-                    <a
-                      href={`tel:${selectedReferral.referredPhone}`}
-                      className="font-medium hover:underline"
-                      data-testid="detail-referred-phone"
-                    >
+            <FormSection title="Referred Person Information">
+              <FormFieldGrid>
+                <FormField label="Full Name" value={selectedReferral.referredName} />
+                <FormField
+                  label="Phone Number"
+                  value={
+                    <a href={`tel:${selectedReferral.referredPhone}`} className="text-primary hover:underline">
                       {selectedReferral.referredPhone}
                     </a>
-                  </div>
-                  {selectedReferral.referredEmail && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Email</p>
-                      <a
-                        href={`mailto:${selectedReferral.referredEmail}`}
-                        className="font-medium hover:underline"
-                        data-testid="detail-referred-email"
-                      >
+                  }
+                />
+                <FormField
+                  label="Email Address"
+                  value={
+                    selectedReferral.referredEmail ? (
+                      <a href={`mailto:${selectedReferral.referredEmail}`} className="text-primary hover:underline">
                         {selectedReferral.referredEmail}
                       </a>
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-sm text-muted-foreground">Location</p>
-                    <p className="font-medium" data-testid="detail-location">{selectedReferral.referredLocation}</p>
-                  </div>
-                  <div className="md:col-span-2">
-                    <p className="text-sm text-muted-foreground">Primary Need for Care</p>
-                    <p className="font-medium" data-testid="detail-need">{selectedReferral.primaryNeedForCare}</p>
-                  </div>
-                </div>
+                    ) : undefined
+                  }
+                />
+                <FormField label="Location" value={selectedReferral.referredLocation} />
+              </FormFieldGrid>
+              <div className="mt-4">
+                <FormField label="Primary Need for Care" value={selectedReferral.primaryNeedForCare} />
               </div>
+            </FormSection>
 
-              {/* Additional Information */}
-              {selectedReferral.additionalInfo && (
-                <div className="space-y-2">
-                  <h3 className="font-semibold">Additional Information</h3>
-                  <div className="bg-muted p-4 rounded-lg">
-                    <p className="whitespace-pre-wrap text-sm" data-testid="detail-additional">
-                      {selectedReferral.additionalInfo}
-                    </p>
-                  </div>
+            {selectedReferral.additionalInfo && (
+              <FormSection title="Additional Information">
+                <div className="bg-muted p-4 rounded-lg">
+                  <p className="whitespace-pre-wrap text-sm">{selectedReferral.additionalInfo}</p>
                 </div>
-              )}
+              </FormSection>
+            )}
 
-              {/* Status & Tracking */}
-              <div className="space-y-3">
-                <h3 className="font-semibold">Referral Tracking</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Submitted</p>
-                    <p data-testid="detail-created">{format(new Date(selectedReferral.createdAt), "PPpp")}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Current Status</p>
-                    <div data-testid="detail-status">{getStatusBadge(selectedReferral.status)}</div>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Incentive Status</p>
-                    <div data-testid="detail-incentive">
-                      {selectedReferral.incentiveAwarded ? (
-                        <Badge variant="secondary" className="gap-1">
-                          <Gift className="h-3 w-3" />
-                          Awarded
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline">Pending</Badge>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <FormSection title="Referral Tracking">
+              <FormFieldGrid>
+                <FormField label="Date Submitted" value={format(new Date(selectedReferral.createdAt), "PPpp")} />
+                <FormField label="Current Status" value={getStatusBadge(selectedReferral.status)} />
+                <FormField
+                  label="Incentive Status"
+                  value={
+                    selectedReferral.incentiveAwarded ? (
+                      <Badge variant="secondary" className="gap-1">
+                        <Gift className="h-3 w-3" />
+                        Awarded
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline">Pending</Badge>
+                    )
+                  }
+                />
+              </FormFieldGrid>
+            </FormSection>
 
-              {/* Status Actions */}
-              <div className="space-y-3">
-                <h3 className="font-semibold">Update Status</h3>
+            <div className="print:hidden border-t pt-4 space-y-4">
+              <div>
+                <h3 className="font-semibold mb-3">Update Status</h3>
                 <div className="flex flex-wrap gap-2">
                   {["pending", "contacted", "converted", "closed"].map((status) => (
                     <Button
@@ -436,9 +386,8 @@ export default function ReferralsPage() {
                 </div>
               </div>
 
-              {/* Incentive Award */}
-              <div className="space-y-3">
-                <h3 className="font-semibold">Incentive Award</h3>
+              <div>
+                <h3 className="font-semibold mb-3">Incentive Award</h3>
                 <Button
                   variant={selectedReferral.incentiveAwarded ? "secondary" : "default"}
                   onClick={() =>
@@ -455,9 +404,9 @@ export default function ReferralsPage() {
                 </Button>
               </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        )}
+      </PrintableFormDialog>
     </AdminLayout>
   );
 }

@@ -12,13 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import PrintableFormDialog, { FormSection, FormField, FormFieldGrid } from "@/components/PrintableFormDialog";
 import { useState } from "react";
 import { format } from "date-fns";
 import { Mail, Phone, Calendar, CheckCircle, Clock, XCircle, FileText, Download } from "lucide-react";
@@ -249,204 +243,130 @@ export default function ApplicationsPage() {
       </div>
 
       {/* Application Detail Dialog */}
-      <Dialog open={!!selectedApplication} onOpenChange={() => setSelectedApplication(null)}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Application Details</DialogTitle>
-            <DialogDescription>
-              Complete applicant information and resume
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedApplication && (
-            <div className="space-y-6">
-              {/* Personal Information */}
-              <div className="space-y-3">
-                <h3 className="font-semibold">Personal Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Full Name</p>
-                    <p className="font-medium" data-testid="detail-name">{selectedApplication.fullName}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <a
-                      href={`mailto:${selectedApplication.email}`}
-                      className="font-medium hover:underline"
-                      data-testid="detail-email"
-                    >
+      <PrintableFormDialog
+        open={!!selectedApplication}
+        onOpenChange={() => setSelectedApplication(null)}
+        title="Job Application"
+        subtitle={selectedApplication ? `Applicant: ${selectedApplication.fullName}` : undefined}
+        formId={selectedApplication?.id}
+      >
+        {selectedApplication && (
+          <div className="space-y-6">
+            <FormSection title="Personal Information">
+              <FormFieldGrid>
+                <FormField label="Full Name" value={selectedApplication.fullName} />
+                <FormField
+                  label="Email Address"
+                  value={
+                    <a href={`mailto:${selectedApplication.email}`} className="text-primary hover:underline">
                       {selectedApplication.email}
                     </a>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Phone</p>
-                    <a
-                      href={`tel:${selectedApplication.phone}`}
-                      className="font-medium hover:underline"
-                      data-testid="detail-phone"
-                    >
+                  }
+                />
+                <FormField
+                  label="Phone Number"
+                  value={
+                    <a href={`tel:${selectedApplication.phone}`} className="text-primary hover:underline">
                       {selectedApplication.phone}
                     </a>
-                  </div>
-                  {selectedApplication.address && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Address</p>
-                      <p className="font-medium" data-testid="detail-address">{selectedApplication.address}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
+                  }
+                />
+                <FormField label="Address" value={selectedApplication.address} />
+              </FormFieldGrid>
+            </FormSection>
 
-              {/* Professional Information */}
-              <div className="space-y-3">
-                <h3 className="font-semibold">Professional Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Position Interested</p>
-                    <p className="font-medium" data-testid="detail-position">
-                      {selectedApplication.positionInterested || "General Application"}
-                    </p>
-                  </div>
-                  {selectedApplication.yearsExperience !== undefined && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Years of Experience</p>
-                      <p className="font-medium" data-testid="detail-experience">
-                        {selectedApplication.yearsExperience} years
-                      </p>
-                    </div>
-                  )}
-                  {selectedApplication.certificationType && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Certification</p>
-                      <p className="font-medium" data-testid="detail-certification">
-                        {selectedApplication.certificationType}
-                      </p>
-                    </div>
-                  )}
-                  {selectedApplication.drivingStatus && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Driving Status</p>
-                      <p className="font-medium" data-testid="detail-driving">
-                        {selectedApplication.drivingStatus.replace(/_/g, " ")}
-                      </p>
-                    </div>
-                  )}
-                  {selectedApplication.startDate && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Available Start Date</p>
-                      <p className="font-medium" data-testid="detail-startdate">{selectedApplication.startDate}</p>
-                    </div>
-                  )}
-                  {selectedApplication.backgroundScreeningConsent && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Background Check Consent</p>
-                      <Badge variant="secondary" data-testid="detail-background">
-                        {selectedApplication.backgroundScreeningConsent}
-                      </Badge>
-                    </div>
-                  )}
-                </div>
-              </div>
+            <FormSection title="Professional Information">
+              <FormFieldGrid>
+                <FormField label="Position Interested" value={selectedApplication.positionInterested || "General Application"} />
+                <FormField label="Years of Experience" value={selectedApplication.yearsExperience !== undefined ? `${selectedApplication.yearsExperience} years` : undefined} />
+                <FormField label="Certification Type" value={selectedApplication.certificationType} />
+                <FormField label="Driving Status" value={selectedApplication.drivingStatus?.replace(/_/g, " ")} />
+                <FormField label="Available Start Date" value={selectedApplication.startDate} />
+                <FormField
+                  label="Background Check Consent"
+                  value={
+                    selectedApplication.backgroundScreeningConsent && (
+                      <Badge variant="secondary">{selectedApplication.backgroundScreeningConsent}</Badge>
+                    )
+                  }
+                />
+              </FormFieldGrid>
+            </FormSection>
 
-              {/* Availability & Skills */}
-              {(selectedApplication.availability && selectedApplication.availability.length > 0) && (
-                <div className="space-y-2">
-                  <h3 className="font-semibold">Availability</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedApplication.availability.map((day) => (
-                      <Badge key={day} variant="outline" data-testid={`availability-${day}`}>
-                        {day}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {(selectedApplication.specialSkills && selectedApplication.specialSkills.length > 0) && (
-                <div className="space-y-2">
-                  <h3 className="font-semibold">Special Skills</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedApplication.specialSkills.map((skill) => (
-                      <Badge key={skill} variant="secondary" data-testid={`skill-${skill}`}>
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Cover Letter */}
-              {selectedApplication.coverLetter && (
-                <div className="space-y-2">
-                  <h3 className="font-semibold">Cover Letter</h3>
-                  <div className="bg-muted p-4 rounded-lg">
-                    <p className="whitespace-pre-wrap text-sm" data-testid="detail-coverletter">
-                      {selectedApplication.coverLetter}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Resume */}
-              {selectedApplication.resumeUrl && (
-                <div className="space-y-2">
-                  <h3 className="font-semibold">Resume</h3>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    asChild
-                    data-testid="button-download-resume"
-                  >
-                    <a href={selectedApplication.resumeUrl} target="_blank" rel="noopener noreferrer">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download Resume
-                    </a>
-                  </Button>
-                </div>
-              )}
-
-              {/* Metadata */}
-              <div className="space-y-3">
-                <h3 className="font-semibold">Application Status</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Submitted</p>
-                    <p data-testid="detail-created">{format(new Date(selectedApplication.createdAt), "PPpp")}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Current Status</p>
-                    <div data-testid="detail-status">{getStatusBadge(selectedApplication.status)}</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Status Actions */}
-              <div className="space-y-3">
-                <h3 className="font-semibold">Update Status</h3>
+            {selectedApplication.availability && selectedApplication.availability.length > 0 && (
+              <FormSection title="Availability">
                 <div className="flex flex-wrap gap-2">
-                  {["pending", "reviewing", "accepted", "rejected"].map((status) => (
-                    <Button
-                      key={status}
-                      variant={selectedApplication.status === status ? "default" : "outline"}
-                      size="sm"
-                      onClick={() =>
-                        updateStatusMutation.mutate({
-                          id: selectedApplication.id,
-                          status,
-                        })
-                      }
-                      disabled={updateStatusMutation.isPending}
-                      data-testid={`button-status-${status}`}
-                    >
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Button>
+                  {selectedApplication.availability.map((day) => (
+                    <Badge key={day} variant="outline">{day}</Badge>
                   ))}
                 </div>
+              </FormSection>
+            )}
+
+            {selectedApplication.specialSkills && selectedApplication.specialSkills.length > 0 && (
+              <FormSection title="Special Skills">
+                <div className="flex flex-wrap gap-2">
+                  {selectedApplication.specialSkills.map((skill) => (
+                    <Badge key={skill} variant="secondary">{skill}</Badge>
+                  ))}
+                </div>
+              </FormSection>
+            )}
+
+            {selectedApplication.coverLetter && (
+              <FormSection title="Cover Letter">
+                <div className="bg-muted p-4 rounded-lg">
+                  <p className="whitespace-pre-wrap text-sm">{selectedApplication.coverLetter}</p>
+                </div>
+              </FormSection>
+            )}
+
+            {selectedApplication.resumeUrl && (
+              <FormSection title="Resume">
+                <Button variant="outline" size="sm" asChild className="print:hidden">
+                  <a href={selectedApplication.resumeUrl} target="_blank" rel="noopener noreferrer">
+                    <Download className="h-4 w-4 mr-2" />
+                    Download Resume
+                  </a>
+                </Button>
+                <p className="hidden print:block text-sm text-muted-foreground">
+                  Resume file attached: {selectedApplication.resumeUrl}
+                </p>
+              </FormSection>
+            )}
+
+            <FormSection title="Submission Details">
+              <FormFieldGrid>
+                <FormField label="Date Submitted" value={format(new Date(selectedApplication.createdAt), "PPpp")} />
+                <FormField label="Current Status" value={getStatusBadge(selectedApplication.status)} />
+              </FormFieldGrid>
+            </FormSection>
+
+            <div className="print:hidden border-t pt-4">
+              <h3 className="font-semibold mb-3">Update Status</h3>
+              <div className="flex flex-wrap gap-2">
+                {["pending", "reviewing", "accepted", "rejected"].map((status) => (
+                  <Button
+                    key={status}
+                    variant={selectedApplication.status === status ? "default" : "outline"}
+                    size="sm"
+                    onClick={() =>
+                      updateStatusMutation.mutate({
+                        id: selectedApplication.id,
+                        status,
+                      })
+                    }
+                    disabled={updateStatusMutation.isPending}
+                    data-testid={`button-status-${status}`}
+                  >
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </Button>
+                ))}
               </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        )}
+      </PrintableFormDialog>
     </AdminLayout>
   );
 }
