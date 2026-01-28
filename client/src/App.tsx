@@ -95,6 +95,7 @@ function Router() {
         <Route path="/find-hospital" component={FindHospitalPage} />
         <Route path="/application-thank-you" component={ApplicationThankYouPage} />
         <Route path="/directory" component={DirectoryPage} />
+        <Route path="/locations" component={DirectoryPage} />
         <Route path="/locations/:citySlug" component={CityPage} />
         <Route path="/nursing-homes/massachusetts" component={NursingHomesPage} />
         <Route path="/assisted-living/massachusetts" component={AssistedLivingPage} />
