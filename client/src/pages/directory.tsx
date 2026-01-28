@@ -182,8 +182,16 @@ export default function DirectoryPage() {
     <>
       <PageSEO 
         pageSlug="directory"
-        fallbackTitle="Massachusetts In-Home Care Directory | Private InHome CareGiver"
-        fallbackDescription="Find trusted in-home care services across Massachusetts. Browse our directory of care services in over 300 cities and towns including Boston, Cambridge, Worcester, and more."
+        fallbackTitle="Massachusetts Senior Care Directory | 65+ Cities | Private Pay In-Home Care"
+        fallbackDescription="Find private pay in-home senior care services across Massachusetts. Browse our directory covering 65+ cities and towns - Boston, Cambridge, Worcester, Plymouth and all 14 counties."
+        canonicalPath="/locations"
+        includeMaGeoTargeting={true}
+        geoPlacename="Massachusetts"
+        pageType="website"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Massachusetts Senior Care Directory", url: "/locations" }
+        ]}
       />
       <Header />
 
@@ -525,6 +533,44 @@ export default function DirectoryPage() {
                 </Accordion>
               </CardContent>
             </Card>
+          </div>
+        </section>
+
+        {/* Internal Linking Section - County Hubs */}
+        <section className="py-12 bg-background border-t">
+          <div className="max-w-7xl mx-auto px-4">
+            <h2 className="text-2xl font-bold mb-6 text-center">Explore Senior Care By County</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+              {counties.map((county) => (
+                <Link 
+                  key={county} 
+                  href={`/locations?county=${encodeURIComponent(county)}`}
+                  className="text-center p-3 rounded-lg border hover-elevate transition-all"
+                  data-testid={`link-county-${county.toLowerCase().replace(/\s+/g, '-')}`}
+                >
+                  <Building2 className="w-5 h-5 mx-auto mb-1 text-primary" />
+                  <span className="text-sm font-medium">{county}</span>
+                </Link>
+              ))}
+            </div>
+            
+            <div className="mt-8 grid md:grid-cols-3 gap-4 text-center">
+              <Link href="/services" className="p-4 rounded-lg border hover-elevate" data-testid="link-services">
+                <Heart className="w-6 h-6 mx-auto mb-2 text-primary" />
+                <span className="font-medium">Our Care Services</span>
+                <p className="text-sm text-muted-foreground mt-1">Personal care, companionship, dementia care</p>
+              </Link>
+              <Link href="/consultation" className="p-4 rounded-lg border hover-elevate" data-testid="link-consultation">
+                <Phone className="w-6 h-6 mx-auto mb-2 text-primary" />
+                <span className="font-medium">Free Consultation</span>
+                <p className="text-sm text-muted-foreground mt-1">Speak with a care coordinator today</p>
+              </Link>
+              <Link href="/careers" className="p-4 rounded-lg border hover-elevate" data-testid="link-careers">
+                <Users className="w-6 h-6 mx-auto mb-2 text-primary" />
+                <span className="font-medium">Join Our Team</span>
+                <p className="text-sm text-muted-foreground mt-1">Become a caregiver in your community</p>
+              </Link>
+            </div>
           </div>
         </section>
 

@@ -154,14 +154,18 @@ export default function CityPage() {
     
     const localBusinessSchema = {
       "@context": "https://schema.org",
-      "@type": "HomeHealthCareService",
+      "@type": ["HomeHealthCareService", "LocalBusiness", "MedicalBusiness"],
       "@id": `${baseUrl}/locations/${citySlug}`,
-      name: `PrivateInHomeCareGiver - ${cityName}`,
+      name: `PrivateInHomeCareGiver - ${cityName} Senior Care`,
+      alternateName: `Private Pay Home Care ${cityName} MA`,
       url: `${baseUrl}/locations/${citySlug}`,
       logo: `${baseUrl}/logo.png`,
-      image: `${baseUrl}/logo.png`,
-      description: `Professional in-home care services in ${cityName}, Massachusetts. Personal care, companionship, homemaking, and specialized dementia care from trusted local caregivers.`,
+      image: locationData?.heroImageUrl || `${baseUrl}/logo.png`,
+      description: `Premium private pay in-home care for seniors in ${cityName}, ${county ? county + ' County, ' : ''}Massachusetts. Professional caregivers providing personal care, companionship, homemaking, and specialized dementia care.`,
       telephone: "+1-617-686-0595",
+      email: "info@privateinhomecaregiver.com",
+      paymentAccepted: "Private Pay, Long-term Care Insurance, VA Benefits",
+      currenciesAccepted: "USD",
       address: {
         "@type": "PostalAddress",
         addressLocality: cityName,
@@ -175,11 +179,20 @@ export default function CityPage() {
           name: cityName,
           containedInPlace: {
             "@type": "AdministrativeArea",
-            name: county ? `${county} County` : "Massachusetts"
+            name: county ? `${county} County, Massachusetts` : "Massachusetts"
           }
         }
       ],
-      priceRange: "$$",
+      serviceArea: {
+        "@type": "GeoCircle",
+        geoMidpoint: {
+          "@type": "GeoCoordinates",
+          addressLocality: cityName,
+          addressRegion: "MA"
+        },
+        geoRadius: "25 miles"
+      },
+      priceRange: "$$-$$$",
       openingHoursSpecification: {
         "@type": "OpeningHoursSpecification",
         dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
@@ -194,16 +207,30 @@ export default function CityPage() {
       },
       hasOfferCatalog: {
         "@type": "OfferCatalog",
-        name: "In-Home Care Services",
+        name: "Private Pay Senior Care Services",
         itemListElement: SERVICES.map(s => ({
           "@type": "Offer",
           itemOffered: {
             "@type": "Service",
             name: s.title,
-            description: s.description
+            description: s.description,
+            areaServed: {
+              "@type": "City",
+              name: cityName
+            }
           }
         }))
-      }
+      },
+      knowsAbout: [
+        "Senior Care",
+        "Elderly Care",
+        "In-Home Care",
+        "Private Pay Home Care",
+        "Dementia Care",
+        "Personal Care Assistance",
+        "Companion Care",
+        "Homemaking Services"
+      ]
     };
 
     const breadcrumbSchema = {
@@ -220,19 +247,38 @@ export default function CityPage() {
           "@type": "ListItem",
           position: 2,
           name: "Massachusetts Care Directory",
-          item: `${baseUrl}/directory`
+          item: `${baseUrl}/locations`
         },
         {
           "@type": "ListItem",
           position: 3,
-          name: `${cityName} In-Home Care`,
+          name: `${cityName} Senior Home Care`,
           item: `${baseUrl}/locations/${citySlug}`
         }
       ]
     };
 
-    return JSON.stringify([localBusinessSchema, breadcrumbSchema]);
-  }, [citySlug, cityName, locationData]);
+    // FAQPage schema for city-specific FAQs
+    const faqSchema = cityFaqs && cityFaqs.length > 0 ? {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      name: `Frequently Asked Questions About Senior Care in ${cityName}, MA`,
+      description: `Common questions about private pay in-home care services for seniors in ${cityName}, Massachusetts`,
+      mainEntity: cityFaqs.map(faq => ({
+        "@type": "Question",
+        name: faq.question,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: faq.answer
+        }
+      }))
+    } : null;
+
+    const schemas: object[] = [localBusinessSchema, breadcrumbSchema];
+    if (faqSchema) schemas.push(faqSchema);
+    
+    return JSON.stringify(schemas);
+  }, [citySlug, cityName, locationData, cityFaqs]);
 
   useEffect(() => {
     try {
@@ -254,8 +300,18 @@ export default function CityPage() {
     <>
       <PageSEO 
         pageSlug={`city-${citySlug}`}
-        fallbackTitle={`${cityName} In-Home Care Services | Private InHome CareGiver`}
-        fallbackDescription={`Professional in-home care services in ${cityName}, MA. Personal care, companionship, homemaking, and specialized dementia care from trusted local caregivers.`}
+        fallbackTitle={`${cityName} In-Home Care Services | Private Pay Senior Care | PrivateInHomeCareGiver`}
+        fallbackDescription={`Premium private pay in-home care for seniors in ${cityName}, Massachusetts. Personal care, companionship, homemaking, and dementia care. 24/7 availability, background-checked caregivers.`}
+        canonicalPath={`/locations/${citySlug}`}
+        includeMaGeoTargeting={true}
+        geoPlacename={cityName}
+        geoRegion="US-MA"
+        pageType="local_business"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Massachusetts Care Directory", url: "/locations" },
+          { name: `${cityName} Senior Care`, url: `/locations/${citySlug}` }
+        ]}
       />
       <Header />
 

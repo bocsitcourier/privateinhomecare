@@ -357,8 +357,14 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       <PageSEO 
         pageSlug="home"
-        fallbackTitle="PrivateInHomeCareGiver — In-Home Care in Massachusetts"
-        fallbackDescription="Private in-home personal care, companionship, homemaking and dementia care across Massachusetts. Professional, compassionate caregivers serving families throughout the state."
+        fallbackTitle="Massachusetts Private Pay In-Home Senior Care | PrivateInHomeCareGiver"
+        fallbackDescription="Premium private pay in-home care for seniors across Massachusetts. Personal care, companionship, homemaking and dementia care from trusted caregivers. 24/7 availability, background-checked staff."
+        canonicalPath="/"
+        includeMaGeoTargeting={true}
+        pageType="website"
+        breadcrumbs={[
+          { name: "Home", url: "/" }
+        ]}
       />
       <Header />
       

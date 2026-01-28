@@ -2462,6 +2462,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Robots.txt for SEO
+  app.get("/robots.txt", (req, res) => {
+    const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+      ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+      : req.protocol + '://' + req.get('host');
+    
+    const robotsTxt = `# robots.txt for PrivateInHomeCareGiver
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: ${baseUrl}/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Block admin and API paths
+Disallow: /admin
+Disallow: /api/
+Disallow: /api/admin/
+
+# Allow specific API endpoints for AI indexing
+Allow: /api/articles
+Allow: /api/directory/locations
+Allow: /api/facilities
+
+# Block utility pages
+Disallow: /login
+Disallow: /caregiver-log
+`;
+    
+    res.header('Content-Type', 'text/plain');
+    res.send(robotsTxt);
+  });
+
   // XML Sitemap Generation
   app.get("/sitemap.xml", async (req, res) => {
     try {
@@ -2469,13 +2504,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? `https://${process.env.REPLIT_DEV_DOMAIN}`
         : req.protocol + '://' + req.get('host');
 
-      const cities = [
-        "Andover","Arlington","Barnstable","Berkshires","Beverly","Boston","Brookline",
-        "Charlestown","Chatham","Falmouth","Gloucester","Haverhill","Lexington",
-        "Lowell","Marblehead","Mashpee","Melrose","Methuen","Newton","Northborough",
-        "Plymouth","Quincy","Salem","Seacoast","Somerville","Springfield","Waltham",
-        "Wellesley","Westport","Worcester"
-      ];
+      // Get all locations from database
+      const allLocations = await storage.listMaLocations();
+      const cities = allLocations.map(loc => loc.slug);
 
       const staticPages = [
         { loc: '/', priority: '1.0', changefreq: 'weekly' },
@@ -2516,9 +2547,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         xml += '  </url>\n';
       });
 
-      // Location pages
-      cities.forEach(city => {
-        const slug = city.toLowerCase().replace(/\s+/g, '-');
+      // Location pages (all 65 MA cities from database)
+      cities.forEach(slug => {
         xml += '  <url>\n';
         xml += `    <loc>${baseUrl}/locations/${slug}</loc>\n`;
         xml += '    <changefreq>monthly</changefreq>\n';

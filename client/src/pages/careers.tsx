@@ -188,8 +188,15 @@ export default function CareersPage() {
     <div className="min-h-screen bg-background">
       <PageSEO 
         pageSlug="careers"
-        fallbackTitle="Careers — PrivateInHomeCareGiver"
-        fallbackDescription="Join our team of compassionate caregivers. Browse available positions in Massachusetts."
+        fallbackTitle="Caregiver Jobs in Massachusetts | PCA & Home Health Aide Positions"
+        fallbackDescription="Join Massachusetts' leading private pay senior care team. Competitive pay, flexible schedules, and rewarding work helping seniors age in place. Apply today."
+        canonicalPath="/careers"
+        includeMaGeoTargeting={true}
+        pageType="website"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Caregiver Careers", url: "/careers" }
+        ]}
       />
       <Header />
 

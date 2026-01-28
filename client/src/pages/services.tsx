@@ -350,8 +350,15 @@ export default function ServicesPage() {
     <>
       <PageSEO 
         pageSlug="services"
-        fallbackTitle="Platinum Standard Home Care Services | Massachusetts | PrivateInHomeCareGiver"
-        fallbackDescription="Award-winning in-home care services including personal care, companionship, dementia care, and 24/7 live-in support. Serving Massachusetts families with compassionate, professional caregivers."
+        fallbackTitle="Private Pay Senior Care Services | Personal Care, Dementia Care | Massachusetts"
+        fallbackDescription="Premium private pay in-home senior care services in Massachusetts. Personal care, companionship, homemaking, and specialized dementia care. 24/7 availability, background-checked caregivers."
+        canonicalPath="/services"
+        includeMaGeoTargeting={true}
+        pageType="service"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Our Services", url: "/services" }
+        ]}
       />
       <Header />
 
