@@ -407,50 +407,59 @@ export default function FacilityDetailPage() {
           </div>
         </div>
 
-        <div className="h-64 md:h-80 relative">
+        {/* Premium Hero Section */}
+        <div className="relative h-[50vh] min-h-[400px] md:h-[60vh]">
           <img 
             src={facility.heroImageUrl || getFacilityTypeImage(facility.facilityType).hero}
             alt={facility.heroImageUrl ? facility.name : getFacilityTypeImage(facility.facilityType).alt}
             className="w-full h-full object-cover"
             data-testid="img-facility-hero"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        </div>
-
-        <section className="py-8">
-          <div className="container max-w-4xl mx-auto px-4">
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
-              <div>
-                <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  <Badge>
-                    <Icon className="w-3 h-3 mr-1" />
-                    {typeInfo?.title || facility.facilityType}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+          
+          {/* Hero Content Overlay */}
+          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
+            <div className="container max-w-5xl mx-auto">
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30">
+                  <Icon className="w-3 h-3 mr-1" />
+                  {typeInfo?.title || facility.facilityType}
+                </Badge>
+                {facility.isClosed === "yes" && (
+                  <Badge variant="destructive" data-testid="badge-facility-closed">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    Permanently Closed
                   </Badge>
-                  {facility.isClosed === "yes" && (
-                    <Badge variant="destructive" data-testid="badge-facility-closed">
-                      <AlertCircle className="w-3 h-3 mr-1" />
-                      Permanently Closed
-                    </Badge>
-                  )}
-                </div>
-                <h1 className="text-2xl md:text-3xl font-bold" data-testid="text-facility-name">
-                  {facility.name}
-                </h1>
-                <div className="flex items-center text-muted-foreground mt-2">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  {facility.address}, {facility.city}, {facility.state} {facility.zipCode}
+                )}
+                {facility.overallRating && parseFloat(facility.overallRating) >= 4.0 && (
+                  <Badge className="bg-amber-500/90 text-white border-amber-400">
+                    <Star className="w-3 h-3 mr-1 fill-white" />
+                    Top Rated
+                  </Badge>
+                )}
+              </div>
+              
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4" data-testid="text-facility-name">
+                {facility.name}
+              </h1>
+              
+              <div className="flex flex-wrap items-center gap-4 text-white/90 mb-4">
+                <div className="flex items-center">
+                  <MapPin className="w-5 h-5 mr-2" />
+                  <span>{facility.city}, {facility.state}</span>
                 </div>
                 {facility.overallRating && (
-                  <div className="flex items-center gap-2 mt-2">
+                  <div className="flex items-center gap-2">
                     <RatingStars rating={parseFloat(facility.overallRating)} size="large" />
-                    <span className="font-semibold text-lg">{facility.overallRating}</span>
+                    <span className="font-semibold">{facility.overallRating}</span>
                     {facility.reviewCount > 0 && (
-                      <span className="text-muted-foreground">({facility.reviewCount} reviews)</span>
+                      <span className="text-white/70">({facility.reviewCount} reviews)</span>
                     )}
                   </div>
                 )}
               </div>
-              <div className="flex flex-col gap-2">
+              
+              <div className="flex flex-wrap gap-3">
                 {facility.phone && (
                   <Button size="lg" asChild data-testid="button-call-facility">
                     <a href={`tel:${facility.phone}`}>
@@ -459,30 +468,45 @@ export default function FacilityDetailPage() {
                     </a>
                   </Button>
                 )}
-                {!facility.phone && (
-                  <Button size="lg" variant="outline" asChild data-testid="button-google-maps">
-                    <a href={generateGoogleMapsUrl(facility)} target="_blank" rel="noopener noreferrer">
-                      <Navigation className="w-4 h-4 mr-2" />
-                      Get Directions
-                    </a>
-                  </Button>
-                )}
+                <Button size="lg" variant="outline" className="bg-white/10 border-white/30 text-white backdrop-blur-sm" asChild data-testid="button-google-maps">
+                  <a href={generateGoogleMapsUrl(facility)} target="_blank" rel="noopener noreferrer">
+                    <Navigation className="w-4 h-4 mr-2" />
+                    Get Directions
+                  </a>
+                </Button>
                 {facility.website && (
-                  <Button variant="outline" asChild data-testid="link-facility-website">
+                  <Button size="lg" variant="outline" className="bg-white/10 border-white/30 text-white backdrop-blur-sm" asChild data-testid="link-facility-website">
                     <a href={facility.website} target="_blank" rel="noopener noreferrer">
                       <Globe className="w-4 h-4 mr-2" />
                       Visit Website
                     </a>
                   </Button>
                 )}
-                <Button variant="outline" asChild data-testid="button-google-reviews">
-                  <a href={generateGoogleReviewsUrl(facility)} target="_blank" rel="noopener noreferrer">
-                    <SiGoogle className="w-4 h-4 mr-2" />
-                    View Google Reviews
-                  </a>
-                </Button>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Quick Info Bar */}
+        <div className="bg-card border-b">
+          <div className="container max-w-5xl mx-auto px-4 py-4">
+            <div className="flex flex-wrap justify-between items-center gap-4">
+              <p className="text-sm text-muted-foreground">
+                <MapPin className="w-4 h-4 inline mr-1" />
+                {facility.address}, {facility.city}, {facility.state} {facility.zipCode}
+              </p>
+              <Button variant="outline" size="sm" asChild data-testid="button-google-reviews">
+                <a href={generateGoogleReviewsUrl(facility)} target="_blank" rel="noopener noreferrer">
+                  <SiGoogle className="w-4 h-4 mr-2" />
+                  View Google Reviews
+                </a>
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <section className="py-10">
+          <div className="container max-w-5xl mx-auto px-4">
 
             <div className="grid md:grid-cols-3 gap-6">
               <div className="md:col-span-2 space-y-6">

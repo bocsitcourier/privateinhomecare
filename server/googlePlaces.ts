@@ -14,6 +14,17 @@ export function createDataHash(data: { address?: string | null; phone?: string |
   return crypto.createHash("md5").update(hashInput).digest("hex");
 }
 
+interface PlacePhoto {
+  name: string;
+  widthPx?: number;
+  heightPx?: number;
+  authorAttributions?: Array<{
+    displayName?: string;
+    uri?: string;
+    photoUri?: string;
+  }>;
+}
+
 interface PlaceResult {
   formattedAddress?: string;
   nationalPhoneNumber?: string;
@@ -25,6 +36,7 @@ interface PlaceResult {
   id?: string;
   displayName?: { text: string };
   businessStatus?: "OPERATIONAL" | "CLOSED_TEMPORARILY" | "CLOSED_PERMANENTLY";
+  photos?: PlacePhoto[];
 }
 
 interface PlacesResponse {
@@ -45,8 +57,15 @@ export interface EnrichmentResult {
     googlePlaceId: string | null;
     businessStatus: string | null;
     isClosed: "yes" | "no";
+    heroImageUrl: string | null;
+    galleryImages: string[];
   };
   error?: string;
+}
+
+function buildPhotoUrl(photoName: string, maxWidth: number = 800): string {
+  if (!GOOGLE_PLACES_API_KEY) return "";
+  return `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=${maxWidth}&key=${GOOGLE_PLACES_API_KEY}`;
 }
 
 export async function enrichFacility(facility: Facility): Promise<EnrichmentResult> {
@@ -67,7 +86,7 @@ export async function enrichFacility(facility: Facility): Promise<EnrichmentResu
       headers: {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
-        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.internationalPhoneNumber,places.rating,places.userRatingCount,places.googleMapsUri,places.websiteUri,places.businessStatus",
+        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.internationalPhoneNumber,places.rating,places.userRatingCount,places.googleMapsUri,places.websiteUri,places.businessStatus,places.photos",
       },
       body: JSON.stringify({
         textQuery: searchQuery,
@@ -106,6 +125,17 @@ export async function enrichFacility(facility: Facility): Promise<EnrichmentResu
     const place = data.places[0];
     const isClosed = place.businessStatus === "CLOSED_PERMANENTLY" ? "yes" : "no";
     
+    // Extract photo URLs from Google Places
+    const photoUrls: string[] = [];
+    if (place.photos && place.photos.length > 0) {
+      for (const photo of place.photos.slice(0, 10)) {
+        if (photo.name) {
+          photoUrls.push(buildPhotoUrl(photo.name, 1200));
+        }
+      }
+    }
+    const heroImageUrl = photoUrls.length > 0 ? photoUrls[0] : null;
+    
     return {
       facilityId: facility.id,
       facilityName: facility.name,
@@ -120,6 +150,8 @@ export async function enrichFacility(facility: Facility): Promise<EnrichmentResu
         googlePlaceId: place.id || null,
         businessStatus: place.businessStatus || null,
         isClosed,
+        heroImageUrl,
+        galleryImages: photoUrls.slice(1),
       },
     };
   } catch (error) {

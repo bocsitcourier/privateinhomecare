@@ -3573,6 +3573,137 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
     }
   });
 
+  // Test endpoint: Enrich a single facility with Google Places photos
+  app.post("/api/test/enrich-facility/:id", async (req: Request, res: Response) => {
+    try {
+      const facility = await storage.getFacility(req.params.id);
+      if (!facility) {
+        return res.status(404).json({ message: "Facility not found" });
+      }
+      
+      // Pass full facility object to enrichFacility
+      const result = await enrichFacility(facility);
+      if (!result || !result.success) {
+        return res.json({ 
+          success: false, 
+          error: result?.error || "Failed to enrich facility",
+          facility: facility
+        });
+      }
+      
+      // Update facility with enriched data including photos
+      const updateData: any = {
+        lastEnrichedAt: new Date()
+      };
+      
+      if (result.data) {
+        if (result.data.heroImageUrl) {
+          updateData.heroImageUrl = result.data.heroImageUrl;
+        }
+        if (result.data.galleryImages && result.data.galleryImages.length > 0) {
+          updateData.galleryImages = result.data.galleryImages;
+        }
+        if (result.data.address) updateData.address = result.data.address;
+        if (result.data.phone) updateData.phone = result.data.phone;
+        if (result.data.website) updateData.website = result.data.website;
+        if (result.data.rating) updateData.overallRating = result.data.rating;
+        if (result.data.reviewCount) updateData.reviewCount = result.data.reviewCount;
+        if (result.data.googleMapsUrl) updateData.googleMapsUrl = result.data.googleMapsUrl;
+        if (result.data.businessStatus) updateData.businessStatus = result.data.businessStatus;
+        updateData.isClosed = result.data.isClosed;
+      }
+      
+      const updated = await storage.updateFacility(facility.id, updateData);
+      res.json({ 
+        success: true, 
+        facility: updated,
+        enrichmentResult: result 
+      });
+    } catch (error) {
+      console.error("Error enriching facility:", error);
+      res.status(500).json({ message: "Failed to enrich facility" });
+    }
+  });
+
+  // Bulk enrich all facilities with Google Places photos (parallel processing)
+  app.post("/api/test/enrich-all-facilities", async (req: Request, res: Response) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 796;
+      const batchSize = parseInt(req.query.batchSize as string) || 10;
+      
+      // Get all facilities (will search Google Places for each)
+      const allFacilities = await storage.listFacilities();
+      const facilitiesToEnrich = allFacilities
+        .filter(f => !f.heroImageUrl) // Only enrich those without hero image
+        .slice(0, limit);
+      
+      console.log(`Enriching ${facilitiesToEnrich.length} facilities in batches of ${batchSize}...`);
+      
+      let enriched = 0;
+      let failed = 0;
+      const results: any[] = [];
+      
+      // Process in parallel batches
+      for (let i = 0; i < facilitiesToEnrich.length; i += batchSize) {
+        const batch = facilitiesToEnrich.slice(i, i + batchSize);
+        console.log(`Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(facilitiesToEnrich.length/batchSize)}...`);
+        
+        const batchResults = await Promise.all(
+          batch.map(async (facility) => {
+            try {
+              const result = await enrichFacility(facility);
+              if (result.success && result.data) {
+                const updateData: any = { lastEnrichedAt: new Date() };
+                if (result.data.heroImageUrl) updateData.heroImageUrl = result.data.heroImageUrl;
+                if (result.data.galleryImages && result.data.galleryImages.length > 0) {
+                  updateData.galleryImages = result.data.galleryImages;
+                }
+                if (result.data.address) updateData.address = result.data.address;
+                if (result.data.phone) updateData.phone = result.data.phone;
+                if (result.data.rating) updateData.overallRating = result.data.rating;
+                if (result.data.reviewCount) updateData.reviewCount = result.data.reviewCount;
+                if (result.data.googlePlaceId) updateData.googlePlaceId = result.data.googlePlaceId;
+                if (result.data.googleMapsUrl) updateData.googleMapsUrl = result.data.googleMapsUrl;
+                if (result.data.businessStatus) updateData.businessStatus = result.data.businessStatus;
+                updateData.isClosed = result.data.isClosed;
+                
+                await storage.updateFacility(facility.id, updateData);
+                enriched++;
+                return { 
+                  id: facility.id, 
+                  name: facility.name, 
+                  success: true, 
+                  hasPhoto: !!result.data.heroImageUrl,
+                  photoUrl: result.data.heroImageUrl?.substring(0, 100)
+                };
+              }
+              return { id: facility.id, name: facility.name, success: false, error: result.error };
+            } catch (err) {
+              failed++;
+              return { id: facility.id, name: facility.name, success: false, error: String(err) };
+            }
+          })
+        );
+        results.push(...batchResults);
+        
+        // Small delay between batches to avoid rate limiting
+        if (i + batchSize < facilitiesToEnrich.length) {
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
+      }
+      
+      res.json({
+        total: facilitiesToEnrich.length,
+        enriched,
+        failed,
+        results: results.slice(0, 50) // Return first 50 results
+      });
+    } catch (error) {
+      console.error("Error in bulk enrichment:", error);
+      res.status(500).json({ message: "Failed to enrich facilities" });
+    }
+  });
+
   // Public: Get facility reviews (approved only)
   app.get("/api/facilities/:slug/reviews", async (req: Request, res: Response) => {
     try {
@@ -3873,6 +4004,8 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
           googlePlaceId: result.data.googlePlaceId,
           businessStatus: result.data.businessStatus,
           isClosed: result.data.isClosed,
+          heroImageUrl: result.data.heroImageUrl || facility.heroImageUrl,
+          galleryImages: result.data.galleryImages.length > 0 ? result.data.galleryImages : (facility.galleryImages || undefined),
           lastEnrichedAt: new Date(),
           dataHash: newHash,
           needsRegeneration: dataChanged ? "yes" : facility.needsRegeneration,
@@ -3882,7 +4015,8 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
           dataChanged,
           facility: updated, 
           enrichment: result, 
-          reviewCount: result.data.reviewCount 
+          reviewCount: result.data.reviewCount,
+          hasPhoto: !!result.data.heroImageUrl
         });
       } else {
         res.json({ success: false, error: result.error, facility });
@@ -4100,6 +4234,8 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
                 googlePlaceId: result.data.googlePlaceId,
                 businessStatus: result.data.businessStatus,
                 isClosed: result.data.isClosed,
+                heroImageUrl: result.data.heroImageUrl || facility.heroImageUrl,
+                galleryImages: result.data.galleryImages.length > 0 ? result.data.galleryImages : (facility.galleryImages || undefined),
                 lastEnrichedAt: new Date(),
                 dataHash: newHash,
                 needsRegeneration: dataChanged ? "yes" : "no",
@@ -4107,7 +4243,8 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
               successful++;
               const closedFlag = result.data.isClosed === "yes" ? " [CLOSED]" : "";
               const changeFlag = dataChanged ? "🔄 Data changed." : "";
-              console.log(`[${successful + failed + unchanged}/${facilities.length}] ${changeFlag} Enriched: ${facility.name} - Phone: ${result.data.phone || 'N/A'}${closedFlag}`);
+              const photoFlag = result.data.heroImageUrl ? "📷" : "";
+              console.log(`[${successful + failed + unchanged}/${facilities.length}] ${changeFlag}${photoFlag} Enriched: ${facility.name} - Phone: ${result.data.phone || 'N/A'}${closedFlag}`);
             }
           } catch (updateError) {
             console.error(`Failed to update facility ${facility.name}:`, updateError);
