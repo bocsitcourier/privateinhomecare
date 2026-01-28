@@ -95,14 +95,21 @@ export default function HospicePalliativeCarePage() {
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-1">
-          <section className="bg-gradient-to-br from-primary/10 via-secondary/5 to-background py-16 md:py-20">
-            <div className="container mx-auto px-4 max-w-6xl">
-              <div className="max-w-3xl">
-                <Badge variant="secondary" className="mb-4">Massachusetts Care Options</Badge>
-                <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4" data-testid="text-page-title">
+          <section className="relative min-h-[500px] md:min-h-[550px] flex items-center">
+            <div 
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+              style={{ 
+                backgroundImage: `url('https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=1600&q=80')`
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
+            <div className="relative z-10 container mx-auto px-4 max-w-6xl py-16">
+              <div className="max-w-2xl">
+                <Badge className="mb-4 bg-primary/90 text-primary-foreground border-0">Massachusetts Care Options</Badge>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4" data-testid="text-page-title">
                   Hospice & Palliative Care in Massachusetts
                 </h1>
-                <p className="text-lg text-muted-foreground mb-6">
+                <p className="text-lg text-white/90 mb-6">
                   Massachusetts has over 80 hospice providers offering compassionate end-of-life care. Whether you're exploring options for yourself or a loved one, we're here to help you understand your choices and find the support your family needs.
                 </p>
                 <div className="flex flex-wrap gap-4">
@@ -112,7 +119,7 @@ export default function HospicePalliativeCarePage() {
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
-                  <Button asChild variant="outline" size="lg">
+                  <Button asChild variant="outline" size="lg" className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20">
                     <a href="tel:+16176860595">
                       <Phone className="mr-2 h-4 w-4" />
                       Call (617) 686-0595

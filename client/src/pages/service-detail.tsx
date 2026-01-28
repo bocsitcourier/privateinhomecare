@@ -35,16 +35,16 @@ const iconMap: Record<string, React.ReactNode> = {
   "smile": <Heart className="w-6 h-6" />,
 };
 
-// Premium hero images for each service type - seniors only, no babies
+// Premium hero images for each service type - seniors only, appropriate care imagery
 const serviceHeroImages: Record<string, string> = {
-  "personal-care": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1600&q=80",
-  "companionship": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=1600&q=80",
-  "homemaking": "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1600&q=80",
+  "personal-care": "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=1600&q=80",
+  "companionship": "https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=1600&q=80",
+  "homemaking": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1600&q=80",
   "dementia-care": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=1600&q=80",
-  "respite-care": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1600&q=80",
-  "live-in-care": "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1600&q=80",
-  "overnight-care": "https://images.unsplash.com/photo-1586105251261-72a756497a11?w=1600&q=80",
-  "post-hospital-care": "https://images.unsplash.com/photo-1631815589968-fdb09a223b1e?w=1600&q=80",
+  "respite-care": "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=1600&q=80",
+  "live-in-care": "https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=1600&q=80",
+  "overnight-care": "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=1600&q=80",
+  "post-hospital-care": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=1600&q=80",
 };
 
 function getServiceHeroImage(serviceKey: string): string {
