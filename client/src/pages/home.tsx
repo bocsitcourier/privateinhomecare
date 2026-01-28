@@ -985,6 +985,7 @@ export default function Home() {
               <li><Link href="/hipaa-acknowledgment" className="text-foreground/70 hover:text-primary" data-testid="link-hipaa-form">HIPAA acknowledgment</Link></li>
               <li><Link href="/privacy-policy" className="text-foreground/70 hover:text-primary" data-testid="link-privacy-policy">Privacy policy</Link></li>
               <li><Link href="/terms-and-conditions" className="text-foreground/70 hover:text-primary" data-testid="link-terms-conditions">Terms and conditions</Link></li>
+              <li><Link href="/non-solicitation-policy" className="text-foreground/70 hover:text-primary" data-testid="link-non-solicitation">Non-solicitation policy</Link></li>
             </ul>
           </div>
         </div>
