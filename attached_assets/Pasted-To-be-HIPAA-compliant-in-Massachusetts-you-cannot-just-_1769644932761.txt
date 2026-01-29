@@ -1,0 +1,105 @@
+To be HIPAA compliant in Massachusetts, you cannot just "store" data; you must protect it with military-grade standards.
+
+Here is the technical blueprint to harden your Node.js/NestJS application and integrate reCAPTCHA on every input point.
+
+I. The HIPAA Hardening Strategy (The "Fortress")
+For a Node.js application handling PHI (Protected Health Information), we must implement Technical Safeguards at three levels: Database, Transport, and Access.
+
+1. Encryption Everywhere
+In-Transit: Force TLS 1.3 (HTTPS) on all connections. No unencrypted HTTP traffic is allowed.
+
+At-Rest (Database): Your PostgreSQL database must use Transparent Data Encryption (TDE).
+
+Field-Level Encryption: Highly sensitive fields (SSN, DOB, Gate Codes) should not be readable even by the database administrator. We will encrypt these inside the Node.js application before sending them to the database.
+
+2. The "Black Box" Audit Trail
+HIPAA requires you to know exactly who touched a file and when.
+
+Implementation: Create a NestJS Interceptor that logs every single GET, POST, or PATCH request involving client records.
+
+Storage: Send these logs to a separate, immutable storage bucket (like AWS S3 with Object Lock) so they cannot be deleted or tampered with.
+
+3. reCAPTCHA v3 (Invisible Shield)
+We will use Google reCAPTCHA v3. Unlike the old "Click all the traffic lights" puzzles, v3 runs silently in the background and assigns a "Risk Score" to the user.
+
+Score 0.9: Human (Allow).
+
+Score 0.1: Bot (Block immediately).
+
+II. Technical Implementation (Node.js/NestJS)
+Below is the code structure to secure your forms and encrypt data.
+
+A. The reCAPTCHA Guard (Blocking Bots)
+This code sits in front of your "Login," "Register," and "Intake" APIs. It stops the request before it even reaches your database.
+
+TypeScript
+
+// captcha.guard.ts
+import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
+import axios from 'axios';
+
+@Injectable()
+export class RecaptchaGuard implements CanActivate {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    const token = request.headers['recaptcha-token']; // Token sent from Frontend
+
+    if (!token) {
+      throw new HttpException('No reCAPTCHA token found', HttpStatus.FORBIDDEN);
+    }
+
+    // Verify with Google
+    const response = await axios.post(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`
+    );
+
+    const { success, score } = response.data;
+
+    // Strict Threshold: Score must be > 0.5 to pass
+    if (!success || score < 0.5) {
+      throw new HttpException('Bot activity detected', HttpStatus.FORBIDDEN);
+    }
+
+    return true;
+  }
+}
+B. Field-Level Encryption (Protecting PHI)
+This utility encrypts data (like an SSN) using AES-256-GCM before it saves to the database.
+
+TypeScript
+
+// encryption.util.ts
+import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
+
+const ALGORITHM = 'aes-256-gcm';
+const KEY = Buffer.from(process.env.ENCRYPTION_KEY, 'hex'); // 32-byte key
+
+export function encryptPHI(text: string) {
+  const iv = randomBytes(16); // Initialization Vector
+  const cipher = createCipheriv(ALGORITHM, KEY, iv);
+  
+  let encrypted = cipher.update(text, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  
+  const authTag = cipher.getAuthTag().toString('hex');
+
+  // Store IV and AuthTag with the data so we can decrypt it later
+  return `${iv.toString('hex')}:${authTag}:${encrypted}`;
+}
+
+// Usage in your Service:
+// client.ssn = encryptPHI(dto.ssn);
+// await clientRepository.save(client);
+III. The Secure Architecture Diagram
+To explain this to your developers or an auditor, here is how the data flows through your hardened system.
+
+IV. Hardening Checklist for Deployment
+To achieve Platinum Security Status, ensure these boxes are checked before going live:
+
+[ ] Signed BAA: You must sign a Business Associate Agreement (BAA) with your cloud provider (AWS, Google Cloud, or Azure). Without this, hosting PHI on their servers is illegal.
+
+[ ] Session Timeouts: Configure the system to auto-logout users after 15 minutes of inactivity (HIPAA requirement).
+
+[ ] Least Privilege: Your "Caregivers" should only see the clients assigned to them, not the full database.
+
+[ ] Data Backup: Encrypted backups must run daily and be tested monthly.

@@ -856,6 +856,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const formData = req.body;
       
+      // HIPAA: Verify reCAPTCHA to prevent bot submissions
+      if (formData.captchaToken) {
+        const captchaResult = await verifyCaptcha(formData.captchaToken);
+        if (!captchaResult.success) {
+          return res.status(400).json({ error: captchaResult.error || "CAPTCHA verification failed" });
+        }
+      } else if (process.env.NODE_ENV === 'production') {
+        return res.status(400).json({ error: "CAPTCHA verification required" });
+      }
+      
       if (formData.email && isDisposableEmail(formData.email)) {
         return res.status(400).json({ error: "Please use a permanent email address" });
       }
@@ -910,6 +920,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/forms/initial-assessment", publicFormLimiter, async (req, res) => {
     try {
       const formData = req.body;
+      
+      // HIPAA: Verify reCAPTCHA to prevent bot submissions
+      if (formData.captchaToken) {
+        const captchaResult = await verifyCaptcha(formData.captchaToken);
+        if (!captchaResult.success) {
+          return res.status(400).json({ error: captchaResult.error || "CAPTCHA verification failed" });
+        }
+      } else if (process.env.NODE_ENV === 'production') {
+        return res.status(400).json({ error: "CAPTCHA verification required" });
+      }
       
       if (formData.email && isDisposableEmail(formData.email)) {
         return res.status(400).json({ error: "Please use a permanent email address" });

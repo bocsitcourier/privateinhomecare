@@ -247,11 +247,12 @@ app.use(session({
   secret: process.env.SESSION_SECRET || "dev-secret-change-in-production",
   resave: false,
   saveUninitialized: false,
+  rolling: true, // HIPAA: Reset session expiry on each request (activity-based timeout)
   cookie: {
     secure: process.env.NODE_ENV === "production",
     httpOnly: true,
     sameSite: 'lax', // Changed from 'strict' to 'lax' for better compatibility with redirects and CORS
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    maxAge: 15 * 60 * 1000, // HIPAA Compliance: 15-minute inactivity timeout
   },
 }));
 

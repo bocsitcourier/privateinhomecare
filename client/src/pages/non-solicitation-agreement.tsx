@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link } from "wouter";
+import ReCAPTCHA from "react-google-recaptcha";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -72,6 +73,8 @@ const steps = [
 export default function NonSolicitationAgreementPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const { toast } = useToast();
 
   const form = useForm<FormData>({
@@ -98,16 +101,20 @@ export default function NonSolicitationAgreementPage() {
 
   const submitMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      return apiRequest("POST", "/api/forms/non-solicitation", data);
+      return apiRequest("POST", "/api/forms/non-solicitation", { ...data, captchaToken });
     },
     onSuccess: () => {
       setIsSubmitted(true);
+      setCaptchaToken(null);
+      recaptchaRef.current?.reset();
       toast({
         title: "Agreement Submitted",
         description: "Your Non-Solicitation Agreement has been submitted successfully.",
       });
     },
     onError: (error: Error) => {
+      setCaptchaToken(null);
+      recaptchaRef.current?.reset();
       toast({
         title: "Submission Failed",
         description: error.message || "There was an error submitting your agreement. Please try again.",
@@ -155,7 +162,19 @@ export default function NonSolicitationAgreementPage() {
   };
 
   const onSubmit = (data: FormData) => {
+    if (!captchaToken) {
+      toast({
+        title: "Verification Required",
+        description: "Please complete the CAPTCHA verification before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
     submitMutation.mutate(data);
+  };
+
+  const handleCaptchaChange = (token: string | null) => {
+    setCaptchaToken(token);
   };
 
   if (isSubmitted) {
@@ -521,6 +540,17 @@ export default function NonSolicitationAgreementPage() {
                               <FormMessage />
                             </FormItem>
                           )}
+                        />
+                      </div>
+                    )}
+
+                    {currentStep === 5 && import.meta.env.VITE_RECAPTCHA_SITE_KEY && (
+                      <div className="flex justify-center pt-4">
+                        <ReCAPTCHA
+                          ref={recaptchaRef}
+                          sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+                          onChange={handleCaptchaChange}
+                          data-testid="recaptcha"
                         />
                       </div>
                     )}

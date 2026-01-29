@@ -228,9 +228,13 @@ export function auditLog(req: Request, res: Response, next: NextFunction) {
   const sensitiveEndpoints = [
     '/api/admin/',
     '/api/auth/',
-    '/intake',
+    '/api/inquiries',
+    '/api/intake',
+    '/api/forms/',
     '/job-applications',
-    '/caregiver-log'
+    '/caregiver-log',
+    '/api/referrals',
+    '/api/consultation'
   ];
   
   const isSensitive = sensitiveEndpoints.some(endpoint => req.path.includes(endpoint));
