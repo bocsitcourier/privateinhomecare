@@ -1,7 +1,7 @@
 import { Heart, Shield, Award, Star, CheckCircle2, ArrowRight, Phone, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import heroImage from "@assets/private-in-home-care-boston-medical-center_1769554180599.png";
+import heroImage from "@assets/private-in-home-care-boston-medical-center_1769694632455.png";
 
 export default function Hero() {
   return (

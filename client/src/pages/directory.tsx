@@ -31,9 +31,9 @@ import {
 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
-import heroImage from "@assets/images/directory-hero.png";
-import careImage1 from "@assets/images/directory-care-1.png";
-import careImage2 from "@assets/images/directory-care-2.png";
+import heroImage from "@assets/vitality-for-seniors-and-caregivers-this-winter-in-boston_1769694567018.png";
+import careImage1 from "@assets/Guide_to_Private_Pay_Home_Care_in_Newton,_Wellesley_&_Lexingto_1769694567038.png";
+import careImage2 from "@assets/Wellness-First_Private_Caregiving_for_the_holidays_1769694567036.png";
 
 interface MaLocation {
   id: string;

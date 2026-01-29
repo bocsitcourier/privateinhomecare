@@ -1,11 +1,11 @@
-import personalCareImg from "@assets/images/care-types/personal-care.png";
-import companionshipImg from "@assets/images/care-types/companionship.png";
-import homemakingImg from "@assets/images/care-types/homemaking.png";
-import dementiaCareImg from "@assets/images/care-types/dementia-care.png";
-import respiteCareImg from "@assets/images/care-types/respite-care.png";
-import liveInCareImg from "@assets/images/care-types/live-in-care.png";
-import postHospitalCareImg from "@assets/images/care-types/post-hospital-care.png";
-import hospiceCareImg from "@assets/images/care-types/hospice-care.png";
+import personalCareImg from "@assets/in-home-care-bidmc-discharge-boston_1769694632453.png";
+import companionshipImg from "@assets/non-medical-caregiver-cost-cambridge-ma_1769694632458.png";
+import homemakingImg from "@assets/guide-to-in-home-support-for-seniors-discharged-from-hospital_1769694632455.png";
+import dementiaCareImg from "@assets/how-to-choose-the-right-in-home-care-after-hebrew-senior-life-_1769694632449.png";
+import respiteCareImg from "@assets/private-in-home-care-boston-medical-center_1769694632455.png";
+import liveInCareImg from "@assets/private-in-home-care-after-discharge-greater-boston_1769694632456.png";
+import postHospitalCareImg from "@assets/in-home-help-after-hospital-discharge-boston_1769694632453.png";
+import hospiceCareImg from "@assets/in-home-help-costs-mass-general-boston_1769694632454.png";
 
 export const CARE_TYPE_IMAGES: Record<string, { hero: string; thumbnail: string; alt: string }> = {
   "personal-care": {

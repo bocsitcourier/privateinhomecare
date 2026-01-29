@@ -34,14 +34,14 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 
-import heroImage from "@assets/Comfort_and_Independence_Aging_in_Place_in_Massachusetts_1767894946697.png";
-import homeCareImage from "@assets/non-medical-caregiver-options-in-greater-boston-ma_1767895133875.png";
-import nutritionImage from "@assets/non-medical-caregiver-cost-in-newton-ma-2026_1767895133875.png";
-import housingImage from "@assets/non-medical-caregiver-options-wellesley-ma_1767895133875.png";
-import communityImage from "@assets/private-inhome-caregiver-non-medical-caregiver-services-cape-c_1767895133875.png";
-import supportImage from "@assets/vetting-trusted-in-home-caregivers-agencies-massachusetts-priv_1767894946697.png";
-import mobilityImage from "@assets/hire-non-medical-caregiver-marlborough-ma_1767895133875.png";
-import medicationImage from "@assets/non-medical-caregiver-providers-plymouth-ma_1767895133875.png";
+import heroImage from "@assets/vitality-for-seniors-and-caregivers-this-winter-in-boston_1769694567018.png";
+import homeCareImage from "@assets/private-in-home-care-boston-medical-center_1769694632455.png";
+import nutritionImage from "@assets/guide-to-in-home-support-for-seniors-discharged-from-hospital_1769694632455.png";
+import housingImage from "@assets/non-medical-caregiver-cost-in-newton-ma-2026_1769694632458.png";
+import communityImage from "@assets/home-care-faqs-greater-boston-private-inhome-caregiver_1769694632457.png";
+import supportImage from "@assets/find-trustworthy-in-home-caregiver-services-in-worcester-ma_1769694632457.png";
+import mobilityImage from "@assets/hire-non-medical-caregiver-marlborough-ma_1769694632457.png";
+import medicationImage from "@assets/in-home-help-after-hospital-discharge-boston_1769694632453.png";
 
 const emergencyResources = [
   {

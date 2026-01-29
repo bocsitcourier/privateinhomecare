@@ -1,10 +1,10 @@
-import nursingHomeImg from "@assets/images/facility-types/nursing-home.png";
-import assistedLivingImg from "@assets/images/facility-types/assisted-living.png";
-import memoryCareImg from "@assets/images/facility-types/memory-care.png";
-import independentLivingImg from "@assets/images/facility-types/independent-living.png";
-import continuingCareImg from "@assets/images/facility-types/continuing-care.png";
-import hospiceImg from "@assets/images/facility-types/hospice.png";
-import hospitalImg from "@assets/images/facility-types/hospital.png";
+import nursingHomeImg from "@assets/Screenshot_2025-12-10_at_4.08.09_PM_1769694567019.png";
+import assistedLivingImg from "@assets/Why_Private_Caregivers_Are_the_Top_Choice_for_Wellesley,_MA_Fa_1769694567041.png";
+import memoryCareImg from "@assets/Local_In-Home_Care_Options_for_Seniors_in_Burlington,_MA_1769694567040.png";
+import independentLivingImg from "@assets/concierge-care-in-massachusetts-private-inhome-caregiver_1769694567019.png";
+import continuingCareImg from "@assets/vetting-trusted-in-home-caregivers-agencies-massachusetts-priv_1769694567018.png";
+import hospiceImg from "@assets/private-in-home-caregivers-senior-lives-massachusetts_1769694567019.png";
+import hospitalImg from "@assets/private_in-home_caregiver_assisting_an_elderly_person_in_a_hom_1769694567035.png";
 
 export const FACILITY_TYPE_IMAGES: Record<string, { hero: string; thumbnail: string; alt: string }> = {
   "nursing-home": {

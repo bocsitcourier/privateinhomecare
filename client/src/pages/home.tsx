@@ -14,8 +14,8 @@ import { Heart, Users, Home as HomeIcon, Brain, Phone, Mail, MapPin, ArrowRight,
 import { cn } from "@/lib/utils";
 import { HOMEPAGE_FAQS } from "@/constants/serviceFaqs";
 import type { Article, Job, Video } from "@shared/schema";
-import caregiverImage from "@assets/compassionate inhome care_1760033982348.webp";
-import careCoordinatorImage from "@assets/Private inhome care in MA_1760035857926.png";
+import caregiverImage from "@assets/private-in-home-care-after-discharge-greater-boston_1769694632456.png";
+import careCoordinatorImage from "@assets/find-trustworthy-in-home-caregiver-services-in-worcester-ma_1769694632457.png";
 import susanImage from "@assets/susan-testimonial.png";
 import carlosImage from "@assets/carlos-testimonial.png";
 import evelynImage from "@assets/evelyn-testimonial.png";

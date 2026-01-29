@@ -27,8 +27,8 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 
-import heroImage from "@assets/Compassionate_Hospice_PCA_in_Greater_Boston,_End-of-Life_Care__1767894946697.png";
-import recoveryImage from "@assets/non-medical-caregiver-cost-cambridge-ma_1767895133875.png";
+import heroImage from "@assets/in-home-care-02115-mass-general-hospital-private-inhome-caregi_1769694632453.png";
+import recoveryImage from "@assets/private-in-home-care-after-discharge-greater-boston_1769694632456.png";
 
 import type { Facility } from "@shared/schema";
 
