@@ -20,6 +20,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { SessionTimeoutWarning } from "@/components/SessionTimeoutWarning";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -144,6 +145,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           {children}
         </div>
       </main>
+
+      {/* HIPAA Session Timeout Warning */}
+      <SessionTimeoutWarning
+        warningThresholdMs={2 * 60 * 1000}
+        sessionTimeoutMs={15 * 60 * 1000}
+        onTimeout={() => {
+          logoutMutation.mutate();
+        }}
+      />
     </div>
   );
 }

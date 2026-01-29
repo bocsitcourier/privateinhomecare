@@ -1,0 +1,46 @@
+{
+  "name": "hipaa-security-package",
+  "version": "1.0.0",
+  "description": "HIPAA-compliant security implementation for Node.js/NestJS healthcare applications",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts"
+  },
+  "keywords": [
+    "hipaa",
+    "healthcare",
+    "security",
+    "encryption",
+    "nestjs",
+    "nodejs",
+    "phi",
+    "compliance"
+  ],
+  "dependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/config": "^3.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/throttler": "^5.0.0",
+    "@nestjs/typeorm": "^10.0.0",
+    "axios": "^1.6.0",
+    "compression": "^1.7.4",
+    "helmet": "^7.1.0",
+    "pg": "^8.11.0",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.8.0",
+    "typeorm": "^0.3.17",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/compression": "^1.7.5",
+    "@types/node": "^20.0.0",
+    "@types/uuid": "^9.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}

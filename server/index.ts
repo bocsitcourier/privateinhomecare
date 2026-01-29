@@ -6,6 +6,7 @@ import helmet from "helmet";
 import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { hipaaAuditMiddleware } from "./middleware/hipaa-audit";
 
 const app = express();
 app.set('trust proxy', 1);
@@ -255,6 +256,9 @@ app.use(session({
     maxAge: 15 * 60 * 1000, // HIPAA Compliance: 15-minute inactivity timeout
   },
 }));
+
+// HIPAA Audit Logging Middleware - logs all PHI access
+app.use(hipaaAuditMiddleware);
 
 app.use((req, res, next) => {
   const start = Date.now();

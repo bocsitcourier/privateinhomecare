@@ -572,6 +572,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // HIPAA: Session extend endpoint - resets the session timeout
+  app.post("/api/session/extend", requireAuth, async (req, res) => {
+    try {
+      // Touch the session to reset the rolling timeout
+      if (req.session) {
+        req.session.touch();
+      }
+      res.json({ success: true, message: "Session extended" });
+    } catch (error: any) {
+      console.error("[SESSION] Extend error:", error);
+      res.status(500).json({ error: "Failed to extend session" });
+    }
+  });
+
   const changePasswordSchema = z.object({
     currentPassword: z.string().min(1),
     newPassword: z.string().min(8, "Password must be at least 8 characters"),
