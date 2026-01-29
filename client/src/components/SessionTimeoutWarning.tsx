@@ -50,7 +50,7 @@ export function SessionTimeoutWarning({
   const handleTimeout = useCallback(() => {
     setShowWarning(false);
     onTimeout?.();
-    window.location.href = '/admin/login?timeout=true';
+    window.location.href = '/admin?timeout=true';
   }, [onTimeout]);
 
   useEffect(() => {
