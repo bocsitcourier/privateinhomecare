@@ -411,7 +411,8 @@ export default function FacilityDetailPage() {
         <div className="relative h-[50vh] min-h-[400px] md:h-[60vh]">
           <img 
             src={facility.heroImageUrl || getFacilityTypeImage(facility.facilityType).hero}
-            alt={facility.heroImageUrl ? facility.name : getFacilityTypeImage(facility.facilityType).alt}
+            alt={facility.heroImageUrl ? `${facility.name} - Senior care facility in ${facility.city}, Massachusetts` : getFacilityTypeImage(facility.facilityType).alt}
+            title={facility.heroImageUrl ? `${facility.name} - Massachusetts Senior Care` : getFacilityTypeImage(facility.facilityType).title}
             className="w-full h-full object-cover"
             data-testid="img-facility-hero"
           />

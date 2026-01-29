@@ -530,7 +530,8 @@ export default function AgingResourcesPage() {
             <div className="absolute inset-0 z-0">
               <img 
                 src={heroImage} 
-                alt="Aging in place in Massachusetts"
+                alt="Aging in place resources for seniors in Massachusetts - Private pay home care services Boston, Cambridge, Newton"
+                title="Massachusetts Senior Aging Resources - Private In-Home Care Options"
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/60" />
@@ -631,7 +632,8 @@ export default function AgingResourcesPage() {
                   <div className="rounded-lg overflow-hidden shadow-lg">
                     <img 
                       src={homeCareImage} 
-                      alt="Home care consultation in Massachusetts"
+                      alt="Private pay home care consultation for seniors in Massachusetts - Boston, Worcester, Springfield"
+                      title="Massachusetts Senior Home Care Consultation - Private Pay Services"
                       className="w-full h-64 object-cover"
                     />
                   </div>
@@ -667,7 +669,8 @@ export default function AgingResourcesPage() {
                   <div className="rounded-lg overflow-hidden shadow-lg">
                     <img 
                       src={mobilityImage} 
-                      alt="Caregiver helping senior with mobility"
+                      alt="Private caregiver assisting elderly client with mobility and transfer support in Massachusetts home"
+                      title="Mobility & Transfer Assistance for Seniors - Massachusetts In-Home Care"
                       className="w-full h-64 object-cover"
                     />
                   </div>
@@ -721,7 +724,8 @@ export default function AgingResourcesPage() {
                   <div className="rounded-lg overflow-hidden shadow-lg order-1 lg:order-2">
                     <img 
                       src={medicationImage} 
-                      alt="Caregiver helping with medication management"
+                      alt="Private caregiver assisting senior with medication management and health monitoring in Massachusetts"
+                      title="Medication Management for Seniors - Private In-Home Care Massachusetts"
                       className="w-full h-64 object-cover"
                     />
                   </div>
@@ -807,7 +811,8 @@ export default function AgingResourcesPage() {
                   <div className="rounded-lg overflow-hidden shadow-lg order-2 lg:order-1">
                     <img 
                       src={housingImage} 
-                      alt="Senior housing in Massachusetts"
+                      alt="Senior housing options and aging in place resources in Massachusetts - Boston, Cambridge, Newton area"
+                      title="Massachusetts Senior Housing Resources - Private In-Home Care Alternative"
                       className="w-full h-64 object-cover"
                     />
                   </div>
@@ -875,7 +880,8 @@ export default function AgingResourcesPage() {
                   <div className="rounded-lg overflow-hidden shadow-lg">
                     <img 
                       src={communityImage} 
-                      alt="Community support for seniors in Massachusetts"
+                      alt="Community support programs and resources for seniors aging in place in Massachusetts"
+                      title="Massachusetts Senior Community Resources - Private In-Home Care Support"
                       className="w-full h-64 object-cover"
                     />
                   </div>
@@ -934,7 +940,8 @@ export default function AgingResourcesPage() {
                     <div className="rounded-lg overflow-hidden shadow-lg sticky top-24">
                       <img 
                         src={supportImage} 
-                        alt="Family support for aging loved ones"
+                        alt="Family support and private caregiver assistance for aging loved ones in Massachusetts"
+                        title="Family Caregiver Support - Massachusetts In-Home Care Services"
                         className="w-full h-48 object-cover"
                       />
                       <div className="p-4 bg-card">
@@ -962,7 +969,8 @@ export default function AgingResourcesPage() {
                   <div className="rounded-lg overflow-hidden shadow-lg">
                     <img 
                       src={nutritionImage} 
-                      alt="In-home care support in Massachusetts"
+                      alt="Private pay in-home care services supporting seniors aging in place across Massachusetts communities"
+                      title="In-Home Senior Care - Private Pay Services Massachusetts"
                       className="w-full h-64 object-cover"
                     />
                   </div>

@@ -382,7 +382,8 @@ export default function Home() {
                 <div className="order-2 md:order-1">
                   <img 
                     src={caregiverImage} 
-                    alt="Compassionate caregiver with elderly client in a warm, comfortable home setting"
+                    alt="Private pay caregiver providing compassionate in-home care for seniors in Greater Boston, Massachusetts"
+                    title="Trusted Private In-Home Senior Care - Greater Boston MA"
                     className="rounded-lg shadow-lg w-full h-auto object-cover"
                     data-testid="img-about-caregiver"
                   />
@@ -535,7 +536,8 @@ export default function Home() {
                       {video.thumbnailUrl ? (
                         <img
                           src={video.thumbnailUrl}
-                          alt={video.title}
+                          alt={`${video.title} - Senior Care Video Massachusetts`}
+                          title={`${video.title} - Private InHome CareGiver`}
                           className="w-full h-full object-cover"
                           data-testid={`img-video-thumb-${video.id}`}
                         />
@@ -771,7 +773,8 @@ export default function Home() {
                               {article.heroImageUrl && (
                                 <img 
                                   src={article.heroImageUrl} 
-                                  alt={article.title}
+                                  alt={`${article.title} - Senior Care Resources Massachusetts`}
+                                  title={`${article.title} - Private InHome CareGiver`}
                                   className="w-full h-48 object-cover rounded-t-lg"
                                   data-testid={`img-article-${article.id}`}
                                 />
@@ -822,7 +825,8 @@ export default function Home() {
             <div className="flex flex-col items-center gap-6">
               <img 
                 src={careCoordinatorImage}
-                alt="Private in-home caregiver providing compassionate care to elderly client at home"
+                alt="Private pay in-home caregiver providing personalized senior care in Massachusetts - Boston, Newton, Cambridge"
+                title="Contact Our Massachusetts Care Coordinators - Private In-Home Senior Services"
                 className="w-full max-w-md h-auto rounded-lg shadow-lg"
                 data-testid="img-care-coordinator"
               />

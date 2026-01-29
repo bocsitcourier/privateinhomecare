@@ -217,7 +217,8 @@ export default function VideoDetailPage() {
                           {relatedVideo.thumbnailUrl && (
                             <img 
                               src={relatedVideo.thumbnailUrl} 
-                              alt={relatedVideo.title}
+                              alt={`${relatedVideo.title} - Senior Care Video Massachusetts`}
+                              title={`${relatedVideo.title} - Private InHome CareGiver`}
                               className="w-full h-full object-cover"
                             />
                           )}

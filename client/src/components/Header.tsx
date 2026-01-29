@@ -41,7 +41,8 @@ export default function Header() {
             <Link href="/" className="hover-elevate px-2 py-1 rounded-md transition" data-testid="link-logo">
               <img 
                 src={logo} 
-                alt="Private InHome CareGiver - Everyone Deserves Compassion & Dignity" 
+                alt="Private InHome CareGiver - Premium Private Pay In-Home Senior Care Services in Massachusetts" 
+                title="Private InHome CareGiver - Trusted Senior Care Across Massachusetts"
                 className="h-[150px] md:h-[200px] lg:h-[250px] w-auto object-contain"
                 data-testid="img-logo"
               />

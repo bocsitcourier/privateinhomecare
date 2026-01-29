@@ -322,7 +322,8 @@ export default function CityPage() {
               <div className="absolute inset-0 z-0">
                 <img 
                   src={heroImageUrl} 
-                  alt={`${cityName}, Massachusetts`}
+                  alt={`Private pay in-home senior care services in ${cityName}, Massachusetts - Trusted local caregivers`}
+                  title={`Premium In-Home Care for Seniors - ${cityName}, MA`}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/30 to-black/20" />

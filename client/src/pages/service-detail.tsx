@@ -149,7 +149,8 @@ export default function ServiceDetailPage() {
           <div className="absolute inset-0">
             <img 
               src={getServiceHeroImage(serviceKey)}
-              alt={service.title}
+              alt={`${service.title} - Private pay in-home senior care services in Massachusetts`}
+              title={`${service.title} - Premium Private Care Massachusetts`}
               className="w-full h-full object-cover"
               data-testid="img-service-hero"
             />

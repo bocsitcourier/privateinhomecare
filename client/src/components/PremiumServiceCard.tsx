@@ -36,7 +36,8 @@ export default function PremiumServiceCard({
         <div className="relative group overflow-hidden rounded-2xl shadow-xl">
           <img
             src={image}
-            alt={title}
+            alt={`${title} - Private pay in-home senior care services in Massachusetts`}
+            title={`${title} - Premium Private Care MA`}
             className="w-full h-64 lg:h-80 object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
           />

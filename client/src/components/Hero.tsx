@@ -9,7 +9,8 @@ export default function Hero() {
       <div className="absolute inset-0">
         <img 
           src={heroImage} 
-          alt="Private in-home caregiver providing compassionate care to elderly patient"
+          alt="Private pay in-home caregiver providing compassionate senior care in Massachusetts - Boston, Cambridge, Newton"
+          title="Premium Private In-Home Care Services for Seniors in Massachusetts"
           className="w-full h-full object-cover object-center opacity-85"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-900/50 via-slate-900/30 to-transparent" />

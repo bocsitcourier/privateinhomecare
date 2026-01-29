@@ -173,6 +173,7 @@ export default function CareTypeStatePage() {
           <img 
             src={getCareTypeImage(careTypeSlug || "personal-care").hero}
             alt={getCareTypeImage(careTypeSlug || "personal-care").alt}
+            title={getCareTypeImage(careTypeSlug || "personal-care").title}
             className="w-full h-full object-cover"
             data-testid="img-hero"
           />

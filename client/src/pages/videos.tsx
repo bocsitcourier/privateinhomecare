@@ -124,7 +124,8 @@ export default function VideosPage() {
                                 {video.thumbnailUrl ? (
                                   <img 
                                     src={video.thumbnailUrl} 
-                                    alt={video.title}
+                                    alt={`${video.title} - Senior Care Video Massachusetts`}
+                                    title={`${video.title} - Private InHome CareGiver`}
                                     className="w-full h-full object-cover"
                                   />
                                 ) : (
@@ -179,7 +180,8 @@ export default function VideosPage() {
                                 {video.thumbnailUrl ? (
                                   <img 
                                     src={video.thumbnailUrl} 
-                                    alt={video.title}
+                                    alt={`${video.title} - Senior Care Video Massachusetts`}
+                                    title={`${video.title} - Private InHome CareGiver`}
                                     className="w-full h-full object-cover"
                                   />
                                 ) : (

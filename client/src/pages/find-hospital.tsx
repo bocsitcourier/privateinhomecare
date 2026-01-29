@@ -137,7 +137,8 @@ export default function FindHospitalPage() {
             <div className="absolute inset-0 z-0">
               <img 
                 src={heroImage} 
-                alt="Healthcare in Massachusetts"
+                alt="Massachusetts hospitals and healthcare facilities - Find senior care after hospital discharge in Boston, Worcester, Springfield"
+                title="Massachusetts Hospital Directory - Private In-Home Care After Discharge"
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/85 to-background/70" />
@@ -365,7 +366,8 @@ export default function FindHospitalPage() {
                   <div className="rounded-lg overflow-hidden shadow-lg">
                     <img 
                       src={recoveryImage} 
-                      alt="Recovering at home with in-home care support"
+                      alt="Senior recovering at home with private pay in-home care support after Massachusetts hospital discharge"
+                      title="Post-Hospital Recovery Care - Private In-Home Services Massachusetts"
                       className="w-full h-64 object-cover"
                     />
                   </div>

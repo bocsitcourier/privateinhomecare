@@ -424,7 +424,8 @@ export default function DirectoryPage() {
               <div className="relative">
                 <img 
                   src={careImage1} 
-                  alt="Professional caregiver with elderly patient" 
+                  alt="Private pay caregiver providing professional in-home care for seniors across all 65 Massachusetts communities" 
+                  title="Massachusetts Care Directory - Private In-Home Senior Care Services"
                   className="rounded-2xl shadow-xl w-full"
                 />
                 <div className="absolute -bottom-6 -left-6 bg-white rounded-xl shadow-lg p-4 max-w-xs">

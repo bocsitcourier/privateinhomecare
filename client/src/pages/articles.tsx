@@ -65,7 +65,8 @@ export default function ArticlesPage() {
                     {article.heroImageUrl && (
                       <img 
                         src={article.heroImageUrl} 
-                        alt={article.title}
+                        alt={`${article.title} - Senior Care Resources Massachusetts`}
+                        title={`${article.title} - Private InHome CareGiver`}
                         className="w-full h-48 object-cover rounded-t-lg"
                         data-testid={`img-article-${article.id}`}
                       />

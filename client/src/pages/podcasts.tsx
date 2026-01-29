@@ -135,7 +135,8 @@ export default function PodcastsPage() {
                                     {podcast.thumbnailUrl ? (
                                       <img 
                                         src={podcast.thumbnailUrl} 
-                                        alt={podcast.title}
+                                        alt={`${podcast.title} - Senior Care Podcast Massachusetts`}
+                                        title={`${podcast.title} - Private InHome CareGiver`}
                                         className="w-full h-full object-cover"
                                       />
                                     ) : (
@@ -196,7 +197,8 @@ export default function PodcastsPage() {
                                     {podcast.thumbnailUrl ? (
                                       <img 
                                         src={podcast.thumbnailUrl} 
-                                        alt={podcast.title}
+                                        alt={`${podcast.title} - Senior Care Podcast Massachusetts`}
+                                        title={`${podcast.title} - Private InHome CareGiver`}
                                         className="w-full h-full object-cover"
                                       />
                                     ) : (

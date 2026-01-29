@@ -7,49 +7,57 @@ import liveInCareImg from "@assets/private-in-home-care-after-discharge-greater-
 import postHospitalCareImg from "@assets/in-home-help-after-hospital-discharge-boston_1769694632453.png";
 import hospiceCareImg from "@assets/in-home-help-costs-mass-general-boston_1769694632454.png";
 
-export const CARE_TYPE_IMAGES: Record<string, { hero: string; thumbnail: string; alt: string }> = {
+export const CARE_TYPE_IMAGES: Record<string, { hero: string; thumbnail: string; alt: string; title: string }> = {
   "personal-care": {
     hero: personalCareImg,
     thumbnail: personalCareImg,
-    alt: "Caregiver providing personal care assistance to elderly client"
+    alt: "Private pay personal care assistance for seniors in Massachusetts - Boston, Cambridge, Newton caregivers",
+    title: "Personal Care Services - Private In-Home Senior Care Massachusetts"
   },
   "companionship": {
     hero: companionshipImg,
     thumbnail: companionshipImg,
-    alt: "Companion caregiver engaging with senior client"
+    alt: "Private companion caregiver engaging with elderly client in Massachusetts home - Greater Boston area",
+    title: "Companionship Care - Private Senior Services Massachusetts"
   },
   "homemaking": {
     hero: homemakingImg,
     thumbnail: homemakingImg,
-    alt: "Professional home care and homemaking services"
+    alt: "Professional private pay homemaking services for seniors in Massachusetts - Light housekeeping and meal prep",
+    title: "Homemaking Services - Private In-Home Care Massachusetts"
   },
   "dementia-care": {
     hero: dementiaCareImg,
     thumbnail: dementiaCareImg,
-    alt: "Specialized dementia and Alzheimer's care support"
+    alt: "Specialized private dementia and Alzheimer's care support for seniors in Massachusetts - Memory care at home",
+    title: "Dementia Care - Private Memory Care Services Massachusetts"
   },
   "respite-care": {
     hero: respiteCareImg,
     thumbnail: respiteCareImg,
-    alt: "Respite care providing relief for family caregivers"
+    alt: "Private respite care providing relief for Massachusetts family caregivers - Temporary senior care support",
+    title: "Respite Care - Private Family Caregiver Relief Massachusetts"
   },
   "live-in-care": {
     hero: liveInCareImg,
     thumbnail: liveInCareImg,
-    alt: "24/7 live-in caregiver assistance at home"
+    alt: "24/7 private live-in caregiver assistance for seniors in Massachusetts - Round-the-clock home care",
+    title: "Live-In Care - 24/7 Private Senior Care Massachusetts"
   },
   "post-hospital-care": {
     hero: postHospitalCareImg,
     thumbnail: postHospitalCareImg,
-    alt: "Post-hospital recovery care and support services"
+    alt: "Private post-hospital recovery care for seniors after Massachusetts hospital discharge - Boston area",
+    title: "Post-Hospital Care - Private Recovery Support Massachusetts"
   },
   "hospice-palliative-care": {
     hero: hospiceCareImg,
     thumbnail: hospiceCareImg,
-    alt: "Compassionate hospice and palliative care support"
+    alt: "Compassionate private hospice and palliative care support for seniors in Massachusetts - End-of-life care",
+    title: "Hospice Care - Private Palliative Support Massachusetts"
   }
 };
 
-export function getCareTypeImage(careType: string): { hero: string; thumbnail: string; alt: string } {
+export function getCareTypeImage(careType: string): { hero: string; thumbnail: string; alt: string; title: string } {
   return CARE_TYPE_IMAGES[careType] || CARE_TYPE_IMAGES["personal-care"];
 }

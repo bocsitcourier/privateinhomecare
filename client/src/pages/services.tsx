@@ -417,19 +417,22 @@ export default function ServicesPage() {
                   <div className="space-y-4">
                     <img
                       src={heroImage1}
-                      alt="Compassionate caregiver with senior"
+                      alt="Private pay caregiver providing compassionate senior care in Boston, Massachusetts"
+                      title="Premium In-Home Senior Care - Boston MA"
                       className="rounded-2xl shadow-xl w-full h-48 object-cover"
                     />
                     <img
                       src={heroImage2}
-                      alt="In-home care assistance"
+                      alt="Professional in-home care assistance for elderly patients in Greater Boston area"
+                      title="Private Pay Home Care Services - Greater Boston"
                       className="rounded-2xl shadow-xl w-full h-32 object-cover"
                     />
                   </div>
                   <div className="pt-8">
                     <img
                       src={heroImage3}
-                      alt="Professional home care services"
+                      alt="Trusted private home care services for seniors in Worcester County, Massachusetts"
+                      title="Professional Senior Care - Worcester MA"
                       className="rounded-2xl shadow-xl w-full h-64 object-cover"
                     />
                   </div>
@@ -484,7 +487,8 @@ export default function ServicesPage() {
                     <div className="lg:w-2/5 relative group overflow-hidden">
                       <img 
                         src={serviceImage}
-                        alt={`${service.title} - In-home care services Massachusetts`}
+                        alt={`${service.title} - Private pay in-home care services for seniors in Massachusetts`}
+                        title={`${service.title} - Premium Senior Care MA`}
                         className="w-full h-64 lg:h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         loading="lazy"
                         data-testid={`img-service-${service.key}`}

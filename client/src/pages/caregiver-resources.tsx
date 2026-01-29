@@ -290,7 +290,8 @@ export default function CaregiverResourcesPage() {
                           <div className="aspect-video overflow-hidden rounded-t-lg">
                             <img 
                               src={article.heroImageUrl} 
-                              alt={article.title}
+                              alt={`${article.title} - Caregiver Resources Massachusetts`}
+                              title={`${article.title} - Private InHome CareGiver`}
                               className="w-full h-full object-cover"
                             />
                           </div>

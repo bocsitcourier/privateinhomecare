@@ -106,7 +106,8 @@ export default function CaregiverProfilePage() {
                   {caregiver.photoUrl ? (
                     <img 
                       src={caregiver.photoUrl} 
-                      alt={caregiver.name}
+                      alt={`${caregiver.name} - Private in-home caregiver serving ${caregiver.location}, Massachusetts`}
+                      title={`${caregiver.name} - Massachusetts Private Caregiver`}
                       className="w-32 h-32 rounded-lg object-cover"
                     />
                   ) : (
