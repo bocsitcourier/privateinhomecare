@@ -31,9 +31,9 @@ import {
 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
-import heroImage from "@assets/stock_images/elderly_care_caregiv_e43826bf.jpg";
-import careImage1 from "@assets/stock_images/professional_home_ca_b42d5493.jpg";
-import careImage2 from "@assets/stock_images/senior_companion_car_36a9cbbd.jpg";
+import heroImage from "@assets/images/directory-hero.png";
+import careImage1 from "@assets/images/directory-care-1.png";
+import careImage2 from "@assets/images/directory-care-2.png";
 
 interface MaLocation {
   id: string;

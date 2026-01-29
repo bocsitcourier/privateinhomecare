@@ -1,10 +1,10 @@
-import nursingHomeImg from "@assets/stock_images/elderly_care_caregiv_71009293.jpg";
-import assistedLivingImg from "@assets/stock_images/elderly_care_caregiv_283cf488.jpg";
-import memoryCareImg from "@assets/stock_images/senior_dementia_alzh_a04ebee0.jpg";
-import independentLivingImg from "@assets/stock_images/elderly_senior_care__9dce600a.jpg";
-import continuingCareImg from "@assets/stock_images/elderly_care_caregiv_2dabe619.jpg";
-import hospiceImg from "@assets/stock_images/family_caregiver_wit_aee9cbea.jpg";
-import hospitalImg from "@assets/stock_images/elderly_senior_care__aea077be.jpg";
+import nursingHomeImg from "@assets/images/facility-types/nursing-home.png";
+import assistedLivingImg from "@assets/images/facility-types/assisted-living.png";
+import memoryCareImg from "@assets/images/facility-types/memory-care.png";
+import independentLivingImg from "@assets/images/facility-types/independent-living.png";
+import continuingCareImg from "@assets/images/facility-types/continuing-care.png";
+import hospiceImg from "@assets/images/facility-types/hospice.png";
+import hospitalImg from "@assets/images/facility-types/hospital.png";
 
 export const FACILITY_TYPE_IMAGES: Record<string, { hero: string; thumbnail: string; alt: string }> = {
   "nursing-home": {

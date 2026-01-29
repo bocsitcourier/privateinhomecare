@@ -1,11 +1,11 @@
-import personalCareImg from "@assets/stock_images/elderly_care_caregiv_e43826bf.jpg";
-import companionshipImg from "@assets/stock_images/senior_companion_car_36a9cbbd.jpg";
-import homemakingImg from "@assets/stock_images/professional_home_ca_b42d5493.jpg";
-import dementiaCareImg from "@assets/stock_images/dementia_alzheimer_e_33623aa0.jpg";
-import respiteCareImg from "@assets/stock_images/respite_care_break_c_9c0cb1f6.jpg";
-import liveInCareImg from "@assets/stock_images/elderly_care_caregiv_3d01a824.jpg";
-import postHospitalCareImg from "@assets/stock_images/elderly_senior_care__4a0f33b0.jpg";
-import hospiceCareImg from "@assets/stock_images/family_caregiver_wit_2b3524ad.jpg";
+import personalCareImg from "@assets/images/care-types/personal-care.png";
+import companionshipImg from "@assets/images/care-types/companionship.png";
+import homemakingImg from "@assets/images/care-types/homemaking.png";
+import dementiaCareImg from "@assets/images/care-types/dementia-care.png";
+import respiteCareImg from "@assets/images/care-types/respite-care.png";
+import liveInCareImg from "@assets/images/care-types/live-in-care.png";
+import postHospitalCareImg from "@assets/images/care-types/post-hospital-care.png";
+import hospiceCareImg from "@assets/images/care-types/hospice-care.png";
 
 export const CARE_TYPE_IMAGES: Record<string, { hero: string; thumbnail: string; alt: string }> = {
   "personal-care": {
