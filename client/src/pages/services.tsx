@@ -8,17 +8,17 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { SERVICE_FAQS, GENERAL_HOME_CARE_FAQS } from "@/constants/serviceFaqs";
 
-import heroImage1 from "@/assets/images/hero-diverse-1.jpg";
-import heroImage2 from "@/assets/images/hero-diverse-2.jpg";
-import heroImage3 from "@/assets/images/hero-diverse-3.jpg";
-import personalCareImg from "@/assets/images/service-personal-care.jpg";
-import companionshipImg from "@/assets/images/service-companionship.jpg";
-import homemakingImg from "@/assets/images/service-homemaking.jpg";
-import dementiaCareImg from "@/assets/images/service-dementia-care.jpg";
-import respiteCareImg from "@/assets/images/service-respite-care.jpg";
-import liveInCareImg from "@/assets/images/service-live-in-care.jpg";
-import postHospitalImg from "@/assets/images/service-post-hospital.jpg";
-import hospiceImg from "@/assets/images/service-hospice.jpg";
+import heroImage1 from "@assets/private-in-home-care-boston-medical-center_1769694632455.png";
+import heroImage2 from "@assets/private-in-home-care-after-discharge-greater-boston_1769694632456.png";
+import heroImage3 from "@assets/find-trustworthy-in-home-caregiver-services-in-worcester-ma_1769694632457.png";
+import personalCareImg from "@assets/non-medical-caregiver-cost-cambridge-ma_1769694632458.png";
+import companionshipImg from "@assets/private-in-home-care-after-discharge-greater-boston_1769694632456.png";
+import homemakingImg from "@assets/hire-non-medical-caregiver-marlborough-ma_1769694632457.png";
+import dementiaCareImg from "@assets/how-to-choose-the-right-in-home-care-after-hebrew-senior-life-_1769694632449.png";
+import respiteCareImg from "@assets/concierge-care-in-massachusetts-private-inhome-caregiver_1769694567019.png";
+import liveInCareImg from "@assets/Guide_to_Private_Pay_Home_Care_in_Newton,_Wellesley_&_Lexingto_1769694567038.png";
+import postHospitalImg from "@assets/guide-to-in-home-support-for-seniors-discharged-from-hospital_1769694632455.png";
+import hospiceImg from "@assets/home-care-faqs-greater-boston-private-inhome-caregiver_1769694632457.png";
 
 const SERVICE_IMAGES: Record<string, string> = {
   "personal-care": personalCareImg,

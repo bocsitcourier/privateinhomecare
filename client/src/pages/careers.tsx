@@ -17,6 +17,7 @@ import { Briefcase, MapPin, DollarSign, Clock, ArrowRight } from "lucide-react";
 import ReCAPTCHA from "react-google-recaptcha";
 import Header from "@/components/Header";
 import ResumeUpload from "@/components/ResumeUpload";
+import careersHeroImage from "@assets/find-trustworthy-in-home-caregiver-services-in-worcester-ma_1769694632457.png";
 
 export default function CareersPage() {
   const { toast } = useToast();
@@ -201,26 +202,40 @@ export default function CareersPage() {
       <Header />
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/5 to-secondary/5 py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-page-title">
-            Join Our Team: Caregivers Who Bring Compassion Home
-          </h1>
-          <h2 className="text-2xl md:text-3xl font-semibold text-primary mb-4">
-            A Career Where Excellence Meets Empathy
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            At <strong>Private InHome CareGiver</strong>, we believe that caring for others is one of the highest honors, and our caregivers are the heart of our premium, private-pay service. We are not just hiring hands; we are seeking professional, compassionate individuals who are motivated by a deep desire to make a meaningful difference in the lives of seniors and their families.
-          </p>
-          <div className="mt-8 flex justify-center">
-            <Button 
-              size="lg" 
-              onClick={() => setLocation("/apply")}
-              data-testid="button-apply-hero"
-            >
-              Apply Now
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+      <section className="relative bg-gradient-to-br from-primary/5 to-secondary/5 py-16 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="text-center lg:text-left">
+              <h1 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-page-title">
+                Join Our Team: Caregivers Who Bring Compassion Home
+              </h1>
+              <h2 className="text-2xl md:text-3xl font-semibold text-primary mb-4">
+                A Career Where Excellence Meets Empathy
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto lg:mx-0">
+                At <strong>Private InHome CareGiver</strong>, we believe that caring for others is one of the highest honors, and our caregivers are the heart of our premium, private-pay service. We are not just hiring hands; we are seeking professional, compassionate individuals who are motivated by a deep desire to make a meaningful difference in the lives of seniors and their families.
+              </p>
+              <div className="mt-8 flex justify-center lg:justify-start">
+                <Button 
+                  size="lg" 
+                  onClick={() => setLocation("/apply")}
+                  data-testid="button-apply-hero"
+                >
+                  Apply Now
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+            <div className="relative hidden lg:block">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                <img 
+                  src={careersHeroImage} 
+                  alt="Professional caregiver providing compassionate care to a senior in Massachusetts"
+                  className="w-full h-auto object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+              </div>
+            </div>
           </div>
         </div>
       </section>
