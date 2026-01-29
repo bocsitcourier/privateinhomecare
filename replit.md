@@ -59,6 +59,26 @@ The database schema includes tables for users, jobs, articles (with FAQs), inqui
 
 Security is multi-layered, incorporating `bcrypt` for password hashing, `express-session` with a PostgreSQL-backed store, `helmet` for security headers, API hardening against common vulnerabilities, anti-spam measures (honeypot, disposable email blocking, server-side CAPTCHA), IP-based geo-blocking, DOMPurify for HTML sanitization, and audit logging. Admin login supports reCAPTCHA. SSN fields have been removed for compliance.
 
+#### HIPAA Technical Safeguards
+The platform implements HIPAA Security Rule technical safeguards (§164.312):
+
+- **Automatic Logoff (§164.312(a)(2)(iii))**: 15-minute inactivity timeout with rolling sessions. Session timeout warning component (`client/src/components/SessionTimeoutWarning.tsx`) displays non-dismissable dialog at 2 minutes before expiry, forcing user to either continue or logout. Session extend endpoint (`POST /api/session/extend`) resets rolling timeout on user activity.
+- **Audit Controls (§164.312(b))**: Enhanced HIPAA audit middleware (`server/middleware/hipaa-audit.ts`) provides structured logging with PHI field detection, action classification (CREATE/READ/UPDATE/DELETE/EXPORT/LOGIN/LOGOUT), user attribution via session.userId, IP/user-agent tracking, and outcome logging (success/failure).
+- **Transmission Security (§164.312(e)(1))**: TLS 1.3 enforced, HTTPS-only, helmet security headers configured in server/index.ts.
+- **Access Control (§164.312(a)(1))**: reCAPTCHA v2 on all 7 PHI form endpoints (inquiries, intake, referrals, job applications, general apply, non-solicitation, initial-assessment), session-based authentication for admin portal.
+- **PHI Field-Level Encryption Utility (§164.312(a)(2)(iv))**: Ready utility at `server/utils/phi-encryption.ts` using AES-256-GCM with scrypt key derivation. Integration into storage layer deferred pending data migration strategy for PHI fields (dateOfBirth, healthInsuranceNo, medicalHistory in intake forms).
+
+**PHI Form Endpoints with reCAPTCHA**: All 7 endpoints validate captchaToken server-side before processing:
+- POST /api/inquiries
+- POST /api/intake
+- POST /api/referrals
+- POST /api/jobs/:id/apply
+- POST /api/jobs/general-apply
+- POST /api/forms/non-solicitation
+- POST /api/forms/initial-assessment
+
+**Documentation**: Comprehensive HIPAA deployment checklist at `docs/HIPAA_DEPLOYMENT_CHECKLIST.md`.
+
 Content management supports draft/published states and uses TipTap for rich text editing. The platform includes a lead magnet system, a 4-step job application process, a dedicated consultation system, and a comprehensive health care plan assessment intake form. A dual-purpose HIPAA NPP and consumer Privacy Policy is implemented. Automated email notifications via Resend API are configured for inquiries, applications, and referrals.
 
 The Admin Dashboard offers comprehensive management with KPI statistics, filterable data tables, detailed modals for submissions, and status tracking.
