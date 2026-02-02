@@ -79,6 +79,7 @@ import {
 import { randomUUID } from "crypto";
 import { slugify, generateUniqueSlug } from "@shared/utils";
 import { eq, and, or, desc, sql, isNull, gte, lte } from "drizzle-orm";
+import { db } from "./db";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -2930,7 +2931,7 @@ export class DbStorage implements IStorage {
     }
     
     const existingArticles = await this.db.select({ slug: articles.slug }).from(articles);
-    const existingSlugs = existingArticles.map(a => a.slug);
+    const existingSlugs = existingArticles.map((a: { slug: string }) => a.slug);
     slug = generateUniqueSlug(slug, existingSlugs);
     
     const result = await this.db.insert(articles).values({
@@ -2950,12 +2951,12 @@ export class DbStorage implements IStorage {
     if (updates.slug) {
       newSlug = slugify(updates.slug);
       const existingArticles = await this.db.select({ slug: articles.slug }).from(articles).where(sql`${articles.id} != ${id}`);
-      const existingSlugs = existingArticles.map(a => a.slug);
+      const existingSlugs = existingArticles.map((a: { slug: string }) => a.slug);
       newSlug = generateUniqueSlug(newSlug, existingSlugs);
     } else if (updates.title && updates.title !== existing.title) {
       const baseSlug = slugify(updates.title);
       const existingArticles = await this.db.select({ slug: articles.slug }).from(articles).where(sql`${articles.id} != ${id}`);
-      const existingSlugs = existingArticles.map(a => a.slug);
+      const existingSlugs = existingArticles.map((a: { slug: string }) => a.slug);
       newSlug = generateUniqueSlug(baseSlug, existingSlugs);
     }
     
@@ -4410,9 +4411,5 @@ export class DbStorage implements IStorage {
 
 // Development: Use MemStorage (in-memory) for Replit
 // Production: Switch to DbStorage when deploying to Digital Ocean with DATABASE_URL
-// Uncomment the following lines for production with PostgreSQL:
-const { db } = await import("./db");
+// Using DbStorage with PostgreSQL:
 export const storage = new DbStorage(db);
-
-// export const storage = new MemStorage();
-// const { db } = await import("./db");
