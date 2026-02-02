@@ -585,10 +585,10 @@ export default function NonMedicalTransportationPage() {
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button size="lg" variant="secondary" className="gap-2" asChild>
-                <Link href="/consultation">
+                <a href="#request-form">
                   <Car className="w-5 h-5" />
                   Book Transportation
-                </Link>
+                </a>
               </Button>
               <Button size="lg" variant="outline" className="bg-transparent border-white/30 text-white hover:bg-white/10 gap-2" asChild>
                 <a href="tel:+16175550123">
