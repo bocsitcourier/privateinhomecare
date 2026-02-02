@@ -34,8 +34,17 @@ export default function ConciergeRequestsManagement() {
   const [notes, setNotes] = useState("");
   const { toast } = useToast();
 
+  const queryUrl = statusFilter === "all" 
+    ? "/api/admin/concierge-requests" 
+    : `/api/admin/concierge-requests?status=${statusFilter}`;
+  
   const { data: requests = [], isLoading, refetch } = useQuery<ConciergeRequest[]>({
     queryKey: ["/api/admin/concierge-requests", statusFilter],
+    queryFn: async () => {
+      const response = await fetch(queryUrl, { credentials: "include" });
+      if (!response.ok) throw new Error("Failed to fetch concierge requests");
+      return response.json();
+    },
     enabled: true,
   });
 

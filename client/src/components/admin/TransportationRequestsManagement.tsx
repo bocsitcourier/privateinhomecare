@@ -34,8 +34,17 @@ export default function TransportationRequestsManagement() {
   const [notes, setNotes] = useState("");
   const { toast } = useToast();
 
+  const queryUrl = statusFilter === "all" 
+    ? "/api/admin/transportation-requests" 
+    : `/api/admin/transportation-requests?status=${statusFilter}`;
+  
   const { data: requests = [], isLoading, refetch } = useQuery<TransportationRequest[]>({
     queryKey: ["/api/admin/transportation-requests", statusFilter],
+    queryFn: async () => {
+      const response = await fetch(queryUrl, { credentials: "include" });
+      if (!response.ok) throw new Error("Failed to fetch transportation requests");
+      return response.json();
+    },
     enabled: true,
   });
 
