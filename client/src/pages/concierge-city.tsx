@@ -126,20 +126,74 @@ export default function ConciergeCityPage() {
     ]
   };
 
+  const localBusinessSchema = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": `Private InHome CareGiver - Concierge Services ${cityName}`,
+    "description": `Private pay senior concierge services in ${cityName}, ${county} County, Massachusetts`,
+    "image": "https://privateinhomecaregiver.com/images/concierge-services-og.jpg",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": cityName,
+      "addressRegion": "MA",
+      "addressCountry": "US"
+    },
+    "areaServed": {
+      "@type": "City",
+      "name": cityName,
+      "containedInPlace": { "@type": "State", "name": "Massachusetts" }
+    },
+    "priceRange": "$$",
+    "telephone": "(617) 686-0595",
+    "url": `https://privateinhomecaregiver.com/concierge-services/massachusetts/${citySlug}`,
+    "sameAs": ["https://privateinhomecaregiver.com"]
+  };
+
   return (
     <>
       <Helmet>
         <title>Senior Concierge Services {cityName} MA | Private Pay Errands & Appointments | {county} County</title>
         <meta name="description" content={`Private pay senior concierge services in ${cityName}, Massachusetts. Errand running, appointment coordination, medication management, shopping assistance for elderly in ${county} County. Local ${cityName} staff. Free consultation.`} />
         <meta name="keywords" content={`senior concierge ${cityName}, private pay errands ${cityName} MA, elderly shopping assistance ${county} County, appointment coordination ${cityName}, medication management ${cityName}`} />
+        
+        {/* Open Graph / Facebook */}
         <meta property="og:title" content={`Senior Concierge Services ${cityName} MA | Private InHome CareGiver`} />
-        <meta property="og:description" content={`Premium private pay concierge services for seniors in ${cityName}, Massachusetts.`} />
+        <meta property="og:description" content={`Premium private pay concierge services for seniors in ${cityName}, Massachusetts. Errands, appointments, meal planning & lifestyle support in ${county} County.`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`https://privateinhomecaregiver.com/concierge-services/massachusetts/${citySlug}`} />
+        <meta property="og:image" content="https://privateinhomecaregiver.com/images/concierge-services-og.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={`Senior concierge services in ${cityName} Massachusetts - Professional elderly assistance`} />
+        <meta property="og:locale" content="en_US" />
+        <meta property="og:site_name" content="Private InHome CareGiver" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`Senior Concierge Services ${cityName} MA | Private Pay Care`} />
+        <meta name="twitter:description" content={`Private pay concierge services for ${cityName} seniors. Errands, appointments, meal planning in ${county} County.`} />
+        <meta name="twitter:image" content="https://privateinhomecaregiver.com/images/concierge-services-og.jpg" />
+        <meta name="twitter:image:alt" content={`Senior concierge services ${cityName} Massachusetts`} />
+        
+        {/* Geo-targeting */}
         <meta name="geo.region" content="US-MA" />
         <meta name="geo.placename" content={cityName} />
+        
+        {/* AI Search / GEO Optimization */}
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow, max-image-preview:large" />
+        <meta name="author" content="Private InHome CareGiver" />
+        <meta name="topic" content={`Senior Care Services, Concierge Services ${cityName}, Elder Care ${county} County`} />
+        <meta name="summary" content={`Private pay senior concierge services in ${cityName}, ${county} County, Massachusetts. Errand running, appointment coordination, meal planning, medication management support for elderly.`} />
+        <meta name="classification" content="Healthcare Services, Senior Care, Concierge Services" />
+        <meta name="category" content="Senior Care" />
+        <meta name="coverage" content={`${cityName}, ${county} County, Massachusetts`} />
+        
         <link rel="canonical" href={`https://privateinhomecaregiver.com/concierge-services/massachusetts/${citySlug}`} />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(serviceSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(localBusinessSchema)}</script>
       </Helmet>
 
       <Header />

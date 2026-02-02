@@ -126,20 +126,74 @@ export default function TransportationCityPage() {
     ]
   };
 
+  const localBusinessSchema = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": `Private InHome CareGiver - Transportation ${cityName}`,
+    "description": `Private pay senior transportation in ${cityName}, ${county} County, Massachusetts`,
+    "image": "https://privateinhomecaregiver.com/images/transportation-services-og.jpg",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": cityName,
+      "addressRegion": "MA",
+      "addressCountry": "US"
+    },
+    "areaServed": {
+      "@type": "City",
+      "name": cityName,
+      "containedInPlace": { "@type": "State", "name": "Massachusetts" }
+    },
+    "priceRange": "$$",
+    "telephone": "(617) 686-0595",
+    "url": `https://privateinhomecaregiver.com/non-medical-transportation/massachusetts/${citySlug}`,
+    "sameAs": ["https://privateinhomecaregiver.com"]
+  };
+
   return (
     <>
       <Helmet>
         <title>Senior Transportation {cityName} MA | Private Pay Non-Medical Rides | {county} County</title>
         <meta name="description" content={`Private pay senior transportation in ${cityName}, Massachusetts. Medical appointments, dialysis, shopping, wheelchair accessible vehicles. Door-through-door service in ${county} County. Free quote.`} />
         <meta name="keywords" content={`senior transportation ${cityName}, private pay elderly rides ${cityName} MA, wheelchair transport ${county} County, medical appointment rides ${cityName}, dialysis transportation ${cityName}`} />
+        
+        {/* Open Graph / Facebook */}
         <meta property="og:title" content={`Senior Transportation ${cityName} MA | Private InHome CareGiver`} />
-        <meta property="og:description" content={`Private pay non-medical transportation for seniors in ${cityName}, Massachusetts.`} />
+        <meta property="og:description" content={`Private pay non-medical transportation for seniors in ${cityName}, Massachusetts. Medical appointments, dialysis, shopping in ${county} County.`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`https://privateinhomecaregiver.com/non-medical-transportation/massachusetts/${citySlug}`} />
+        <meta property="og:image" content="https://privateinhomecaregiver.com/images/transportation-services-og.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={`Senior transportation services in ${cityName} Massachusetts - Wheelchair accessible rides`} />
+        <meta property="og:locale" content="en_US" />
+        <meta property="og:site_name" content="Private InHome CareGiver" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`Senior Transportation ${cityName} MA | Private Pay Rides`} />
+        <meta name="twitter:description" content={`Private pay transportation for ${cityName} seniors. Medical appointments, dialysis, wheelchair accessible in ${county} County.`} />
+        <meta name="twitter:image" content="https://privateinhomecaregiver.com/images/transportation-services-og.jpg" />
+        <meta name="twitter:image:alt" content={`Senior transportation ${cityName} Massachusetts`} />
+        
+        {/* Geo-targeting */}
         <meta name="geo.region" content="US-MA" />
         <meta name="geo.placename" content={cityName} />
+        
+        {/* AI Search / GEO Optimization */}
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow, max-image-preview:large" />
+        <meta name="author" content="Private InHome CareGiver" />
+        <meta name="topic" content={`Senior Transportation ${cityName}, Non-Medical Rides, Elder Care ${county} County`} />
+        <meta name="summary" content={`Private pay senior transportation in ${cityName}, ${county} County, Massachusetts. Door-through-door service for medical appointments, dialysis, shopping, and social activities.`} />
+        <meta name="classification" content="Healthcare Services, Senior Transportation, Non-Medical Rides" />
+        <meta name="category" content="Senior Transportation" />
+        <meta name="coverage" content={`${cityName}, ${county} County, Massachusetts`} />
+        
         <link rel="canonical" href={`https://privateinhomecaregiver.com/non-medical-transportation/massachusetts/${citySlug}`} />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(serviceSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(localBusinessSchema)}</script>
       </Helmet>
 
       <Header />

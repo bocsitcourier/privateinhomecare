@@ -276,13 +276,50 @@ export default function NonMedicalTransportationPage() {
         <title>Non-Medical Transportation for Seniors Massachusetts | Private Pay Elderly Transport | Boston, Cambridge, Worcester</title>
         <meta name="description" content="Private pay non-medical transportation for seniors in Massachusetts. Door-through-door service to medical appointments, dialysis, shopping, and social activities. Wheelchair accessible. Serving Boston, Cambridge, Worcester, Newton, and all MA cities. Free quote." />
         <meta name="keywords" content="non-medical transportation Massachusetts, senior transport Boston, elderly transportation Cambridge, wheelchair accessible rides Worcester, dialysis transportation MA, medical appointment transport Newton, private pay senior rides Brookline, door-to-door elderly transport Quincy" />
+        
+        {/* Open Graph / Facebook */}
         <meta property="og:title" content="Non-Medical Senior Transportation Massachusetts | Private InHome CareGiver" />
-        <meta property="og:description" content="Private pay transportation for seniors throughout Massachusetts. Medical appointments, dialysis, shopping, and social activities. Door-through-door service." />
+        <meta property="og:description" content="Private pay transportation for seniors throughout Massachusetts. Medical appointments, dialysis, shopping, and social activities. Door-through-door service. Serving Boston, Cambridge, Worcester & 60+ cities." />
         <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://privateinhomecaregiver.com/non-medical-transportation/massachusetts" />
+        <meta property="og:image" content="https://privateinhomecaregiver.com/images/transportation-services-og.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="Non-medical senior transportation in Massachusetts - Wheelchair accessible door-through-door service" />
         <meta property="og:locale" content="en_US" />
+        <meta property="og:site_name" content="Private InHome CareGiver" />
+        
+        {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Non-Medical Senior Transportation Massachusetts | Private Pay" />
+        <meta name="twitter:description" content="Private pay transportation for MA seniors. Medical appointments, dialysis, wheelchair accessible. Boston, Cambridge, Worcester & 60+ cities." />
+        <meta name="twitter:image" content="https://privateinhomecaregiver.com/images/transportation-services-og.jpg" />
+        <meta name="twitter:image:alt" content="Senior transportation Massachusetts - Wheelchair accessible rides" />
+        
+        {/* Geo-targeting */}
         <meta name="geo.region" content="US-MA" />
         <meta name="geo.placename" content="Massachusetts" />
+        <meta name="geo.position" content="42.3601;-71.0589" />
+        <meta name="ICBM" content="42.3601, -71.0589" />
+        
+        {/* AI Search / GEO Optimization */}
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow, max-image-preview:large" />
+        <meta name="bingbot" content="index, follow" />
+        <meta name="author" content="Private InHome CareGiver" />
+        <meta name="publisher" content="Private InHome CareGiver" />
+        <meta name="copyright" content="2025 Private InHome CareGiver" />
+        <meta name="topic" content="Senior Transportation, Non-Medical Rides, Elder Care, Wheelchair Transport" />
+        <meta name="summary" content="Private pay non-medical transportation for seniors in Massachusetts offering door-through-door service for medical appointments, dialysis, shopping, and social activities. Wheelchair accessible vehicles throughout Boston, Cambridge, Worcester and 60+ MA cities." />
+        <meta name="abstract" content="Professional non-medical transportation for Massachusetts seniors including medical appointment rides, dialysis transport, shopping trips, and social activities. Private pay only with wheelchair accessible vehicles and trained companion drivers." />
+        <meta name="classification" content="Healthcare Services, Senior Transportation, Non-Medical Rides" />
+        <meta name="category" content="Senior Transportation" />
+        <meta name="coverage" content="Massachusetts, United States" />
+        <meta name="distribution" content="Global" />
+        <meta name="rating" content="General" />
+        <meta name="revisit-after" content="7 days" />
+        <meta name="target" content="seniors, elderly, caregivers, family members, adult children" />
+        
         <link rel="canonical" href="https://privateinhomecaregiver.com/non-medical-transportation/massachusetts" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(serviceSchema)}</script>
