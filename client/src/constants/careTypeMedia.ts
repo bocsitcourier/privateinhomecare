@@ -1,5 +1,5 @@
 import personalCareImg from "@assets/in-home-care-bidmc-discharge-boston_1769694632453.png";
-import companionshipImg from "@assets/non-medical-caregiver-cost-cambridge-ma_1769694632458.png";
+import companionshipImg from "@assets/Dedicated_private_in-home_caregiver_providing_support_for_seni_1767894946697.png";
 import homemakingImg from "@assets/guide-to-in-home-support-for-seniors-discharged-from-hospital_1769694632455.png";
 import dementiaCareImg from "@assets/how-to-choose-the-right-in-home-care-after-hebrew-senior-life-_1769694632449.png";
 import respiteCareImg from "@assets/private-in-home-care-boston-medical-center_1769694632455.png";
