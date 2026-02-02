@@ -48,7 +48,7 @@ export default function Header() {
                 src={logo} 
                 alt="Private InHome CareGiver - Premium Private Pay In-Home Senior Care Services in Massachusetts" 
                 title="Private InHome CareGiver - Trusted Senior Care Across Massachusetts"
-                className="h-[50px] md:h-[60px] lg:h-[70px] w-auto object-contain"
+                className="h-[100px] md:h-[120px] lg:h-[140px] w-auto object-contain"
                 data-testid="img-logo"
               />
             </Link>
