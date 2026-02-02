@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Briefcase, FileText, MessageSquare, CheckCircle, Users, HelpCircle, ClipboardList, Gift, FileCheck, Eye, TrendingUp, Video, Headphones } from "lucide-react";
+import { Briefcase, FileText, MessageSquare, CheckCircle, Users, HelpCircle, ClipboardList, Gift, FileCheck, Eye, TrendingUp, Video, Headphones, Sparkles, Car } from "lucide-react";
 import { Link } from "wouter";
 
 interface AnalyticsSummary {
@@ -38,6 +38,14 @@ export default function AdminDashboard() {
   });
   const { data: referrals } = useQuery({ 
     queryKey: ["/api/admin/referrals"],
+    refetchInterval: 30000
+  });
+  const { data: conciergeRequests } = useQuery({ 
+    queryKey: ["/api/admin/concierge-requests"],
+    refetchInterval: 30000
+  });
+  const { data: transportationRequests } = useQuery({ 
+    queryKey: ["/api/admin/transportation-requests"],
     refetchInterval: 30000
   });
   const { data: applications } = useQuery({ 
@@ -93,6 +101,24 @@ export default function AdminDashboard() {
       color: "text-orange-500",
       bgColor: "bg-orange-50 dark:bg-orange-950",
       href: "/admin/referrals"
+    },
+    {
+      title: "Concierge",
+      value: Array.isArray(conciergeRequests) ? conciergeRequests.length : 0,
+      pending: Array.isArray(conciergeRequests) ? conciergeRequests.filter((c: any) => c.status === 'pending').length : 0,
+      icon: Sparkles,
+      color: "text-pink-500",
+      bgColor: "bg-pink-50 dark:bg-pink-950",
+      href: "/admin/concierge"
+    },
+    {
+      title: "Transport",
+      value: Array.isArray(transportationRequests) ? transportationRequests.length : 0,
+      pending: Array.isArray(transportationRequests) ? transportationRequests.filter((t: any) => t.status === 'pending').length : 0,
+      icon: Car,
+      color: "text-teal-500",
+      bgColor: "bg-teal-50 dark:bg-teal-950",
+      href: "/admin/transportation"
     },
   ];
 

@@ -2639,6 +2639,138 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // =============================================
+  // Admin: Concierge Service Requests Management
+  // =============================================
+  app.get("/api/admin/concierge-requests", requireAuth, async (req, res) => {
+    try {
+      const { status } = req.query;
+      const requests = await storage.listConciergeRequests(status as string | undefined);
+      res.json(requests);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/admin/concierge-requests/:id", requireAuth, async (req, res) => {
+    try {
+      const request = await storage.getConciergeRequest(req.params.id);
+      if (!request) {
+        return res.status(404).json({ error: "Concierge request not found" });
+      }
+      res.json(request);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/admin/concierge-requests/:id", requireAuth, async (req, res) => {
+    try {
+      const data = updateConciergeRequestSchema.parse(req.body);
+      const request = await storage.updateConciergeRequest(req.params.id, data);
+      if (!request) {
+        return res.status(404).json({ error: "Concierge request not found" });
+      }
+      res.json(request);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/admin/concierge-requests/:id/status", requireAuth, async (req, res) => {
+    try {
+      const { status } = req.body;
+      if (!status) {
+        return res.status(400).json({ error: "Status is required" });
+      }
+      const request = await storage.updateConciergeRequest(req.params.id, { status });
+      if (!request) {
+        return res.status(404).json({ error: "Concierge request not found" });
+      }
+      res.json(request);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/admin/concierge-requests/:id", requireAuth, async (req, res) => {
+    try {
+      const deleted = await storage.deleteConciergeRequest(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Concierge request not found" });
+      }
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // =============================================
+  // Admin: Transportation Requests Management
+  // =============================================
+  app.get("/api/admin/transportation-requests", requireAuth, async (req, res) => {
+    try {
+      const { status } = req.query;
+      const requests = await storage.listTransportationRequests(status as string | undefined);
+      res.json(requests);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/admin/transportation-requests/:id", requireAuth, async (req, res) => {
+    try {
+      const request = await storage.getTransportationRequest(req.params.id);
+      if (!request) {
+        return res.status(404).json({ error: "Transportation request not found" });
+      }
+      res.json(request);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/admin/transportation-requests/:id", requireAuth, async (req, res) => {
+    try {
+      const data = updateTransportationRequestSchema.parse(req.body);
+      const request = await storage.updateTransportationRequest(req.params.id, data);
+      if (!request) {
+        return res.status(404).json({ error: "Transportation request not found" });
+      }
+      res.json(request);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/admin/transportation-requests/:id/status", requireAuth, async (req, res) => {
+    try {
+      const { status } = req.body;
+      if (!status) {
+        return res.status(400).json({ error: "Status is required" });
+      }
+      const request = await storage.updateTransportationRequest(req.params.id, { status });
+      if (!request) {
+        return res.status(404).json({ error: "Transportation request not found" });
+      }
+      res.json(request);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/admin/transportation-requests/:id", requireAuth, async (req, res) => {
+    try {
+      const deleted = await storage.deleteTransportationRequest(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Transportation request not found" });
+      }
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Robots.txt for SEO
   app.get("/robots.txt", (req, res) => {
     const baseUrl = process.env.REPLIT_DEV_DOMAIN 

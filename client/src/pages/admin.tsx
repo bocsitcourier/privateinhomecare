@@ -30,7 +30,9 @@ import {
   Home,
   FileEdit,
   Megaphone,
-  Database
+  Database,
+  Sparkles,
+  Car
 } from "lucide-react";
 import JobsManagement from "@/components/admin/JobsManagement";
 import ArticlesManagement from "@/components/admin/ArticlesManagement";
@@ -50,6 +52,8 @@ import { VideosManagementContent } from "@/pages/admin/videos";
 import { PodcastsManagementContent } from "@/pages/admin/podcasts";
 import { FacilitiesManagementContent } from "@/pages/admin/facilities";
 import { QuizLeadsManagementContent } from "@/pages/admin/quiz-leads";
+import ConciergeRequestsManagement from "@/components/admin/ConciergeRequestsManagement";
+import TransportationRequestsManagement from "@/components/admin/TransportationRequestsManagement";
 
 interface NavItem {
   id: string;
@@ -79,6 +83,8 @@ const NAV_GROUPS: NavGroup[] = [
       { id: "quizzes", label: "Quiz Leads", icon: <HelpCircle className="w-4 h-4" /> },
       { id: "intake", label: "Intake Forms", icon: <ClipboardList className="w-4 h-4" /> },
       { id: "referrals", label: "Referrals", icon: <Gift className="w-4 h-4" /> },
+      { id: "concierge", label: "Concierge", icon: <Sparkles className="w-4 h-4" /> },
+      { id: "transportation", label: "Transportation", icon: <Car className="w-4 h-4" /> },
     ]
   },
   {
@@ -237,6 +243,8 @@ export default function AdminPage() {
       case "jobs": return <JobsManagement />;
       case "applications": return <ApplicationsManagement />;
       case "referrals": return <ReferralsManagement />;
+      case "concierge": return <ConciergeRequestsManagement />;
+      case "transportation": return <TransportationRequestsManagement />;
       case "articles": return <ArticlesManagement />;
       case "messages": return <InquiriesManagement />;
       case "seo": return <PageMetaManagement />;
