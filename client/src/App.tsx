@@ -63,6 +63,10 @@ const FindHospitalPage = lazy(() => import("@/pages/find-hospital"));
 const ServiceDetailPage = lazy(() => import("@/pages/service-detail"));
 const NonSolicitationAgreementPage = lazy(() => import("@/pages/non-solicitation-agreement"));
 const InitialAssessmentPage = lazy(() => import("@/pages/initial-assessment"));
+const ConciergeServicesPage = lazy(() => import("@/pages/concierge-services"));
+const ConciergeCityPage = lazy(() => import("@/pages/concierge-city"));
+const NonMedicalTransportationPage = lazy(() => import("@/pages/non-medical-transportation"));
+const TransportationCityPage = lazy(() => import("@/pages/transportation-city"));
 
 // Scroll to top on route change
 function ScrollToTop() {
@@ -122,6 +126,10 @@ function Router() {
         <Route path="/live-in-care/massachusetts" component={ServiceDetailPage} />
         <Route path="/overnight-care/massachusetts" component={ServiceDetailPage} />
         <Route path="/post-hospital-care/massachusetts" component={ServiceDetailPage} />
+        <Route path="/concierge-services/massachusetts" component={ConciergeServicesPage} />
+        <Route path="/concierge-services/massachusetts/:citySlug" component={ConciergeCityPage} />
+        <Route path="/non-medical-transportation/massachusetts" component={NonMedicalTransportationPage} />
+        <Route path="/non-medical-transportation/massachusetts/:citySlug" component={TransportationCityPage} />
         <Route path="/facilities" component={FacilityDirectoryPage} />
         <Route path="/facilities/:type" component={FacilityDirectoryPage} />
         <Route path="/facility/:slug" component={FacilityDetailPage} />

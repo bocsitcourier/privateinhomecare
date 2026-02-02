@@ -25,6 +25,8 @@ Specific features include:
 - A statewide senior care Facility Directory covering 7 facility types (nursing homes, assisted living, memory care, independent living, continuing care, hospice, hospitals) with 796+ facilities across all 14 Massachusetts counties, featuring search, filtering, reviews, and type-specific FAQs.
 - A dedicated Hospital Directory (`/find-hospital`) with 60 Massachusetts hospitals, specialty filtering, and ER badge detection.
 - A Quiz Lead Generation System with 12 interactive assessment quizzes for lead capture, scoring, and automated email notifications.
+- **Senior Concierge Services** (`/concierge-services/massachusetts`) - Comprehensive non-medical lifestyle support pages with 8 service types (errand running, appointment coordination, meal planning, medication management, bill organization, special occasions, social engagement, home organization), 12 FAQs, city-specific sub-pages for 24 MA cities, full SEO/GEO optimization with 4 JSON-LD schemas (FAQPage, Service, LocalBusiness, BreadcrumbList).
+- **Non-Medical Transportation** (`/non-medical-transportation/massachusetts`) - Private pay senior transportation service pages with 6 transport types (medical appointments, dialysis, shopping, social, business, recreational), wheelchair accessibility information, 12 FAQs, city-specific sub-pages with local hospital listings, full SEO/GEO optimization.
 
 ### Backend
 

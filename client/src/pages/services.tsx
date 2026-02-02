@@ -1,5 +1,5 @@
 import PageSEO from "@/components/PageSEO";
-import { Heart, Users, Home as HomeIcon, Brain, Clock, Shield, Award, CheckCircle2, Phone, Mail, Hospital, ClipboardList, ArrowRight, Leaf, ChevronDown, Star, MapPin, HelpCircle } from "lucide-react";
+import { Heart, Users, Home as HomeIcon, Brain, Clock, Shield, Award, CheckCircle2, Phone, Mail, Hospital, ClipboardList, ArrowRight, Leaf, ChevronDown, Star, MapPin, HelpCircle, ShoppingCart, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
@@ -29,6 +29,8 @@ const SERVICE_IMAGES: Record<string, string> = {
   "live-in-care": liveInCareImg,
   "post-hospital-care": postHospitalImg,
   "hospice-palliative-care": hospiceImg,
+  "concierge-services": respiteCareImg,
+  "non-medical-transportation": liveInCareImg,
 };
 
 const SERVICES = [
@@ -150,6 +152,36 @@ const SERVICES = [
       "Family caregiver respite",
       "Coordination with hospice medical teams",
       "24/7 availability for families"
+    ]
+  },
+  {
+    key: "concierge-services",
+    title: "Senior Concierge Services",
+    icon: <ShoppingCart className="w-8 h-8 text-primary" />,
+    description: "Professional non-medical lifestyle support including errand running, appointment coordination, meal planning, and organization to help seniors thrive independently.",
+    quizSlug: "",
+    features: [
+      "Grocery shopping and errand running",
+      "Appointment scheduling and coordination",
+      "Medication management support",
+      "Bill organization and paperwork help",
+      "Meal planning and light preparation",
+      "Social engagement accompaniment"
+    ]
+  },
+  {
+    key: "non-medical-transportation",
+    title: "Non-Medical Transportation",
+    icon: <Car className="w-8 h-8 text-primary" />,
+    description: "Safe, reliable door-through-door transportation to medical appointments, dialysis, shopping, and social activities with wheelchair accessible vehicles.",
+    quizSlug: "",
+    features: [
+      "Medical appointment transportation",
+      "Dialysis and treatment rides",
+      "Shopping and errand transportation",
+      "Wheelchair accessible vehicles",
+      "Door-through-door assistance",
+      "Wait time during appointments included"
     ]
   }
 ];
@@ -519,12 +551,21 @@ export default function ServicesPage() {
                             <ArrowRight className="w-4 h-4 ml-2" />
                           </Link>
                         </Button>
-                        <Button asChild variant="outline" data-testid={`button-assessment-${service.key}`}>
-                          <Link href={`/quiz/${service.quizSlug}`}>
-                            <ClipboardList className="w-4 h-4 mr-2" />
-                            Take Assessment
-                          </Link>
-                        </Button>
+                        {service.quizSlug ? (
+                          <Button asChild variant="outline" data-testid={`button-assessment-${service.key}`}>
+                            <Link href={`/quiz/${service.quizSlug}`}>
+                              <ClipboardList className="w-4 h-4 mr-2" />
+                              Take Assessment
+                            </Link>
+                          </Button>
+                        ) : (
+                          <Button asChild variant="outline" data-testid={`button-learn-more-${service.key}`}>
+                            <Link href={`/${service.key}/massachusetts`}>
+                              Learn More
+                              <ArrowRight className="w-4 h-4 ml-2" />
+                            </Link>
+                          </Button>
+                        )}
                       </div>
                       
                       <ServiceFAQAccordion serviceKey={service.key} />
