@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import Header from "@/components/Header";
+import TransportationRequestForm from "@/components/TransportationRequestForm";
 
 const MASSACHUSETTS_CITIES = [
   { name: "Boston", slug: "boston-ma", county: "Suffolk", population: "675,647" },
@@ -489,31 +490,7 @@ export default function NonMedicalTransportationPage() {
                 </div>
               </div>
               
-              <div className="bg-background rounded-2xl p-8 shadow-lg border">
-                <h3 className="text-2xl font-bold text-foreground mb-6 text-center">
-                  Get Your Free Transportation Quote
-                </h3>
-                <p className="text-muted-foreground mb-6 text-center">
-                  Tell us your pickup location, destination, and schedule for an instant quote.
-                </p>
-                <div className="space-y-4">
-                  <Button size="lg" className="w-full gap-2" asChild>
-                    <Link href="/consultation">
-                      <Car className="w-5 h-5" />
-                      Request Free Quote
-                    </Link>
-                  </Button>
-                  <Button size="lg" variant="outline" className="w-full gap-2" asChild>
-                    <a href="tel:+16175550123">
-                      <Phone className="w-5 h-5" />
-                      Call (617) 555-0123
-                    </a>
-                  </Button>
-                </div>
-                <p className="text-sm text-muted-foreground text-center mt-4">
-                  Same-day booking available. No obligation.
-                </p>
-              </div>
+              <TransportationRequestForm />
             </div>
           </div>
         </section>

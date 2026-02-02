@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import Header from "@/components/Header";
+import TransportationRequestForm from "@/components/TransportationRequestForm";
 
 const CITY_DATA: Record<string, { name: string; county: string; population: string; zipCodes: string[]; neighbors: string[]; hospitals: string[] }> = {
   "boston-ma": { name: "Boston", county: "Suffolk", population: "675,647", zipCodes: ["02101", "02108", "02109", "02110", "02111", "02113", "02114", "02115", "02116", "02118", "02119", "02120", "02121", "02122", "02124", "02125", "02126", "02127", "02128", "02129", "02130", "02131", "02132", "02134", "02135", "02136"], neighbors: ["Cambridge", "Brookline", "Somerville", "Quincy", "Newton"], hospitals: ["Mass General Hospital", "Brigham and Women's", "Beth Israel Deaconess", "Boston Medical Center", "Dana-Farber Cancer Institute"] },
@@ -323,6 +324,21 @@ export default function TransportationCityPage() {
                 </AccordionItem>
               ))}
             </Accordion>
+          </div>
+        </section>
+
+        <section id="request-form" className="py-16 bg-primary/5">
+          <div className="max-w-4xl mx-auto px-4">
+            <div className="text-center mb-8">
+              <Badge variant="secondary" className="mb-4">Request Transportation</Badge>
+              <h2 className="text-3xl font-bold text-foreground mb-4">
+                Get Started with Transportation in {cityName}
+              </h2>
+              <p className="text-muted-foreground">
+                Fill out the form below to receive a personalized quote for our senior transportation services.
+              </p>
+            </div>
+            <TransportationRequestForm city={cityName} />
           </div>
         </section>
 
