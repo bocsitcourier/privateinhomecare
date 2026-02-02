@@ -20,6 +20,9 @@ interface HipaaAcknowledgment {
   representativeSignature?: string;
   representativePrintedName?: string;
   representativeSignatureDate?: string;
+  agreedToTerms?: string;
+  agreedToPolicy?: string;
+  agreementTimestamp?: string;
   createdAt: string;
 }
 

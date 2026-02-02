@@ -15,6 +15,9 @@ interface IntakeForm {
   dateOfBirth: string;
   caseRecordNo: string;
   formData: any;
+  agreedToTerms?: string;
+  agreedToPolicy?: string;
+  agreementTimestamp?: string;
   createdAt: string;
 }
 

@@ -1886,3 +1886,22 @@ export const updateTransportationRequestSchema = createInsertSchema(transportati
 export type InsertTransportationRequest = z.infer<typeof insertTransportationRequestSchema>;
 export type UpdateTransportationRequest = z.infer<typeof updateTransportationRequestSchema>;
 export type TransportationRequest = typeof transportationRequests.$inferSelect;
+
+// Chat Integration Tables
+export const conversations = pgTable("conversations", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  title: text("title").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const messages = pgTable("messages", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  conversationId: integer("conversation_id").notNull().references(() => conversations.id),
+  role: text("role").notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type Conversation = typeof conversations.$inferSelect;
+export type Message = typeof messages.$inferSelect;
