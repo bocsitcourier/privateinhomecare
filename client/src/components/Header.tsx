@@ -41,14 +41,14 @@ export default function Header() {
   return (
     <>
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
             <Link href="/" className="hover-elevate px-2 py-1 rounded-md transition" data-testid="link-logo">
               <img 
                 src={logo} 
                 alt="Private InHome CareGiver - Premium Private Pay In-Home Senior Care Services in Massachusetts" 
                 title="Private InHome CareGiver - Trusted Senior Care Across Massachusetts"
-                className="h-[150px] md:h-[200px] lg:h-[250px] w-auto object-contain"
+                className="h-[50px] md:h-[60px] lg:h-[70px] w-auto object-contain"
                 data-testid="img-logo"
               />
             </Link>
