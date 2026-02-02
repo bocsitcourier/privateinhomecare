@@ -309,18 +309,20 @@ export default function ConciergeCityPage() {
           </div>
         </section>
 
-        <section id="request-form" className="py-16 bg-primary/5">
+        <section id="request-form" className="py-16 bg-gradient-to-b from-primary/10 to-primary/5">
           <div className="max-w-4xl mx-auto px-4">
-            <div className="text-center mb-8">
-              <Badge variant="secondary" className="mb-4">Request Services</Badge>
-              <h2 className="text-3xl font-bold text-foreground mb-4">
-                Get Started with Concierge Services in {cityName}
-              </h2>
-              <p className="text-muted-foreground">
-                Fill out the form below to receive a personalized consultation about our senior concierge services.
-              </p>
+            <div className="p-8 bg-background rounded-2xl border-2 border-primary/30 shadow-xl">
+              <div className="text-center mb-8">
+                <Badge className="mb-4 bg-primary text-primary-foreground text-sm px-4 py-1">Get Started Today</Badge>
+                <h2 className="text-3xl font-bold text-foreground mb-4">
+                  Request Concierge Services in {cityName}
+                </h2>
+                <p className="text-muted-foreground text-lg">
+                  Fill out the form below and our {cityName} care team will contact you within 24 hours
+                </p>
+              </div>
+              <ConciergeRequestForm city={cityName} />
             </div>
-            <ConciergeRequestForm city={cityName} />
           </div>
         </section>
 

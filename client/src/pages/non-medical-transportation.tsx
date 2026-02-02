@@ -490,7 +490,14 @@ export default function NonMedicalTransportationPage() {
                 </div>
               </div>
               
-              <TransportationRequestForm />
+              <div id="request-form" className="mt-8 p-6 bg-primary/10 rounded-xl border-2 border-primary/20">
+                <div className="text-center mb-6">
+                  <Badge className="mb-3 bg-primary text-primary-foreground">Get Started Today</Badge>
+                  <h3 className="text-2xl font-bold text-foreground">Request a Free Quote</h3>
+                  <p className="text-muted-foreground mt-2">Fill out the form below and our transportation team will contact you within 24 hours</p>
+                </div>
+                <TransportationRequestForm />
+              </div>
             </div>
           </div>
         </section>
