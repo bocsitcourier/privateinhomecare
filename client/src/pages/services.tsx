@@ -12,7 +12,7 @@ import heroImage1 from "@assets/private-in-home-care-boston-medical-center_17696
 import heroImage2 from "@assets/private-in-home-care-after-discharge-greater-boston_1769694632456.png";
 import heroImage3 from "@assets/find-trustworthy-in-home-caregiver-services-in-worcester-ma_1769694632457.png";
 import personalCareImg from "@assets/non-medical-caregiver-cost-cambridge-ma_1769694632458.png";
-import companionshipImg from "@assets/private-in-home-care-after-discharge-greater-boston_1769694632456.png";
+import companionshipImg from "@assets/senior-companionship-care-service.png";
 import homemakingImg from "@assets/hire-non-medical-caregiver-marlborough-ma_1769694632457.png";
 import dementiaCareImg from "@assets/how-to-choose-the-right-in-home-care-after-hebrew-senior-life-_1769694632449.png";
 import respiteCareImg from "@assets/concierge-care-in-massachusetts-private-inhome-caregiver_1769694567019.png";
