@@ -21,6 +21,11 @@ const careTypes = [
   { slug: "hospice-palliative-care", label: "Hospice & Palliative Care" },
 ];
 
+const additionalServices = [
+  { slug: "concierge-services", label: "Senior Concierge Services" },
+  { slug: "non-medical-transportation", label: "Non-Medical Transportation" },
+];
+
 const careOptions = [
   { slug: "nursing-homes", label: "Nursing Homes" },
   { slug: "assisted-living", label: "Assisted Living" },
@@ -68,6 +73,14 @@ export default function Header() {
                     <DropdownMenuItem key={ct.slug} asChild>
                       <Link href={`/${ct.slug}/massachusetts`} data-testid={`link-${ct.slug}`}>
                         {ct.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                  <div className="h-px bg-border my-1" />
+                  {additionalServices.map((svc) => (
+                    <DropdownMenuItem key={svc.slug} asChild>
+                      <Link href={`/${svc.slug}/massachusetts`} data-testid={`link-${svc.slug}`}>
+                        {svc.label}
                       </Link>
                     </DropdownMenuItem>
                   ))}
@@ -222,6 +235,18 @@ export default function Header() {
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       {ct.label}
+                    </Link>
+                  ))}
+                  <div className="h-px bg-border my-1" />
+                  {additionalServices.map((svc) => (
+                    <Link
+                      key={svc.slug}
+                      href={`/${svc.slug}/massachusetts`}
+                      className="text-foreground hover-elevate px-3 py-2 rounded-md text-sm"
+                      data-testid={`link-${svc.slug}-mobile`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {svc.label}
                     </Link>
                   ))}
                 </div>
