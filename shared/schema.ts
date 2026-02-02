@@ -1738,3 +1738,151 @@ export const updateClientIntakeSchema = createInsertSchema(clientIntakes).omit({
 export type InsertClientIntake = z.infer<typeof insertClientIntakeSchema>;
 export type UpdateClientIntake = z.infer<typeof updateClientIntakeSchema>;
 export type ClientIntake = typeof clientIntakes.$inferSelect;
+
+// ============================================
+// Concierge Services Requests
+// ============================================
+export const conciergeRequests = pgTable("concierge_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  // Contact Information
+  contactName: text("contact_name").notNull(),
+  contactEmail: text("contact_email").notNull(),
+  contactPhone: text("contact_phone").notNull(),
+  relationshipToSenior: text("relationship_to_senior").notNull(),
+  // Senior Information
+  seniorName: text("senior_name").notNull(),
+  seniorAge: text("senior_age"),
+  seniorCity: text("senior_city").notNull(),
+  // Service Preferences
+  servicesNeeded: jsonb("services_needed").$type<string[]>().default([]),
+  frequency: text("frequency").notNull(),
+  preferredDays: jsonb("preferred_days").$type<string[]>().default([]),
+  preferredTimeOfDay: text("preferred_time_of_day"),
+  startDate: text("start_date"),
+  // Additional Details
+  specialRequests: text("special_requests"),
+  howHeardAboutUs: text("how_heard_about_us"),
+  // Honeypot & Consent
+  website: text("website"),
+  agreedToTerms: text("agreed_to_terms").notNull().default("no"),
+  agreedToPolicy: text("agreed_to_policy").notNull().default("no"),
+  agreementTimestamp: timestamp("agreement_timestamp"),
+  // Status Tracking
+  status: text("status").notNull().default("pending"),
+  notes: text("notes"),
+  assignedTo: text("assigned_to"),
+  followUpDate: timestamp("follow_up_date"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertConciergeRequestSchema = createInsertSchema(conciergeRequests).omit({
+  id: true,
+  status: true,
+  notes: true,
+  assignedTo: true,
+  followUpDate: true,
+  agreementTimestamp: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  contactName: z.string().trim().min(1, "Your name is required"),
+  contactEmail: z.string().trim().email("Valid email is required"),
+  contactPhone: z.string().trim().min(1, "Phone number is required"),
+  relationshipToSenior: z.string().min(1, "Relationship is required"),
+  seniorName: z.string().trim().min(1, "Senior's name is required"),
+  seniorCity: z.string().min(1, "City is required"),
+  servicesNeeded: z.array(z.string()).min(1, "Please select at least one service"),
+  frequency: z.string().min(1, "Frequency is required"),
+  preferredDays: z.array(z.string()).default([]),
+  agreedToTerms: z.enum(["yes", "no"]).refine(val => val === "yes", { message: "You must agree to the Terms of Service" }),
+  agreedToPolicy: z.enum(["yes", "no"]).refine(val => val === "yes", { message: "You must agree to the Privacy Policy" }),
+  captchaToken: z.string().min(1, "CAPTCHA verification required"),
+});
+
+export const updateConciergeRequestSchema = createInsertSchema(conciergeRequests).omit({
+  id: true,
+  createdAt: true,
+}).partial();
+
+export type InsertConciergeRequest = z.infer<typeof insertConciergeRequestSchema>;
+export type UpdateConciergeRequest = z.infer<typeof updateConciergeRequestSchema>;
+export type ConciergeRequest = typeof conciergeRequests.$inferSelect;
+
+// ============================================
+// Non-Medical Transportation Requests
+// ============================================
+export const transportationRequests = pgTable("transportation_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  // Contact Information
+  contactName: text("contact_name").notNull(),
+  contactEmail: text("contact_email").notNull(),
+  contactPhone: text("contact_phone").notNull(),
+  relationshipToSenior: text("relationship_to_senior").notNull(),
+  // Senior Information
+  seniorName: text("senior_name").notNull(),
+  seniorAge: text("senior_age"),
+  seniorCity: text("senior_city").notNull(),
+  // Transportation Needs
+  transportTypes: jsonb("transport_types").$type<string[]>().default([]),
+  primaryDestination: text("primary_destination"),
+  frequency: text("frequency").notNull(),
+  preferredDays: jsonb("preferred_days").$type<string[]>().default([]),
+  preferredTimeOfDay: text("preferred_time_of_day"),
+  // Accessibility Needs
+  wheelchairAccessible: text("wheelchair_accessible").notNull().default("no"),
+  mobilityAids: jsonb("mobility_aids").$type<string[]>().default([]),
+  specialAccommodations: text("special_accommodations"),
+  // Additional Details
+  regularAppointments: text("regular_appointments"),
+  startDate: text("start_date"),
+  additionalNotes: text("additional_notes"),
+  howHeardAboutUs: text("how_heard_about_us"),
+  // Honeypot & Consent
+  website: text("website"),
+  agreedToTerms: text("agreed_to_terms").notNull().default("no"),
+  agreedToPolicy: text("agreed_to_policy").notNull().default("no"),
+  agreementTimestamp: timestamp("agreement_timestamp"),
+  // Status Tracking
+  status: text("status").notNull().default("pending"),
+  notes: text("notes"),
+  assignedTo: text("assigned_to"),
+  followUpDate: timestamp("follow_up_date"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertTransportationRequestSchema = createInsertSchema(transportationRequests).omit({
+  id: true,
+  status: true,
+  notes: true,
+  assignedTo: true,
+  followUpDate: true,
+  agreementTimestamp: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  contactName: z.string().trim().min(1, "Your name is required"),
+  contactEmail: z.string().trim().email("Valid email is required"),
+  contactPhone: z.string().trim().min(1, "Phone number is required"),
+  relationshipToSenior: z.string().min(1, "Relationship is required"),
+  seniorName: z.string().trim().min(1, "Senior's name is required"),
+  seniorCity: z.string().min(1, "City is required"),
+  transportTypes: z.array(z.string()).min(1, "Please select at least one transportation type"),
+  frequency: z.string().min(1, "Frequency is required"),
+  preferredDays: z.array(z.string()).default([]),
+  wheelchairAccessible: z.enum(["yes", "no"]),
+  mobilityAids: z.array(z.string()).default([]),
+  agreedToTerms: z.enum(["yes", "no"]).refine(val => val === "yes", { message: "You must agree to the Terms of Service" }),
+  agreedToPolicy: z.enum(["yes", "no"]).refine(val => val === "yes", { message: "You must agree to the Privacy Policy" }),
+  captchaToken: z.string().min(1, "CAPTCHA verification required"),
+});
+
+export const updateTransportationRequestSchema = createInsertSchema(transportationRequests).omit({
+  id: true,
+  createdAt: true,
+}).partial();
+
+export type InsertTransportationRequest = z.infer<typeof insertTransportationRequestSchema>;
+export type UpdateTransportationRequest = z.infer<typeof updateTransportationRequestSchema>;
+export type TransportationRequest = typeof transportationRequests.$inferSelect;

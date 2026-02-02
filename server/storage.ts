@@ -36,6 +36,8 @@ import {
   type NonSolicitationAgreement, type InsertNonSolicitation, type UpdateNonSolicitation,
   type InitialAssessment, type InsertInitialAssessment, type UpdateInitialAssessment,
   type ClientIntake, type InsertClientIntake, type UpdateClientIntake,
+  type ConciergeRequest, type InsertConciergeRequest, type UpdateConciergeRequest,
+  type TransportationRequest, type InsertTransportationRequest, type UpdateTransportationRequest,
   users,
   recoveryCodes,
   jobs,
@@ -70,7 +72,9 @@ import {
   mediaEvents,
   nonSolicitationAgreements,
   initialAssessments,
-  clientIntakes
+  clientIntakes,
+  conciergeRequests,
+  transportationRequests
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { slugify, generateUniqueSlug } from "@shared/utils";
@@ -329,6 +333,20 @@ export interface IStorage {
   updateClientIntake(id: string, intake: UpdateClientIntake): Promise<ClientIntake | undefined>;
   deleteClientIntake(id: string): Promise<boolean>;
   markClientIntakeEmailSent(id: string): Promise<ClientIntake | undefined>;
+  
+  // Concierge Service Requests
+  listConciergeRequests(status?: string): Promise<ConciergeRequest[]>;
+  getConciergeRequest(id: string): Promise<ConciergeRequest | undefined>;
+  createConciergeRequest(request: Omit<InsertConciergeRequest, 'captchaToken'>): Promise<ConciergeRequest>;
+  updateConciergeRequest(id: string, request: UpdateConciergeRequest): Promise<ConciergeRequest | undefined>;
+  deleteConciergeRequest(id: string): Promise<boolean>;
+  
+  // Transportation Requests
+  listTransportationRequests(status?: string): Promise<TransportationRequest[]>;
+  getTransportationRequest(id: string): Promise<TransportationRequest | undefined>;
+  createTransportationRequest(request: Omit<InsertTransportationRequest, 'captchaToken'>): Promise<TransportationRequest>;
+  updateTransportationRequest(id: string, request: UpdateTransportationRequest): Promise<TransportationRequest | undefined>;
+  deleteTransportationRequest(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -2638,6 +2656,129 @@ export class MemStorage implements IStorage {
     this.clientIntakesMap.set(id, updated);
     return updated;
   }
+
+  // Concierge Service Requests
+  private conciergeRequestsMap: Map<string, ConciergeRequest> = new Map();
+
+  async listConciergeRequests(status?: string): Promise<ConciergeRequest[]> {
+    const all = Array.from(this.conciergeRequestsMap.values());
+    if (status) return all.filter(r => r.status === status);
+    return all.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getConciergeRequest(id: string): Promise<ConciergeRequest | undefined> {
+    return this.conciergeRequestsMap.get(id);
+  }
+
+  async createConciergeRequest(request: Omit<InsertConciergeRequest, 'captchaToken'>): Promise<ConciergeRequest> {
+    const id = randomUUID();
+    const now = new Date();
+    const newRequest: ConciergeRequest = {
+      id,
+      contactName: request.contactName,
+      contactEmail: request.contactEmail,
+      contactPhone: request.contactPhone,
+      relationshipToSenior: request.relationshipToSenior,
+      seniorName: request.seniorName,
+      seniorAge: request.seniorAge ?? null,
+      seniorCity: request.seniorCity,
+      servicesNeeded: request.servicesNeeded || [],
+      frequency: request.frequency,
+      preferredDays: request.preferredDays || [],
+      preferredTimeOfDay: request.preferredTimeOfDay ?? null,
+      startDate: request.startDate ?? null,
+      specialRequests: request.specialRequests ?? null,
+      howHeardAboutUs: request.howHeardAboutUs ?? null,
+      website: request.website ?? null,
+      agreedToTerms: request.agreedToTerms,
+      agreedToPolicy: request.agreedToPolicy,
+      agreementTimestamp: now,
+      status: 'pending',
+      notes: null,
+      assignedTo: null,
+      followUpDate: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.conciergeRequestsMap.set(id, newRequest);
+    return newRequest;
+  }
+
+  async updateConciergeRequest(id: string, request: UpdateConciergeRequest): Promise<ConciergeRequest | undefined> {
+    const existing = this.conciergeRequestsMap.get(id);
+    if (!existing) return undefined;
+    const updated = { ...existing, ...request, updatedAt: new Date() };
+    this.conciergeRequestsMap.set(id, updated);
+    return updated;
+  }
+
+  async deleteConciergeRequest(id: string): Promise<boolean> {
+    return this.conciergeRequestsMap.delete(id);
+  }
+
+  // Transportation Requests
+  private transportationRequestsMap: Map<string, TransportationRequest> = new Map();
+
+  async listTransportationRequests(status?: string): Promise<TransportationRequest[]> {
+    const all = Array.from(this.transportationRequestsMap.values());
+    if (status) return all.filter(r => r.status === status);
+    return all.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getTransportationRequest(id: string): Promise<TransportationRequest | undefined> {
+    return this.transportationRequestsMap.get(id);
+  }
+
+  async createTransportationRequest(request: Omit<InsertTransportationRequest, 'captchaToken'>): Promise<TransportationRequest> {
+    const id = randomUUID();
+    const now = new Date();
+    const newRequest: TransportationRequest = {
+      id,
+      contactName: request.contactName,
+      contactEmail: request.contactEmail,
+      contactPhone: request.contactPhone,
+      relationshipToSenior: request.relationshipToSenior,
+      seniorName: request.seniorName,
+      seniorAge: request.seniorAge ?? null,
+      seniorCity: request.seniorCity,
+      transportTypes: request.transportTypes || [],
+      primaryDestination: request.primaryDestination ?? null,
+      frequency: request.frequency,
+      preferredDays: request.preferredDays || [],
+      preferredTimeOfDay: request.preferredTimeOfDay ?? null,
+      wheelchairAccessible: request.wheelchairAccessible,
+      mobilityAids: request.mobilityAids || [],
+      specialAccommodations: request.specialAccommodations ?? null,
+      regularAppointments: request.regularAppointments ?? null,
+      startDate: request.startDate ?? null,
+      additionalNotes: request.additionalNotes ?? null,
+      howHeardAboutUs: request.howHeardAboutUs ?? null,
+      website: request.website ?? null,
+      agreedToTerms: request.agreedToTerms,
+      agreedToPolicy: request.agreedToPolicy,
+      agreementTimestamp: now,
+      status: 'pending',
+      notes: null,
+      assignedTo: null,
+      followUpDate: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.transportationRequestsMap.set(id, newRequest);
+    return newRequest;
+  }
+
+  async updateTransportationRequest(id: string, request: UpdateTransportationRequest): Promise<TransportationRequest | undefined> {
+    const existing = this.transportationRequestsMap.get(id);
+    if (!existing) return undefined;
+    const updated = { ...existing, ...request, updatedAt: new Date() };
+    this.transportationRequestsMap.set(id, updated);
+    return updated;
+  }
+
+  async deleteTransportationRequest(id: string): Promise<boolean> {
+    return this.transportationRequestsMap.delete(id);
+  }
 }
 
 export class DbStorage implements IStorage {
@@ -4188,6 +4329,82 @@ export class DbStorage implements IStorage {
       .where(eq(clientIntakes.id, id))
       .returning();
     return result[0];
+  }
+
+  // Concierge Service Requests
+  async listConciergeRequests(status?: string): Promise<ConciergeRequest[]> {
+    let query = this.db.select().from(conciergeRequests);
+    if (status) {
+      query = query.where(eq(conciergeRequests.status, status));
+    }
+    return await query.orderBy(desc(conciergeRequests.createdAt));
+  }
+
+  async getConciergeRequest(id: string): Promise<ConciergeRequest | undefined> {
+    const result = await this.db.select().from(conciergeRequests)
+      .where(eq(conciergeRequests.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createConciergeRequest(request: Omit<InsertConciergeRequest, 'captchaToken'>): Promise<ConciergeRequest> {
+    const result = await this.db.insert(conciergeRequests).values({
+      ...request,
+      agreementTimestamp: new Date(),
+    }).returning();
+    return result[0];
+  }
+
+  async updateConciergeRequest(id: string, request: UpdateConciergeRequest): Promise<ConciergeRequest | undefined> {
+    const result = await this.db.update(conciergeRequests)
+      .set({ ...request, updatedAt: new Date() })
+      .where(eq(conciergeRequests.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteConciergeRequest(id: string): Promise<boolean> {
+    const result = await this.db.delete(conciergeRequests)
+      .where(eq(conciergeRequests.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  // Transportation Requests
+  async listTransportationRequests(status?: string): Promise<TransportationRequest[]> {
+    let query = this.db.select().from(transportationRequests);
+    if (status) {
+      query = query.where(eq(transportationRequests.status, status));
+    }
+    return await query.orderBy(desc(transportationRequests.createdAt));
+  }
+
+  async getTransportationRequest(id: string): Promise<TransportationRequest | undefined> {
+    const result = await this.db.select().from(transportationRequests)
+      .where(eq(transportationRequests.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createTransportationRequest(request: Omit<InsertTransportationRequest, 'captchaToken'>): Promise<TransportationRequest> {
+    const result = await this.db.insert(transportationRequests).values({
+      ...request,
+      agreementTimestamp: new Date(),
+    }).returning();
+    return result[0];
+  }
+
+  async updateTransportationRequest(id: string, request: UpdateTransportationRequest): Promise<TransportationRequest | undefined> {
+    const result = await this.db.update(transportationRequests)
+      .set({ ...request, updatedAt: new Date() })
+      .where(eq(transportationRequests.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteTransportationRequest(id: string): Promise<boolean> {
+    const result = await this.db.delete(transportationRequests)
+      .where(eq(transportationRequests.id, id))
+      .returning();
+    return result.length > 0;
   }
 }
 

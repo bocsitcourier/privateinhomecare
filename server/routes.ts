@@ -24,6 +24,8 @@ import {
   insertNonSolicitationSchema, updateNonSolicitationSchema,
   insertInitialAssessmentSchema, updateInitialAssessmentSchema,
   insertClientIntakeSchema, updateClientIntakeSchema,
+  insertConciergeRequestSchema, updateConciergeRequestSchema,
+  insertTransportationRequestSchema, updateTransportationRequestSchema,
   type PageMeta
 } from "@shared/schema";
 import DOMPurify from 'isomorphic-dompurify';
@@ -1030,6 +1032,147 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json({ success: true, id: assessment.id });
     } catch (error: any) {
       console.error("Initial assessment form error:", error);
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Concierge Services Request Form
+  app.post("/api/forms/concierge-request", publicFormLimiter, async (req, res) => {
+    try {
+      const { captchaToken, website, ...formData } = req.body;
+      
+      // Honeypot check
+      if (checkHoneypot(website, req)) {
+        return res.status(400).json({ error: "Invalid submission" });
+      }
+      
+      // Disposable email check
+      if (formData.contactEmail && isDisposableEmail(formData.contactEmail)) {
+        const ip = req.ip || req.socket.remoteAddress || 'unknown';
+        console.warn(`[SECURITY] Disposable email domain blocked: ${formData.contactEmail} from IP: ${ip}`);
+        return res.status(400).json({ error: "Please use a permanent email address" });
+      }
+      
+      // CAPTCHA verification
+      if (!captchaToken) {
+        return res.status(400).json({ error: "CAPTCHA verification required" });
+      }
+      
+      const captchaResult = await verifyCaptcha(captchaToken);
+      if (!captchaResult.success) {
+        return res.status(400).json({ error: captchaResult.error || "CAPTCHA verification failed" });
+      }
+      
+      // Validate and create request
+      const validatedData = insertConciergeRequestSchema.omit({ captchaToken: true }).parse(formData);
+      const request = await storage.createConciergeRequest(validatedData);
+      
+      // Send notification email
+      const hrEmail = process.env.HR_EMAIL || 'info@privateinhomecaregiver.com';
+      const servicesText = (validatedData.servicesNeeded || []).join(', ');
+      
+      await sendEmail({
+        to: hrEmail,
+        subject: `New Concierge Services Request - ${validatedData.seniorName}`,
+        html: `
+          <h2>New Concierge Services Request</h2>
+          <p><strong>Contact Name:</strong> ${validatedData.contactName}</p>
+          <p><strong>Contact Email:</strong> ${validatedData.contactEmail}</p>
+          <p><strong>Contact Phone:</strong> ${validatedData.contactPhone}</p>
+          <p><strong>Relationship:</strong> ${validatedData.relationshipToSenior}</p>
+          <hr>
+          <p><strong>Senior's Name:</strong> ${validatedData.seniorName}</p>
+          <p><strong>Senior's Age:</strong> ${validatedData.seniorAge || 'Not specified'}</p>
+          <p><strong>City:</strong> ${validatedData.seniorCity}</p>
+          <hr>
+          <p><strong>Services Needed:</strong> ${servicesText}</p>
+          <p><strong>Frequency:</strong> ${validatedData.frequency}</p>
+          <p><strong>Preferred Days:</strong> ${(validatedData.preferredDays || []).join(', ') || 'Flexible'}</p>
+          <p><strong>Time of Day:</strong> ${validatedData.preferredTimeOfDay || 'Flexible'}</p>
+          <p><strong>Start Date:</strong> ${validatedData.startDate || 'ASAP'}</p>
+          <hr>
+          <p><strong>Special Requests:</strong> ${validatedData.specialRequests || 'None'}</p>
+          <p><strong>How Heard About Us:</strong> ${validatedData.howHeardAboutUs || 'Not specified'}</p>
+        `
+      });
+      
+      res.status(201).json({ success: true, id: request.id });
+    } catch (error: any) {
+      console.error("Concierge request form error:", error);
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Non-Medical Transportation Request Form
+  app.post("/api/forms/transportation-request", publicFormLimiter, async (req, res) => {
+    try {
+      const { captchaToken, website, ...formData } = req.body;
+      
+      // Honeypot check
+      if (checkHoneypot(website, req)) {
+        return res.status(400).json({ error: "Invalid submission" });
+      }
+      
+      // Disposable email check
+      if (formData.contactEmail && isDisposableEmail(formData.contactEmail)) {
+        const ip = req.ip || req.socket.remoteAddress || 'unknown';
+        console.warn(`[SECURITY] Disposable email domain blocked: ${formData.contactEmail} from IP: ${ip}`);
+        return res.status(400).json({ error: "Please use a permanent email address" });
+      }
+      
+      // CAPTCHA verification
+      if (!captchaToken) {
+        return res.status(400).json({ error: "CAPTCHA verification required" });
+      }
+      
+      const captchaResult = await verifyCaptcha(captchaToken);
+      if (!captchaResult.success) {
+        return res.status(400).json({ error: captchaResult.error || "CAPTCHA verification failed" });
+      }
+      
+      // Validate and create request
+      const validatedData = insertTransportationRequestSchema.omit({ captchaToken: true }).parse(formData);
+      const request = await storage.createTransportationRequest(validatedData);
+      
+      // Send notification email
+      const hrEmail = process.env.HR_EMAIL || 'info@privateinhomecaregiver.com';
+      const transportText = (validatedData.transportTypes || []).join(', ');
+      const mobilityText = (validatedData.mobilityAids || []).join(', ');
+      
+      await sendEmail({
+        to: hrEmail,
+        subject: `New Transportation Request - ${validatedData.seniorName}`,
+        html: `
+          <h2>New Non-Medical Transportation Request</h2>
+          <p><strong>Contact Name:</strong> ${validatedData.contactName}</p>
+          <p><strong>Contact Email:</strong> ${validatedData.contactEmail}</p>
+          <p><strong>Contact Phone:</strong> ${validatedData.contactPhone}</p>
+          <p><strong>Relationship:</strong> ${validatedData.relationshipToSenior}</p>
+          <hr>
+          <p><strong>Senior's Name:</strong> ${validatedData.seniorName}</p>
+          <p><strong>Senior's Age:</strong> ${validatedData.seniorAge || 'Not specified'}</p>
+          <p><strong>City:</strong> ${validatedData.seniorCity}</p>
+          <hr>
+          <p><strong>Transportation Types:</strong> ${transportText}</p>
+          <p><strong>Primary Destination:</strong> ${validatedData.primaryDestination || 'Various'}</p>
+          <p><strong>Frequency:</strong> ${validatedData.frequency}</p>
+          <p><strong>Preferred Days:</strong> ${(validatedData.preferredDays || []).join(', ') || 'Flexible'}</p>
+          <p><strong>Time of Day:</strong> ${validatedData.preferredTimeOfDay || 'Flexible'}</p>
+          <hr>
+          <p><strong>Wheelchair Accessible:</strong> ${validatedData.wheelchairAccessible === 'yes' ? 'Yes' : 'No'}</p>
+          <p><strong>Mobility Aids:</strong> ${mobilityText || 'None'}</p>
+          <p><strong>Special Accommodations:</strong> ${validatedData.specialAccommodations || 'None'}</p>
+          <hr>
+          <p><strong>Regular Appointments:</strong> ${validatedData.regularAppointments || 'Not specified'}</p>
+          <p><strong>Start Date:</strong> ${validatedData.startDate || 'ASAP'}</p>
+          <p><strong>Additional Notes:</strong> ${validatedData.additionalNotes || 'None'}</p>
+          <p><strong>How Heard About Us:</strong> ${validatedData.howHeardAboutUs || 'Not specified'}</p>
+        `
+      });
+      
+      res.status(201).json({ success: true, id: request.id });
+    } catch (error: any) {
+      console.error("Transportation request form error:", error);
       res.status(400).json({ error: error.message });
     }
   });
