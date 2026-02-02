@@ -265,13 +265,50 @@ export default function ConciergeServicesPage() {
         <title>Senior Concierge Services Massachusetts | Private Pay Non-Medical Care | Boston, Cambridge, Worcester</title>
         <meta name="description" content="Premium private pay senior concierge services in Massachusetts. Errand running, appointment coordination, meal planning, medication management support, and lifestyle assistance for seniors in Boston, Cambridge, Worcester, Newton, and all MA cities. Professional, vetted staff. Free consultation." />
         <meta name="keywords" content="senior concierge services Massachusetts, private pay elderly errands Boston, non-medical senior care Cambridge, errand services for elderly Worcester, appointment accompaniment MA, senior lifestyle assistance Newton, private concierge care Brookline, elderly shopping assistance Quincy" />
+        
+        {/* Open Graph / Facebook */}
         <meta property="og:title" content="Senior Concierge Services Massachusetts | Private InHome CareGiver" />
-        <meta property="og:description" content="Premium private pay concierge services for seniors throughout Massachusetts. Errands, appointments, organization, and lifestyle support." />
+        <meta property="og:description" content="Premium private pay concierge services for seniors throughout Massachusetts. Errands, appointments, organization, and lifestyle support. Serving Boston, Cambridge, Worcester & 60+ cities." />
         <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://privateinhomecaregiver.com/concierge-services/massachusetts" />
+        <meta property="og:image" content="https://privateinhomecaregiver.com/images/concierge-services-og.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="Senior concierge services in Massachusetts - Professional assistance for elderly errands, shopping, and appointments" />
         <meta property="og:locale" content="en_US" />
+        <meta property="og:site_name" content="Private InHome CareGiver" />
+        
+        {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Senior Concierge Services Massachusetts | Private Pay Care" />
+        <meta name="twitter:description" content="Premium private pay concierge services for MA seniors. Errands, appointments, meal planning, medication management. Boston, Cambridge, Worcester & 60+ cities." />
+        <meta name="twitter:image" content="https://privateinhomecaregiver.com/images/concierge-services-og.jpg" />
+        <meta name="twitter:image:alt" content="Senior concierge services Massachusetts - Professional elderly assistance" />
+        
+        {/* Geo-targeting */}
         <meta name="geo.region" content="US-MA" />
         <meta name="geo.placename" content="Massachusetts" />
+        <meta name="geo.position" content="42.3601;-71.0589" />
+        <meta name="ICBM" content="42.3601, -71.0589" />
+        
+        {/* AI Search / GEO Optimization */}
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow, max-image-preview:large" />
+        <meta name="bingbot" content="index, follow" />
+        <meta name="author" content="Private InHome CareGiver" />
+        <meta name="publisher" content="Private InHome CareGiver" />
+        <meta name="copyright" content="2025 Private InHome CareGiver" />
+        <meta name="topic" content="Senior Care Services, Concierge Services, Elder Care, In-Home Care" />
+        <meta name="summary" content="Private pay senior concierge services in Massachusetts offering errand running, appointment coordination, meal planning, medication management support, and lifestyle assistance for elderly throughout Boston, Cambridge, Worcester and 60+ MA cities." />
+        <meta name="abstract" content="Professional non-medical concierge services for Massachusetts seniors including shopping assistance, appointment accompaniment, home organization, and daily living support. Private pay only with transparent pricing." />
+        <meta name="classification" content="Healthcare Services, Senior Care, Concierge Services" />
+        <meta name="category" content="Senior Care" />
+        <meta name="coverage" content="Massachusetts, United States" />
+        <meta name="distribution" content="Global" />
+        <meta name="rating" content="General" />
+        <meta name="revisit-after" content="7 days" />
+        <meta name="target" content="seniors, elderly, caregivers, family members, adult children" />
+        
         <link rel="canonical" href="https://privateinhomecaregiver.com/concierge-services/massachusetts" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(serviceSchema)}</script>
