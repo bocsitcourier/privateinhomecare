@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Mail, MessageSquare, Send } from "lucide-react";
+import { Mail, MessageSquare, Send, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Inquiry } from "@shared/schema";
 
@@ -42,9 +42,24 @@ export default function InquiriesManagement() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => 
+      apiRequest("DELETE", `/api/admin/inquiries/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/inquiries"] });
+      toast({ title: "Inquiry deleted successfully" });
+    },
+  });
+
   const handleReply = () => {
     if (selectedInquiry && replyText.trim()) {
       replyMutation.mutate({ id: selectedInquiry.id, body: replyText });
+    }
+  };
+
+  const handleDelete = (inquiry: Inquiry) => {
+    if (confirm(`Are you sure you want to delete the inquiry from ${inquiry.name}?`)) {
+      deleteMutation.mutate(inquiry.id);
     }
   };
 
@@ -74,7 +89,7 @@ export default function InquiriesManagement() {
           {Array.isArray(inquiries) && inquiries.map((inquiry: Inquiry) => (
             <Card key={inquiry.id} data-testid={`card-inquiry-${inquiry.id}`}>
               <CardHeader>
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between flex-col md:flex-row gap-4">
                   <div className="space-y-1 flex-1">
                     <CardTitle className="flex items-center gap-2">
                       <Mail className="w-5 h-5" />
@@ -113,6 +128,16 @@ export default function InquiriesManagement() {
                     >
                       <MessageSquare className="w-4 h-4 mr-2" />
                       Reply
+                    </Button>
+                    <Button 
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDelete(inquiry)}
+                      data-testid={`button-delete-inquiry-${inquiry.id}`}
+                      disabled={deleteMutation.isPending}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
                     </Button>
                   </div>
                 </div>
