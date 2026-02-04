@@ -15,6 +15,13 @@
       "when": 1729170000000,
       "tag": "0001_fix_jsonb_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1770187463697,
+      "tag": "0002_dark_mandrill",
+      "breakpoints": true
     }
   ]
 }

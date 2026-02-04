@@ -43,8 +43,18 @@ app.use(helmet({
         "'unsafe-inline'",
         "https://www.google.com",
         "https://www.gstatic.com",
+        "https://www.googletagmanager.com",
         "https://fonts.googleapis.com"
       ],
+      scriptSrcElem: [
+        "'self'",
+        "'unsafe-inline'",
+        "https://www.google.com",
+        "https://www.gstatic.com",
+        "https://www.googletagmanager.com",
+        "https://fonts.googleapis.com"
+      ],
+      scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc: [
         "'self'",
         "'unsafe-inline'",
@@ -67,7 +77,10 @@ app.use(helmet({
       ],
       connectSrc: [
         "'self'",
-        "https://www.google.com"
+        "https://www.google.com",
+        "https://www.google-analytics.com",
+        "https://www.googletagmanager.com",
+        "https://analytics.google.com"
       ],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
@@ -105,7 +118,7 @@ function cleanIPCache() {
       ipLocationCache.delete(ip);
     }
   }
-  
+
   if (ipLocationCache.size > IP_CACHE_MAX_SIZE) {
     const entries = Array.from(ipLocationCache.entries());
     entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
@@ -116,37 +129,37 @@ function cleanIPCache() {
 
 function isPrivateIP(ip: string): boolean {
   let normalizedIP = ip.replace(/:\d+$/, '');
-  
+
   if (normalizedIP.startsWith('::ffff:')) {
     normalizedIP = normalizedIP.substring(7);
   }
-  
+
   if (normalizedIP === '::1' || normalizedIP === '127.0.0.1') {
     return true;
   }
-  
+
   if (normalizedIP.startsWith('fe80:') || normalizedIP.startsWith('fc00:') || normalizedIP.startsWith('fd')) {
     return true;
   }
-  
+
   const parts = normalizedIP.split('.');
   if (parts.length === 4) {
     const first = parseInt(parts[0], 10);
     const second = parseInt(parts[1], 10);
-    
+
     if (first === 10) return true;
     if (first === 172 && second >= 16 && second <= 31) return true;
     if (first === 192 && second === 168) return true;
     if (first === 127) return true;
     if (first === 169 && second === 254) return true;
   }
-  
+
   return false;
 }
 
 function getClientIP(req: Request): string {
   const trustedProxyHeader = process.env.TRUSTED_PROXY_HEADER;
-  
+
   if (trustedProxyHeader && req.headers[trustedProxyHeader.toLowerCase()]) {
     const headerValue = req.headers[trustedProxyHeader.toLowerCase()];
     const ip = Array.isArray(headerValue) ? headerValue[0] : headerValue;
@@ -154,12 +167,12 @@ function getClientIP(req: Request): string {
       return ip.split(',')[0].trim();
     }
   }
-  
+
   const directIP = req.ip || req.socket.remoteAddress || '';
   if (!isPrivateIP(directIP)) {
     return directIP;
   }
-  
+
   return '';
 }
 
@@ -171,23 +184,23 @@ async function checkIPLocation(ip: string): Promise<{ country: string; allowed: 
     cleanIPCache();
     lastCacheCleanup = Date.now();
   }
-  
+
   const cached = ipLocationCache.get(ip);
   if (cached && Date.now() - cached.timestamp < IP_CACHE_TTL) {
     return { country: cached.country, allowed: cached.allowed };
   }
-  
+
   try {
     const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode`);
     const data = await response.json();
-    
+
     if (data.status === 'success') {
       const isUS = data.countryCode === 'US';
       const result = { country: data.country, allowed: isUS, timestamp: Date.now() };
       ipLocationCache.set(ip, result);
       return { country: result.country, allowed: result.allowed };
     }
-    
+
     console.warn('[GEOLOCATION] IP lookup failed:', data);
     return { country: 'Unknown', allowed: true };
   } catch (error) {
@@ -198,31 +211,31 @@ async function checkIPLocation(ip: string): Promise<{ country: string; allowed: 
 
 app.use(async (req, res, next) => {
   const enableGeoBlocking = process.env.ENABLE_GEO_BLOCKING === 'true';
-  
+
   if (!enableGeoBlocking) {
     return next();
   }
-  
+
   if (req.path.startsWith('/uploads/')) {
     return next();
   }
-  
+
   const clientIP = getClientIP(req);
-  
+
   if (!clientIP || isPrivateIP(clientIP)) {
     return next();
   }
-  
+
   const { country, allowed } = await checkIPLocation(clientIP);
-  
+
   if (!allowed) {
     console.warn(`[SECURITY] Access denied - Non-US IP: ${clientIP} from ${country}`);
-    return res.status(403).json({ 
+    return res.status(403).json({
       error: 'Access denied',
       message: 'This service is only available to users in the United States.'
     });
   }
-  
+
   next();
 });
 
@@ -231,17 +244,17 @@ const MemoryStore = createMemoryStore(session);
 
 const sessionStore = process.env.NODE_ENV === "production" && process.env.DATABASE_URL
   ? new PgSession({
-      conObject: {
-        connectionString: process.env.DATABASE_URL,
-        ssl: process.env.DATABASE_URL.includes('sslmode=require') ? { rejectUnauthorized: false } : false
-      },
-      tableName: 'session',
-      createTableIfMissing: true,
-      pruneSessionInterval: 60 * 15 // Prune expired sessions every 15 minutes
-    })
+    conObject: {
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.DATABASE_URL.includes('sslmode=require') ? { rejectUnauthorized: false } : false
+    },
+    tableName: 'session',
+    createTableIfMissing: true,
+    pruneSessionInterval: 60 * 15 // Prune expired sessions every 15 minutes
+  })
   : new MemoryStore({
-      checkPeriod: 86400000 // Prune expired entries every 24h
-    });
+    checkPeriod: 86400000 // Prune expired entries every 24h
+  });
 
 app.use(session({
   store: sessionStore,
