@@ -30,6 +30,10 @@ export default function ReferralsManagement() {
 
   const { data: referrals = [], isLoading, refetch } = useQuery<Referral[]>({
     queryKey: ["/api/admin/referrals", statusFilter],
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/admin/referrals${statusFilter !== "all" ? `?status=${statusFilter}` : ""}`);
+      return response.json();
+    },
     enabled: true,
   });
 

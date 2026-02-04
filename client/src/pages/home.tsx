@@ -263,51 +263,98 @@ export default function Home() {
 
   const schemaJson = useMemo(() => {
     try {
-      const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://privateinhomecaregiver.com';
-      
+      const baseUrl =
+        typeof window !== "undefined"
+          ? window.location.origin
+          : "https://privateinhomecaregiver.com";
+
+      // Compute aggregate from your demo reviews
+      const totalReviews = DEMO_REVIEWS.length;
+      const sumRatings = DEMO_REVIEWS.reduce((sum, r) => sum + Number(r.rating || 0), 0);
+      const avgRating = totalReviews ? (sumRatings / totalReviews) : 0;
+
       const businessSchema = {
         "@context": "https://schema.org",
-        "@type": "LocalBusiness",
+        // Be more specific: HomeHealthCare extends LocalBusiness
+        "@type": ["LocalBusiness", "HomeHealthCare"],
+        "@id": `${baseUrl}#business`,
         name: "PrivateInHomeCareGiver",
         url: baseUrl,
         logo: `${baseUrl}/logo.png`,
-        description: "Private in-home personal care, companionship, homemaking and dementia care across Massachusetts.",
+        description:
+          "Private in-home personal care, companionship, homemaking and dementia care across Massachusetts.",
         telephone: "+1-617-686-0595",
+        priceRange: "$$",
         address: {
           "@type": "PostalAddress",
           streetAddress: "3 Cabot Place, Ste. 10A",
           addressLocality: "Stoughton",
           addressRegion: "MA",
           postalCode: "02072",
-          addressCountry: "US"
+          addressCountry: "US",
         },
-        service: SERVICES.map((s) => ({ "@type": "Service", name: s.title, description: s.full })),
-        review: DEMO_REVIEWS.map((r) => ({ 
-          "@type": "Review", 
-          reviewRating: { "@type": "Rating", ratingValue: String(r.rating), bestRating: "5" }, 
-          author: { "@type": "Person", name: r.name }, 
-          reviewBody: r.text 
+
+        // ★ Add the aggregate rating summary
+        ...(totalReviews > 0 && {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: Number(avgRating.toFixed(2)),
+            reviewCount: totalReviews,
+            ratingCount: totalReviews,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }),
+
+        // Keep individual reviews (fine to include alongside aggregate)
+        review: DEMO_REVIEWS.map((r) => ({
+          "@type": "Review",
+          reviewRating: {
+            "@type": "Rating",
+            ratingValue: String(r.rating),
+            bestRating: "5",
+            worstRating: "1",
+          },
+          author: { "@type": "Person", name: r.name },
+          reviewBody: r.text,
+          datePublished: r.date || undefined, // include if you have it
         })),
-        areaServed: CITIES.map(city => ({
+
+        // Services you offer
+        service: SERVICES.map((s) => ({
+          "@type": "Service",
+          name: s.title,
+          description: s.full,
+        })),
+
+        // Areas served (City is valid; using AdministrativeArea subtype)
+        areaServed: CITIES.map((city) => ({
           "@type": "City",
           name: city,
-          "@id": `https://www.wikidata.org/wiki/${city.replace(/\s+/g, '_')}`
+          "@id": `https://www.wikidata.org/wiki/${city.replace(/\s+/g, "_")}`,
         })),
+
+        // Optional: social profiles
+        sameAs: [
+          // "https://www.facebook.com/…",
+          // "https://www.linkedin.com/company/…",
+        ],
       };
 
       const websiteSchema = {
         "@context": "https://schema.org",
         "@type": "WebSite",
+        "@id": `${baseUrl}#website`,
         name: "PrivateInHomeCareGiver",
         url: baseUrl,
         potentialAction: {
           "@type": "SearchAction",
           target: {
             "@type": "EntryPoint",
-            urlTemplate: `${baseUrl}/articles?q={search_term_string}`
+            urlTemplate: `${baseUrl}/articles?q={search_term_string}`,
           },
-          "query-input": "required name=search_term_string"
-        }
+          "query-input": "required name=search_term_string",
+        },
       };
 
       const navigationSchema = {
@@ -321,8 +368,8 @@ export default function Home() {
           { "@type": "SiteNavigationElement", position: 4, name: "Articles", url: `${baseUrl}/articles` },
           { "@type": "SiteNavigationElement", position: 5, name: "Find Caregivers", url: `${baseUrl}/caregivers` },
           { "@type": "SiteNavigationElement", position: 6, name: "Careers", url: `${baseUrl}/careers` },
-          { "@type": "SiteNavigationElement", position: 7, name: "Contact Us", url: `${baseUrl}/consultation` }
-        ]
+          { "@type": "SiteNavigationElement", position: 7, name: "Contact Us", url: `${baseUrl}/consultation` },
+        ],
       };
 
       return JSON.stringify([businessSchema, websiteSchema, navigationSchema]);
@@ -331,6 +378,7 @@ export default function Home() {
       return "[]";
     }
   }, []);
+
 
   useEffect(() => {
     try {
@@ -347,6 +395,44 @@ export default function Home() {
       // ignore
     }
   }, [schemaJson]);
+
+  // Scroll to bookmark if present on load
+  useEffect(() => {
+    const scrollToHashElement = () => {
+      if (typeof window !== "undefined") {
+        const hash = window.location.hash;
+        if (hash) {
+          // Remove the # from the hash
+          const elementId = hash.substring(1);
+          const element = document.getElementById(elementId);
+          if (element) {
+            // Small delay to ensure page is fully rendered
+            setTimeout(() => {
+              element.scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+              });
+            }, 100);
+          }
+        }
+      }
+    };
+
+    // Run on mount
+    scrollToHashElement();
+
+    // Also run when hash changes (for browser back/forward navigation)
+    const handleHashChange = () => {
+      scrollToHashElement();
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener('hashchange', handleHashChange);
+      return () => {
+        window.removeEventListener('hashchange', handleHashChange);
+      };
+    }
+  }, []);
 
   const handleRequestService = (title: string) => {
     setSelectedService(title);
