@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Link } from "wouter";
-import { 
-  Car, Shield, Award, CheckCircle2, ArrowRight, Phone, 
-  Users, Clock, MapPin, Star, Sparkles, DollarSign, 
+import {
+  Car, Shield, Award, CheckCircle2, ArrowRight, Phone,
+  Users, Clock, MapPin, Star, Sparkles, DollarSign,
   HelpCircle, Calendar, Stethoscope, ShoppingCart,
   Building, Heart, Accessibility, Navigation, Route,
   Timer, ThumbsUp, Briefcase, ChevronRight
@@ -276,7 +276,7 @@ export default function NonMedicalTransportationPage() {
         <title>Non-Medical Transportation for Seniors Massachusetts | Private Pay Elderly Transport | Boston, Cambridge, Worcester</title>
         <meta name="description" content="Private pay non-medical transportation for seniors in Massachusetts. Door-through-door service to medical appointments, dialysis, shopping, and social activities. Wheelchair accessible. Serving Boston, Cambridge, Worcester, Newton, and all MA cities. Free quote." />
         <meta name="keywords" content="non-medical transportation Massachusetts, senior transport Boston, elderly transportation Cambridge, wheelchair accessible rides Worcester, dialysis transportation MA, medical appointment transport Newton, private pay senior rides Brookline, door-to-door elderly transport Quincy" />
-        
+
         {/* Open Graph / Facebook */}
         <meta property="og:title" content="Non-Medical Senior Transportation Massachusetts | Private InHome CareGiver" />
         <meta property="og:description" content="Private pay transportation for seniors throughout Massachusetts. Medical appointments, dialysis, shopping, and social activities. Door-through-door service. Serving Boston, Cambridge, Worcester & 60+ cities." />
@@ -288,20 +288,20 @@ export default function NonMedicalTransportationPage() {
         <meta property="og:image:alt" content="Non-medical senior transportation in Massachusetts - Wheelchair accessible door-through-door service" />
         <meta property="og:locale" content="en_US" />
         <meta property="og:site_name" content="Private InHome CareGiver" />
-        
+
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Non-Medical Senior Transportation Massachusetts | Private Pay" />
         <meta name="twitter:description" content="Private pay transportation for MA seniors. Medical appointments, dialysis, wheelchair accessible. Boston, Cambridge, Worcester & 60+ cities." />
         <meta name="twitter:image" content="https://privateinhomecaregiver.com/images/transportation-services-og.jpg" />
         <meta name="twitter:image:alt" content="Senior transportation Massachusetts - Wheelchair accessible rides" />
-        
+
         {/* Geo-targeting */}
         <meta name="geo.region" content="US-MA" />
         <meta name="geo.placename" content="Massachusetts" />
         <meta name="geo.position" content="42.3601;-71.0589" />
         <meta name="ICBM" content="42.3601, -71.0589" />
-        
+
         {/* AI Search / GEO Optimization */}
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow, max-image-preview:large" />
@@ -319,7 +319,7 @@ export default function NonMedicalTransportationPage() {
         <meta name="rating" content="General" />
         <meta name="revisit-after" content="7 days" />
         <meta name="target" content="seniors, elderly, caregivers, family members, adult children" />
-        
+
         <link rel="canonical" href="https://privateinhomecaregiver.com/non-medical-transportation/massachusetts" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(serviceSchema)}</script>
@@ -332,7 +332,7 @@ export default function NonMedicalTransportationPage() {
       <main>
         <section className="relative min-h-[60vh] flex items-center overflow-hidden">
           <div className="absolute inset-0">
-            <img 
+            <img
               src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1600&q=80&auto=format&fit=crop"
               alt="Non-medical transportation for seniors Massachusetts - Private pay elderly transport services in Boston, Cambridge, Worcester"
               title="Senior Transportation Services - Private InHome CareGiver Massachusetts"
@@ -341,26 +341,26 @@ export default function NonMedicalTransportationPage() {
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent" />
           </div>
-          
+
           <div className="relative z-10 max-w-7xl mx-auto px-4 py-20">
             <div className="max-w-2xl animate-fade-in-up">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-md rounded-full border border-white/30 mb-6">
                 <Car className="w-4 h-4 text-white" />
                 <span className="text-sm font-semibold text-white">Private Pay Senior Transportation Throughout Massachusetts</span>
               </div>
-              
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight drop-shadow-lg" data-testid="heading-main">
+
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight" data-testid="heading-main">
                 Non-Medical Transportation
-                <span className="block text-2xl md:text-3xl font-normal text-white/80 mt-4">
-                  Safe, Reliable Rides for Massachusetts Seniors
-                </span>
               </h1>
-              
+              <p className="text-2xl md:text-3xl font-normal text-white/80 mb-6">
+                Safe, Reliable Rides for Massachusetts Seniors
+              </p>
+
               <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed max-w-xl" data-testid="text-hero-description">
-                Door-through-door transportation to medical appointments, dialysis, shopping, 
+                Door-through-door transportation to medical appointments, dialysis, shopping,
                 and social activities. Wheelchair accessible vehicles with trained, caring drivers.
               </p>
-              
+
               <div className="flex flex-wrap gap-4">
                 <Button size="lg" className="gap-2" asChild>
                   <Link href="/consultation">
@@ -387,9 +387,9 @@ export default function NonMedicalTransportationPage() {
                 Comprehensive Non-Medical Transportation Services
               </h2>
               <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-                Our private pay transportation service helps Massachusetts seniors maintain independence 
-                by providing safe, reliable rides to medical appointments, essential errands, and social 
-                activities. Unlike rideshare services, our trained drivers provide hands-on assistance 
+                Our private pay transportation service helps Massachusetts seniors maintain independence
+                by providing safe, reliable rides to medical appointments, essential errands, and social
+                activities. Unlike rideshare services, our trained drivers provide hands-on assistance
                 from door to door.
               </p>
             </div>
@@ -455,7 +455,7 @@ export default function NonMedicalTransportationPage() {
                 Senior Transportation Near You in Massachusetts
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Find private pay non-medical transportation for seniors in your Massachusetts city. 
+                Find private pay non-medical transportation for seniors in your Massachusetts city.
                 Click on your location for local service details, pricing, and availability.
               </p>
             </div>
@@ -476,7 +476,7 @@ export default function NonMedicalTransportationPage() {
 
             <div className="text-center mt-8">
               <p className="text-muted-foreground mb-4">
-                Don't see your city? We serve all Massachusetts communities including Cape Cod, 
+                Don't see your city? We serve all Massachusetts communities including Cape Cod,
                 Western MA, and the Islands.
               </p>
               <Button variant="outline" asChild>
@@ -498,10 +498,10 @@ export default function NonMedicalTransportationPage() {
                   Clear, Upfront Transportation Rates
                 </h2>
                 <p className="text-lg text-muted-foreground mb-6">
-                  Our private pay model means no insurance hassles, no eligibility requirements, 
+                  Our private pay model means no insurance hassles, no eligibility requirements,
                   and flexible service when you need it. We quote transparent prices before every trip.
                 </p>
-                
+
                 <div className="space-y-4">
                   <div className="flex items-center gap-4 p-4 bg-background rounded-lg border">
                     <Route className="w-8 h-8 text-primary" />
@@ -526,7 +526,7 @@ export default function NonMedicalTransportationPage() {
                   </div>
                 </div>
               </div>
-              
+
               <div id="request-form" className="mt-8 p-6 bg-primary/10 rounded-xl border-2 border-primary/20">
                 <div className="text-center mb-6">
                   <Badge className="mb-3 bg-primary text-primary-foreground">Get Started Today</Badge>
@@ -556,9 +556,9 @@ export default function NonMedicalTransportationPage() {
 
             <Accordion type="single" collapsible className="w-full space-y-4">
               {FAQS.map((faq, index) => (
-                <AccordionItem 
-                  key={index} 
-                  value={`faq-${index}`} 
+                <AccordionItem
+                  key={index}
+                  value={`faq-${index}`}
                   className="border rounded-lg px-6"
                   data-testid={`faq-item-${index}`}
                 >
@@ -580,7 +580,7 @@ export default function NonMedicalTransportationPage() {
               Ready to Schedule Senior Transportation?
             </h2>
             <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
-              Our caring, professional drivers are ready to help your loved one get where 
+              Our caring, professional drivers are ready to help your loved one get where
               they need to go safely and comfortably. Book your first ride today.
             </p>
             <div className="flex flex-wrap justify-center gap-4">

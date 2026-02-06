@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Link } from "wouter";
-import { 
-  Heart, Shield, Award, CheckCircle2, ArrowRight, Phone, 
-  Users, Clock, Home, Star, Sparkles, MapPin, DollarSign, 
-  HelpCircle, Calendar, ShoppingCart, Utensils, Pill, 
+import {
+  Heart, Shield, Award, CheckCircle2, ArrowRight, Phone,
+  Users, Clock, Home, Star, Sparkles, MapPin, DollarSign,
+  HelpCircle, Calendar, ShoppingCart, Utensils, Pill,
   FileText, Briefcase, Gift, Stethoscope, Car, Building,
   Coffee, Mail, ClipboardList, UserCheck
 } from "lucide-react";
@@ -265,7 +265,7 @@ export default function ConciergeServicesPage() {
         <title>Senior Concierge Services Massachusetts | Private Pay Non-Medical Care | Boston, Cambridge, Worcester</title>
         <meta name="description" content="Premium private pay senior concierge services in Massachusetts. Errand running, appointment coordination, meal planning, medication management support, and lifestyle assistance for seniors in Boston, Cambridge, Worcester, Newton, and all MA cities. Professional, vetted staff. Free consultation." />
         <meta name="keywords" content="senior concierge services Massachusetts, private pay elderly errands Boston, non-medical senior care Cambridge, errand services for elderly Worcester, appointment accompaniment MA, senior lifestyle assistance Newton, private concierge care Brookline, elderly shopping assistance Quincy" />
-        
+
         {/* Open Graph / Facebook */}
         <meta property="og:title" content="Senior Concierge Services Massachusetts | Private InHome CareGiver" />
         <meta property="og:description" content="Premium private pay concierge services for seniors throughout Massachusetts. Errands, appointments, organization, and lifestyle support. Serving Boston, Cambridge, Worcester & 60+ cities." />
@@ -277,20 +277,20 @@ export default function ConciergeServicesPage() {
         <meta property="og:image:alt" content="Senior concierge services in Massachusetts - Professional assistance for elderly errands, shopping, and appointments" />
         <meta property="og:locale" content="en_US" />
         <meta property="og:site_name" content="Private InHome CareGiver" />
-        
+
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Senior Concierge Services Massachusetts | Private Pay Care" />
         <meta name="twitter:description" content="Premium private pay concierge services for MA seniors. Errands, appointments, meal planning, medication management. Boston, Cambridge, Worcester & 60+ cities." />
         <meta name="twitter:image" content="https://privateinhomecaregiver.com/images/concierge-services-og.jpg" />
         <meta name="twitter:image:alt" content="Senior concierge services Massachusetts - Professional elderly assistance" />
-        
+
         {/* Geo-targeting */}
         <meta name="geo.region" content="US-MA" />
         <meta name="geo.placename" content="Massachusetts" />
         <meta name="geo.position" content="42.3601;-71.0589" />
         <meta name="ICBM" content="42.3601, -71.0589" />
-        
+
         {/* AI Search / GEO Optimization */}
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow, max-image-preview:large" />
@@ -308,7 +308,7 @@ export default function ConciergeServicesPage() {
         <meta name="rating" content="General" />
         <meta name="revisit-after" content="7 days" />
         <meta name="target" content="seniors, elderly, caregivers, family members, adult children" />
-        
+
         <link rel="canonical" href="https://privateinhomecaregiver.com/concierge-services/massachusetts" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(serviceSchema)}</script>
@@ -321,7 +321,7 @@ export default function ConciergeServicesPage() {
       <main>
         <section className="relative min-h-[60vh] flex items-center overflow-hidden">
           <div className="absolute inset-0">
-            <img 
+            <img
               src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1600&q=80&auto=format&fit=crop"
               alt="Senior concierge services Massachusetts - Private pay non-medical care assistance for elderly in Boston, Cambridge, Worcester"
               title="Senior Concierge Services - Private InHome CareGiver Massachusetts"
@@ -330,26 +330,26 @@ export default function ConciergeServicesPage() {
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent" />
           </div>
-          
+
           <div className="relative z-10 max-w-7xl mx-auto px-4 py-20">
             <div className="max-w-2xl animate-fade-in-up">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-md rounded-full border border-white/30 mb-6">
                 <Sparkles className="w-4 h-4 text-white" />
                 <span className="text-sm font-semibold text-white">Private Pay Concierge Services Throughout Massachusetts</span>
               </div>
-              
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight drop-shadow-lg" data-testid="heading-main">
+
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight" data-testid="heading-main">
                 Senior Concierge Services
-                <span className="block text-2xl md:text-3xl font-normal text-white/80 mt-4">
-                  Non-Medical Lifestyle Support for Massachusetts Seniors
-                </span>
               </h1>
-              
+              <p className="text-2xl md:text-3xl font-normal text-white/80 mb-6">
+                Non-Medical Lifestyle Support for Massachusetts Seniors
+              </p>
+
               <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed max-w-xl" data-testid="text-hero-description">
-                Professional errand running, appointment coordination, meal planning, and lifestyle assistance 
+                Professional errand running, appointment coordination, meal planning, and lifestyle assistance
                 to help your loved ones thrive independently at home throughout Massachusetts.
               </p>
-              
+
               <div className="flex flex-wrap gap-4">
                 <Button size="lg" className="gap-2" asChild>
                   <Link href="/consultation">
@@ -376,9 +376,9 @@ export default function ConciergeServicesPage() {
                 What Are Senior Concierge Services?
               </h2>
               <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-                Senior concierge services provide professional, non-medical lifestyle support that helps 
-                Massachusetts seniors maintain independence, manage daily tasks, and enjoy a higher quality 
-                of life. Our private pay services complement traditional care by handling errands, 
+                Senior concierge services provide professional, non-medical lifestyle support that helps
+                Massachusetts seniors maintain independence, manage daily tasks, and enjoy a higher quality
+                of life. Our private pay services complement traditional care by handling errands,
                 appointments, organization, and social engagement.
               </p>
             </div>
@@ -444,7 +444,7 @@ export default function ConciergeServicesPage() {
                 Concierge Services Near You in Massachusetts
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Find premium private pay concierge services for seniors in your Massachusetts city. 
+                Find premium private pay concierge services for seniors in your Massachusetts city.
                 Click on your location for local service details and availability.
               </p>
             </div>
@@ -465,7 +465,7 @@ export default function ConciergeServicesPage() {
 
             <div className="text-center mt-8">
               <p className="text-muted-foreground mb-4">
-                Don't see your city? We serve all Massachusetts communities including Cape Cod, 
+                Don't see your city? We serve all Massachusetts communities including Cape Cod,
                 Western MA, and the Islands.
               </p>
               <Button variant="outline" asChild>
@@ -487,11 +487,11 @@ export default function ConciergeServicesPage() {
                   Transparent Concierge Service Pricing
                 </h2>
                 <p className="text-lg text-muted-foreground mb-6">
-                  Our private pay model ensures you receive consistent, high-quality service without 
-                  insurance restrictions. We offer competitive rates and flexible packages tailored 
+                  Our private pay model ensures you receive consistent, high-quality service without
+                  insurance restrictions. We offer competitive rates and flexible packages tailored
                   to your family's needs.
                 </p>
-                
+
                 <div className="space-y-4">
                   <div className="flex items-center gap-4 p-4 bg-background rounded-lg border">
                     <DollarSign className="w-8 h-8 text-primary" />
@@ -516,7 +516,7 @@ export default function ConciergeServicesPage() {
                   </div>
                 </div>
               </div>
-              
+
               <div id="request-form" className="mt-8 p-6 bg-primary/10 rounded-xl border-2 border-primary/20">
                 <div className="text-center mb-6">
                   <Badge className="mb-3 bg-primary text-primary-foreground">Get Started Today</Badge>
@@ -546,9 +546,9 @@ export default function ConciergeServicesPage() {
 
             <Accordion type="single" collapsible className="w-full space-y-4">
               {FAQS.map((faq, index) => (
-                <AccordionItem 
-                  key={index} 
-                  value={`faq-${index}`} 
+                <AccordionItem
+                  key={index}
+                  value={`faq-${index}`}
                   className="border rounded-lg px-6"
                   data-testid={`faq-item-${index}`}
                 >
@@ -570,7 +570,7 @@ export default function ConciergeServicesPage() {
               Ready to Simplify Life for Your Loved One?
             </h2>
             <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
-              Our professional concierge team is ready to provide the personalized support 
+              Our professional concierge team is ready to provide the personalized support
               your family deserves. Contact us today for a free consultation.
             </p>
             <div className="flex flex-wrap justify-center gap-4">

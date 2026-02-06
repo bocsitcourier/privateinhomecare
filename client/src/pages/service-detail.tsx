@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useRoute } from "wouter";
 import { Helmet } from "react-helmet";
-import { 
-  Heart, Shield, Award, CheckCircle2, ArrowRight, Phone, 
+import {
+  Heart, Shield, Award, CheckCircle2, ArrowRight, Phone,
   Users, Clock, Home, Star, Sparkles, ChevronDown,
   UserCheck, MapPin, DollarSign, HelpCircle
 } from "lucide-react";
@@ -147,7 +147,7 @@ export default function ServiceDetailPage() {
         <section className="relative min-h-[60vh] flex items-center overflow-hidden">
           {/* Background Image */}
           <div className="absolute inset-0">
-            <img 
+            <img
               src={getServiceHeroImage(serviceKey)}
               alt={`${service.title} - Private pay in-home senior care services in Massachusetts`}
               title={`${service.title} - Premium Private Care Massachusetts`}
@@ -157,25 +157,25 @@ export default function ServiceDetailPage() {
             {/* Lighter gradient overlay - 50% opacity for better visibility */}
             <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/30 to-transparent" />
           </div>
-          
+
           <div className="relative z-10 max-w-7xl mx-auto px-4 py-20">
             <div className="max-w-2xl animate-fade-in-up">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-md rounded-full border border-white/30 mb-6">
                 <Sparkles className="w-4 h-4 text-white" />
                 <span className="text-sm font-semibold text-white">Private Care Throughout Massachusetts</span>
               </div>
-              
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight drop-shadow-lg">
+
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight">
                 {service.title}
-                <span className="block text-2xl md:text-3xl font-normal text-white/80 mt-4">
-                  {service.tagline}
-                </span>
               </h1>
-              
-              <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed drop-shadow">
+              <p className="text-2xl md:text-3xl font-normal text-white/80 mb-6">
+                {service.tagline}
+              </p>
+
+              <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed">
                 {service.heroDescription}
               </p>
-              
+
               <div className="flex flex-wrap gap-4">
                 <Button size="lg" className="text-base px-8 shadow-xl" asChild>
                   <a href="#contact" data-testid="button-get-started">
@@ -192,7 +192,7 @@ export default function ServiceDetailPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
         </section>
 
@@ -238,7 +238,7 @@ export default function ServiceDetailPage() {
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <Card className="border-2 border-border/50">
                   <CardContent className="p-6">
@@ -270,10 +270,10 @@ export default function ServiceDetailPage() {
                 Comprehensive care tailored to your needs
               </p>
             </div>
-            
+
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               {service.servicesIncluded.map((item, idx) => (
-                <div 
+                <div
                   key={idx}
                   className="flex items-center gap-3 p-4 bg-card rounded-xl border border-border/50 hover:border-primary/30 hover:shadow-md transition-all"
                 >
@@ -309,10 +309,10 @@ export default function ServiceDetailPage() {
                   </a>
                 </Button>
               </div>
-              
+
               <div className="space-y-4">
                 {service.caregiverStandards.map((standard, idx) => (
-                  <div 
+                  <div
                     key={idx}
                     className="flex items-start gap-4 p-4 bg-card rounded-xl border border-border/50"
                   >
@@ -360,7 +360,7 @@ export default function ServiceDetailPage() {
                 <CardContent className="p-6">
                   <div className="flex flex-wrap gap-2">
                     {service.coverageAreas.map((area, idx) => (
-                      <span 
+                      <span
                         key={idx}
                         className="px-3 py-1 bg-muted rounded-full text-sm font-medium"
                       >
@@ -389,7 +389,7 @@ export default function ServiceDetailPage() {
                 Everything you need to know about our {service.title.toLowerCase()}
               </p>
             </div>
-            
+
             <Card className="border-2 border-border/50">
               <CardContent className="p-6">
                 <Accordion type="single" collapsible className="w-full">
