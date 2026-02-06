@@ -381,7 +381,7 @@ export default function ArticlePage() {
             {article.keywords && article.keywords.length > 0 && (
               <div className="flex flex-wrap gap-2" data-testid="container-keywords">
                 {article.keywords.map(keyword => (
-                  <Badge key={keyword} variant="secondary" data-testid={`badge-keyword-${keyword}`}>
+                  <Badge key={keyword} variant="secondary" className="whitespace-pre-line" data-testid={`badge-keyword-${keyword}`}>
                     {keyword}
                   </Badge>
                 ))}

@@ -83,14 +83,14 @@ export default function ArticlesPage() {
                         </p>
                       )}
                       {article.keywords && article.keywords.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1 whitespace-pre-line">
                           {article.keywords.slice(0, 3).map(keyword => (
                             <Badge key={keyword} variant="outline" className="text-xs">
                               {keyword}
                             </Badge>
                           ))}
                           {article.keywords.length > 3 && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs whitespace-pre-line">
                               +{article.keywords.length - 3}
                             </Badge>
                           )}
