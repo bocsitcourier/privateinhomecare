@@ -146,14 +146,14 @@ export function PodcastsManagementContent() {
   };
 
   const { data: podcasts, isLoading } = useQuery<PodcastType[]>({
-    queryKey: ["/api/podcasts"],
+    queryKey: ["/api/admin/podcasts"],
   });
 
   const createMutation = useMutation({
     mutationFn: (data: Partial<PodcastType>) =>
       apiRequest("POST", "/api/admin/podcasts", data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/podcasts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/podcasts"] });
       toast({
         title: "Success",
         description: "Podcast created successfully.",
@@ -174,7 +174,7 @@ export function PodcastsManagementContent() {
     mutationFn: (data: { id: string; updates: Partial<PodcastType> }) =>
       apiRequest("PATCH", `/api/admin/podcasts/${data.id}`, data.updates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/podcasts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/podcasts"] });
       toast({
         title: "Success",
         description: "Podcast updated successfully.",
@@ -195,7 +195,7 @@ export function PodcastsManagementContent() {
     mutationFn: (id: string) =>
       apiRequest("DELETE", `/api/admin/podcasts/${id}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/podcasts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/podcasts"] });
       toast({
         title: "Success",
         description: "Podcast deleted successfully.",
@@ -215,7 +215,7 @@ export function PodcastsManagementContent() {
     mutationFn: (id: string) =>
       apiRequest("POST", `/api/admin/podcasts/${id}/publish`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/podcasts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/podcasts"] });
       toast({
         title: "Success",
         description: "Podcast published successfully.",
@@ -234,7 +234,7 @@ export function PodcastsManagementContent() {
     mutationFn: (id: string) =>
       apiRequest("POST", `/api/admin/podcasts/${id}/unpublish`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/podcasts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/podcasts"] });
       toast({
         title: "Success",
         description: "Podcast unpublished successfully.",
@@ -268,7 +268,7 @@ export function PodcastsManagementContent() {
         thumbnailUrl: result.thumbnailUrl,
       }));
       
-      queryClient.invalidateQueries({ queryKey: ["/api/podcasts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/podcasts"] });
       
       toast({
         title: "Thumbnail Generated",
