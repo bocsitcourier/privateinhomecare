@@ -106,8 +106,8 @@ function Router() {
         <Route path="/caregiver-resources" component={CaregiverResourcesPage} />
         <Route path="/videos" component={VideosPage} />
         <Route path="/videos/:slug" component={VideoDetailPage} />
-        <Route path="/podcasts" component={PodcastsPage} />
         <Route path="/podcasts/:slug" component={PodcastDetailPage} />
+        <Route path="/podcasts" component={PodcastsPage} />
         <Route path="/aging-resources" component={AgingResourcesPage} />
         <Route path="/find-hospital" component={FindHospitalPage} />
         <Route path="/application-thank-you" component={ApplicationThankYouPage} />

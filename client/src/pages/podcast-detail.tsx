@@ -241,7 +241,6 @@ export default function PodcastDetailPage() {
                     <Button
                       size="icon"
                       onClick={togglePlay}
-                      className="w-14 h-14 rounded-full"
                       data-testid="button-play-pause"
                     >
                       {isPlaying ? (
