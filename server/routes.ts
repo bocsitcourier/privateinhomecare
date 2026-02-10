@@ -7407,15 +7407,18 @@ ${faqJsonLd}
 
       const createdQuizzes = [];
       for (const quizDef of quizDefinitions) {
-        const { questions, ...quizData } = quizDef;
-        const quiz = await storage.createQuiz(quizData);
+        const { questions, serviceType, facilityType, ...quizData } = quizDef as any;
+        const quiz = await storage.createQuiz({
+          ...quizData,
+          category: quizData.category as "service" | "facility",
+        });
         
         let order = 1;
         for (const q of questions) {
           await storage.createQuizQuestion({
             quizId: quiz.id,
             questionText: q.text,
-            questionType: q.type || "single_choice",
+            questionType: (q as any).type || "single_choice",
             options: q.options,
             displayOrder: order++,
             isRequired: "yes",
@@ -7645,7 +7648,7 @@ ${faqJsonLd}
 
       const createdVideos = [];
       for (const video of videoData) {
-        const created = await storage.createVideo(video);
+        const created = await storage.createVideo(video as any);
         createdVideos.push(created);
       }
 
@@ -7730,7 +7733,7 @@ ${faqJsonLd}
           status: "published",
         };
 
-        const created = await storage.createVideo(videoData);
+        const created = await storage.createVideo(videoData as any);
         importedVideos.push({ title: created.title, slug: created.slug, videoId: video.videoId });
       }
 
