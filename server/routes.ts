@@ -100,7 +100,7 @@ async function seedAdminUser() {
     
     await storage.createRecoveryCodes(user.id, codeHashes);
     
-    console.log("[STARTUP] ✓ Admin user created - Username: admin, Password: demo123");
+    console.log("[STARTUP] ✓ Admin user created successfully");
     console.log("[STARTUP] ✓ Recovery codes generated:", recoveryCodes.length);
   } catch (error: any) {
     console.error("[STARTUP] ✗ Failed to seed admin user:", error.message);

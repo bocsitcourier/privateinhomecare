@@ -31,7 +31,7 @@ export default function AdminModal({ open, onClose }: AdminModalProps) {
     if (password.trim() === "demo123") {
       setAuthenticated(true);
       setError("");
-      console.log("Admin authenticated with CAPTCHA");
+      // Admin authenticated successfully
     } else {
       setError("Incorrect password. For demo use: demo123");
     }
@@ -40,7 +40,7 @@ export default function AdminModal({ open, onClose }: AdminModalProps) {
   const handleCaptchaChange = (token: string | null) => {
     setCaptchaToken(token);
     setError("");
-    console.log("CAPTCHA verified:", token ? "Success" : "Reset");
+    // CAPTCHA token received - do not log
   };
 
   const handleClose = () => {

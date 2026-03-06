@@ -98,7 +98,7 @@ export default function ContactForm({ preselectedService }: ContactFormProps) {
   const handleCaptchaChange = (token: string | null) => {
     setCaptchaToken(token);
     setError("");
-    console.log("CAPTCHA verified:", token ? "Success" : "Reset");
+    // CAPTCHA token received - do not log
   };
 
   if (submitted) {

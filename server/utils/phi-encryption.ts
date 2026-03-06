@@ -16,7 +16,7 @@ import {
 } from 'crypto';
 
 const ALGORITHM = 'aes-256-gcm';
-const IV_LENGTH = 16;
+const IV_LENGTH = 12;
 const AUTH_TAG_LENGTH = 16;
 const SALT_LENGTH = 32;
 
@@ -76,7 +76,7 @@ export function encryptPHI(plaintext: string): string {
   
   const key = deriveKey(masterKey, salt);
   
-  const cipher = createCipheriv(ALGORITHM, key, iv);
+  const cipher = createCipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_LENGTH });
   
   let encrypted = cipher.update(plaintext, 'utf8', 'hex');
   encrypted += cipher.final('hex');
@@ -121,11 +121,15 @@ export function decryptPHI(encryptedData: string): string {
   
   const key = deriveKey(masterKey, salt);
   
-  const decipher = createDecipheriv(ALGORITHM, key, iv);
+  const decipher = createDecipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_LENGTH });
   decipher.setAuthTag(authTag);
   
   let decrypted = decipher.update(ciphertext, 'hex', 'utf8');
-  decrypted += decipher.final('utf8');
+  try {
+    decrypted += decipher.final('utf8');
+  } catch {
+    throw new Error('[HIPAA] Decryption authentication failed: data may have been tampered with');
+  }
   
   return decrypted;
 }
