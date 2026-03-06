@@ -18,7 +18,7 @@ import {
   insertHipaaAcknowledgmentSchema, updateHipaaAcknowledgmentSchema,
   insertLeadMagnetSchema,
   insertReferralSchema, updateReferralSchema,
-  insertVideoSchema, updateVideoSchema,
+  insertVideoSchema, updateVideoSchema, type InsertVideo,
   insertPodcastSchema, updatePodcastSchema,
   insertFacilityFaqSchema, updateFacilityFaqSchema,
   insertNonSolicitationSchema, updateNonSolicitationSchema,
@@ -5367,7 +5367,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
 
       for (const facility of toMigrate) {
         const newHeroUrl = facility.heroImageUrl ? convertUrl(facility.heroImageUrl) : facility.heroImageUrl;
-        const newGallery = (facility.galleryImages as string[] | null)?.map(convertUrl) ?? facility.galleryImages;
+        const newGallery = (facility.galleryImages as string[] | null)?.map(convertUrl) ?? facility.galleryImages ?? undefined;
         await storage.updateFacility(facility.id, {
           heroImageUrl: newHeroUrl,
           galleryImages: newGallery,
@@ -5406,7 +5406,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
     const CONCURRENCY = 3;
     const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-    const fetchWithRetry = async (url: string, opts?: RequestInit, retries = 3): Promise<Response> => {
+    const fetchWithRetry = async (url: string, opts?: RequestInit, retries = 3): Promise<globalThis.Response> => {
       for (let attempt = 0; attempt <= retries; attempt++) {
         const res = await fetch(url, opts);
         if (res.status === 429 && attempt < retries) {
@@ -7843,7 +7843,7 @@ ${faqJsonLd}
         }
       }
 
-      const videoData = [
+      const videoData: InsertVideo[] = [
         {
           title: "Concierge Services Massachusetts - Live Life on Your Own Terms",
           slug: "concierge-services-massachusetts",
@@ -8100,7 +8100,7 @@ ${faqJsonLd}
 
         const shortDescription = video.description.split("\n\n")[0].substring(0, 500);
 
-        const videoData = {
+        const videoData: InsertVideo = {
           title: video.title,
           slug: finalSlug,
           description: shortDescription,

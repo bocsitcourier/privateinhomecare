@@ -1055,7 +1055,7 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const now = new Date();
     const agreementTimestamp = (insertApplication.agreedToTerms === "yes" && insertApplication.agreedToPolicy === "yes") ? now : null;
-    const application: JobApplication = {
+    const application = {
       id,
       ...insertApplication,
       address: insertApplication.address ?? null,
@@ -1073,7 +1073,7 @@ export class MemStorage implements IStorage {
       agreementTimestamp,
       status: 'pending',
       createdAt: now,
-    };
+    } as unknown as JobApplication;
     this.jobApplications.set(id, application);
     return application;
   }
@@ -1108,7 +1108,7 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const now = new Date();
     const agreementTimestamp = (form.agreedToTerms === "yes" && form.agreedToPolicy === "yes") ? now : null;
-    const newForm: IntakeForm = {
+    const newForm = {
       id,
       ...form,
       dateOfBirth: form.dateOfBirth ?? null,
@@ -1121,7 +1121,7 @@ export class MemStorage implements IStorage {
       notes: null,
       createdAt: now,
       updatedAt: now,
-    };
+    } as unknown as IntakeForm;
     this.intakeForms.set(id, newForm);
     return newForm;
   }
@@ -1515,7 +1515,7 @@ export class MemStorage implements IStorage {
   async createMaLocation(location: InsertMaLocation): Promise<MaLocation> {
     const id = randomUUID();
     const now = new Date();
-    const newLocation: MaLocation = { id, ...location, zipCodes: location.zipCodes || [], population: location.population ?? null, latitude: location.latitude ?? null, longitude: location.longitude ?? null, createdAt: now, updatedAt: now };
+    const newLocation = { id, ...location, zipCodes: location.zipCodes || [], population: location.population ?? null, latitude: location.latitude ?? null, longitude: location.longitude ?? null, lastEnrichedAt: null, createdAt: now, updatedAt: now } as unknown as MaLocation;
     this.maLocationsMap.set(id, newLocation);
     return newLocation;
   }
@@ -1566,7 +1566,7 @@ export class MemStorage implements IStorage {
   async createCareTypePage(page: InsertCareTypePage): Promise<CareTypePage> {
     const id = randomUUID();
     const now = new Date();
-    const newPage: CareTypePage = { id, ...page, keywords: page.keywords || [], servicesHighlights: page.servicesHighlights || [], heroTitle: page.heroTitle ?? null, heroSubtitle: page.heroSubtitle ?? null, overviewContent: page.overviewContent ?? null, whyChooseUsContent: page.whyChooseUsContent ?? null, localInfo: page.localInfo ?? null, ctaPhone: page.ctaPhone ?? null, metaTitle: page.metaTitle ?? null, metaDescription: page.metaDescription ?? null, aiGenerated: page.aiGenerated ?? "no", lastEditedBy: page.lastEditedBy ?? null, publishedAt: null, aiGeneratedAt: null, createdAt: now, updatedAt: now };
+    const newPage = { id, ...page, keywords: page.keywords || [], servicesHighlights: page.servicesHighlights || [], heroTitle: page.heroTitle ?? null, heroSubtitle: page.heroSubtitle ?? null, overviewContent: page.overviewContent ?? null, whyChooseUsContent: page.whyChooseUsContent ?? null, localInfo: page.localInfo ?? null, ctaPhone: page.ctaPhone ?? null, metaTitle: page.metaTitle ?? null, metaDescription: page.metaDescription ?? null, aiGenerated: page.aiGenerated ?? "no", lastEditedBy: page.lastEditedBy ?? null, publishedAt: null, aiGeneratedAt: null, createdAt: now, updatedAt: now } as unknown as CareTypePage;
     this.careTypePagesMap.set(id, newPage);
     return newPage;
   }
@@ -1606,7 +1606,7 @@ export class MemStorage implements IStorage {
   async createLocationFaq(faq: InsertLocationFaq): Promise<LocationFaq> {
     const id = randomUUID();
     const now = new Date();
-    const newFaq: LocationFaq = { id, ...faq, createdAt: now, updatedAt: now };
+    const newFaq: LocationFaq = { id, ...faq, isActive: faq.isActive || "yes", sortOrder: faq.sortOrder ?? 0, createdAt: now, updatedAt: now };
     this.locationFaqsMap.set(id, newFaq);
     return newFaq;
   }
@@ -1630,7 +1630,7 @@ export class MemStorage implements IStorage {
   async createLocationReview(review: InsertLocationReview): Promise<LocationReview> {
     const id = randomUUID();
     const now = new Date();
-    const newReview: LocationReview = { id, ...review, reviewerLocation: review.reviewerLocation ?? null, reviewDate: review.reviewDate ?? null, createdAt: now, updatedAt: now };
+    const newReview: LocationReview = { id, ...review, isActive: review.isActive || "yes", rating: review.rating ?? 0, isVerified: review.isVerified || "no", reviewerLocation: review.reviewerLocation ?? null, reviewDate: review.reviewDate ?? null, createdAt: now, updatedAt: now };
     this.locationReviewsMap.set(id, newReview);
     return newReview;
   }
@@ -1714,7 +1714,7 @@ export class MemStorage implements IStorage {
   async createServiceType(service: InsertServiceType): Promise<ServiceType> {
     const id = randomUUID();
     const now = new Date();
-    const newService: ServiceType = { id, ...service, description: service.description ?? null, createdAt: now };
+    const newService: ServiceType = { id, ...service, description: service.description ?? null, isActive: service.isActive || "yes", sortOrder: service.sortOrder ?? 0, createdAt: now };
     this.serviceTypesMap.set(id, newService);
     return newService;
   }
@@ -1765,9 +1765,17 @@ export class MemStorage implements IStorage {
       embedUrl: video.embedUrl ?? null,
       thumbnailUrl: video.thumbnailUrl ?? null,
       duration: video.duration ?? null,
+      transcript: video.transcript ?? null,
+      speakerName: video.speakerName ?? null,
+      speakerTitle: video.speakerTitle ?? null,
+      topics: video.topics || [],
+      targetAudience: video.targetAudience ?? null,
+      learningObjectives: video.learningObjectives || [],
       metaTitle: video.metaTitle ?? null,
       metaDescription: video.metaDescription ?? null,
       keywords: video.keywords || [],
+      canonicalUrl: video.canonicalUrl ?? null,
+      schemaMarkup: video.schemaMarkup ?? null,
       featured: video.featured || "no",
       sortOrder: video.sortOrder || 0,
       status: video.status || "draft",
@@ -1855,9 +1863,14 @@ export class MemStorage implements IStorage {
       hostName: podcast.hostName ?? null,
       guestName: podcast.guestName ?? null,
       guestTitle: podcast.guestTitle ?? null,
+      topics: podcast.topics || [],
+      targetAudience: podcast.targetAudience ?? null,
+      learningObjectives: podcast.learningObjectives || [],
       metaTitle: podcast.metaTitle ?? null,
       metaDescription: podcast.metaDescription ?? null,
       keywords: podcast.keywords || [],
+      canonicalUrl: podcast.canonicalUrl ?? null,
+      schemaMarkup: podcast.schemaMarkup ?? null,
       featured: podcast.featured || "no",
       sortOrder: podcast.sortOrder || 0,
       status: podcast.status || "draft",
@@ -1984,6 +1997,17 @@ export class MemStorage implements IStorage {
       sortOrder: facility.sortOrder || 0,
       status: facility.status || "draft",
       publishedAt: null,
+      googleMapsUrl: facility.googleMapsUrl ?? null,
+      googlePlaceId: facility.googlePlaceId ?? null,
+      businessStatus: facility.businessStatus ?? null,
+      isClosed: facility.isClosed || "no",
+      closureReason: facility.closureReason ?? null,
+      lastEnrichedAt: null,
+      openingHours: (facility.openingHours as any) ?? null,
+      accessibilityOptions: (facility.accessibilityOptions as any) ?? null,
+      googleReviews: (facility.googleReviews as any[]) || [],
+      dataHash: facility.dataHash ?? null,
+      needsRegeneration: facility.needsRegeneration || "no",
       dataSource: facility.dataSource || null,
       externalId: facility.externalId || null,
       createdAt: now,
@@ -1996,7 +2020,7 @@ export class MemStorage implements IStorage {
   async updateFacility(id: string, facility: UpdateFacility): Promise<Facility | undefined> {
     const existing = this.facilitiesMap.get(id);
     if (!existing) return undefined;
-    const updated: Facility = { ...existing, ...facility, updatedAt: new Date() };
+    const updated = { ...existing, ...facility, updatedAt: new Date() } as unknown as Facility;
     this.facilitiesMap.set(id, updated);
     return updated;
   }

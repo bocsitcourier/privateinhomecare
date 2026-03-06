@@ -1196,7 +1196,9 @@ export const insertFacilitySchema = createInsertSchema(facilities).omit({
   acceptsMedicaid: z.enum(["yes", "no", "unknown"]).default("unknown"),
 });
 
-export const updateFacilitySchema = insertFacilitySchema.partial();
+export const updateFacilitySchema = insertFacilitySchema.extend({
+  reviewCount: z.number().optional(),
+}).partial();
 
 export type InsertFacility = z.infer<typeof insertFacilitySchema>;
 export type UpdateFacility = z.infer<typeof updateFacilitySchema>;

@@ -60,7 +60,6 @@ export default function HipaaAcknowledgment() {
       relationshipToClient: "",
       agreedToTerms: undefined,
       agreedToPolicy: undefined,
-      captchaToken: "",
       website: "",
     },
   });

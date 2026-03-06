@@ -159,11 +159,11 @@ export default function PodcastDetailPage() {
             description: podcast.description || podcast.title,
             url: `https://privateinhomecaregiver.com/podcasts/${podcast.slug}`,
             datePublished: podcast.publishedAt ? new Date(podcast.publishedAt).toISOString() : new Date().toISOString(),
-            duration: podcast.durationSeconds ? `PT${podcast.durationSeconds}S` : undefined,
+            duration: podcast.duration ? `PT${podcast.duration}S` : undefined,
             audio: podcast.audioUrl ? {
               "@type": "AudioObject",
               contentUrl: podcast.audioUrl,
-              duration: podcast.durationSeconds ? `PT${podcast.durationSeconds}S` : undefined,
+              duration: podcast.duration ? `PT${podcast.duration}S` : undefined,
               encodingFormat: "audio/mpeg"
             } : undefined,
             author: {

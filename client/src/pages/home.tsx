@@ -317,7 +317,7 @@ export default function Home() {
           },
           author: { "@type": "Person", name: r.name },
           reviewBody: r.text,
-          datePublished: r.date || undefined, // include if you have it
+          datePublished: undefined,
         })),
 
         // Services you offer
