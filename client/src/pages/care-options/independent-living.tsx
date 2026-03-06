@@ -61,8 +61,21 @@ export default function IndependentLivingPage() {
       <PageSEO
         pageSlug="independent-living-massachusetts"
         fallbackTitle="Independent Living in Massachusetts | Senior Communities | PrivateInHomeCareGiver"
-        fallbackDescription="Explore independent living communities in Massachusetts for active seniors. Compare costs, amenities, and learn about in-home alternatives."
+        fallbackDescription="Explore independent living communities in Massachusetts for active seniors. Compare costs, amenities, and learn about private pay in-home care alternatives."
         canonicalPath="/independent-living/massachusetts"
+        includeMaGeoTargeting={true}
+        pageType="service"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Care Options", url: "/care-options" },
+          { name: "Independent Living in Massachusetts", url: "/independent-living/massachusetts" }
+        ]}
+        serviceData={{
+          serviceName: "Independent Living Guidance – Massachusetts",
+          serviceType: "Senior Care Guidance",
+          areaServed: "Massachusetts"
+        }}
+        faqItems={faqs}
       />
       <div className="min-h-screen flex flex-col">
         <Header />

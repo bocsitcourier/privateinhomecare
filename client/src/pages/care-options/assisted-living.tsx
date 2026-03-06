@@ -60,8 +60,21 @@ export default function AssistedLivingPage() {
       <PageSEO
         pageSlug="assisted-living-massachusetts"
         fallbackTitle="Assisted Living in Massachusetts | PrivateInHomeCareGiver"
-        fallbackDescription="Explore assisted living options in Massachusetts. Learn about costs, services, and how in-home care compares as an alternative for your loved one."
+        fallbackDescription="Explore assisted living options in Massachusetts. Learn about costs, services, and how private pay in-home care compares as a personalized alternative."
         canonicalPath="/assisted-living/massachusetts"
+        includeMaGeoTargeting={true}
+        pageType="service"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Care Options", url: "/care-options" },
+          { name: "Assisted Living in Massachusetts", url: "/assisted-living/massachusetts" }
+        ]}
+        serviceData={{
+          serviceName: "Assisted Living Guidance – Massachusetts",
+          serviceType: "Senior Care Guidance",
+          areaServed: "Massachusetts"
+        }}
+        faqItems={faqs}
       />
       <div className="min-h-screen flex flex-col">
         <Header />

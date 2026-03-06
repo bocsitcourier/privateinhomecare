@@ -89,8 +89,21 @@ export default function HospicePalliativeCarePage() {
       <PageSEO
         pageSlug="hospice-palliative-care-massachusetts"
         fallbackTitle="Hospice & Palliative Care in Massachusetts | PrivateInHomeCareGiver"
-        fallbackDescription="Find hospice and palliative care providers in Massachusetts. Learn about end-of-life care options, Medicare coverage, and in-home support for families."
+        fallbackDescription="Find hospice and palliative care providers in Massachusetts. Learn about end-of-life care options and private pay in-home support for families."
         canonicalPath="/hospice-palliative-care/massachusetts"
+        includeMaGeoTargeting={true}
+        pageType="service"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Care Options", url: "/care-options" },
+          { name: "Hospice & Palliative Care in Massachusetts", url: "/hospice-palliative-care/massachusetts" }
+        ]}
+        serviceData={{
+          serviceName: "Hospice & Palliative Care Guidance – Massachusetts",
+          serviceType: "End-of-Life Senior Care",
+          areaServed: "Massachusetts"
+        }}
+        faqItems={faqs}
       />
       <div className="min-h-screen flex flex-col">
         <Header />

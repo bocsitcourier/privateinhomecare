@@ -61,8 +61,21 @@ export default function MemoryCarePage() {
       <PageSEO
         pageSlug="memory-care-massachusetts"
         fallbackTitle="Memory Care in Massachusetts | Alzheimer's & Dementia Care | PrivateInHomeCareGiver"
-        fallbackDescription="Explore memory care options for Alzheimer's and dementia in Massachusetts. Learn about costs, when to consider memory care, and in-home dementia care alternatives."
+        fallbackDescription="Explore memory care options for Alzheimer's and dementia in Massachusetts. Learn about costs, when to consider memory care, and private pay in-home dementia care alternatives."
         canonicalPath="/memory-care/massachusetts"
+        includeMaGeoTargeting={true}
+        pageType="service"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Care Options", url: "/care-options" },
+          { name: "Memory Care in Massachusetts", url: "/memory-care/massachusetts" }
+        ]}
+        serviceData={{
+          serviceName: "Memory Care & Dementia Care Guidance – Massachusetts",
+          serviceType: "Dementia Senior Care",
+          areaServed: "Massachusetts"
+        }}
+        faqItems={faqs}
       />
       <div className="min-h-screen flex flex-col">
         <Header />

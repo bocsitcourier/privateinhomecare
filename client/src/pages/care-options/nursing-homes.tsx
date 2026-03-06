@@ -61,8 +61,21 @@ export default function NursingHomesPage() {
       <PageSEO
         pageSlug="nursing-homes-massachusetts"
         fallbackTitle="Nursing Homes in Massachusetts | PrivateInHomeCareGiver"
-        fallbackDescription="Explore nursing home options in Massachusetts. Learn about costs, Medicare coverage, and how in-home care compares as an alternative for your loved one."
+        fallbackDescription="Explore nursing home options in Massachusetts. Learn about costs, coverage, and how private pay in-home care compares as an alternative for your loved one."
         canonicalPath="/nursing-homes/massachusetts"
+        includeMaGeoTargeting={true}
+        pageType="service"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Care Options", url: "/care-options" },
+          { name: "Nursing Homes in Massachusetts", url: "/nursing-homes/massachusetts" }
+        ]}
+        serviceData={{
+          serviceName: "Nursing Home Care Information – Massachusetts",
+          serviceType: "Senior Care Guidance",
+          areaServed: "Massachusetts"
+        }}
+        faqItems={faqs}
       />
       <div className="min-h-screen flex flex-col">
         <Header />

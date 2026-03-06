@@ -70,8 +70,21 @@ export default function HomeCareOverviewPage() {
       <PageSEO
         pageSlug="home-care-massachusetts"
         fallbackTitle="Home Care in Massachusetts | In-Home Care Services | PrivateInHomeCareGiver"
-        fallbackDescription="Find quality in-home care services in Massachusetts. Personal care, companionship, dementia care, and more. Get a free consultation today."
+        fallbackDescription="Find quality private pay in-home care services in Massachusetts. Personal care, companionship, dementia care, and more. Get a free consultation today."
         canonicalPath="/home-care/massachusetts"
+        includeMaGeoTargeting={true}
+        pageType="service"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Care Options", url: "/care-options" },
+          { name: "Home Care in Massachusetts", url: "/home-care/massachusetts" }
+        ]}
+        serviceData={{
+          serviceName: "In-Home Care Services – Massachusetts",
+          serviceType: "Private Pay Senior In-Home Care",
+          areaServed: "Massachusetts"
+        }}
+        faqItems={faqs}
       />
       <div className="min-h-screen flex flex-col">
         <Header />

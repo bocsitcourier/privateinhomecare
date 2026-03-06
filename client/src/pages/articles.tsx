@@ -20,7 +20,41 @@ export default function ArticlesPage() {
       <PageSEO 
         pageSlug="articles"
         fallbackTitle="Articles & Resources | PrivateInHomeCareGiver"
-        fallbackDescription="Read our latest articles about in-home care, caregiver tips, and resources for families in Massachusetts."
+        fallbackDescription="Read our latest articles about in-home care, caregiver tips, and resources for Massachusetts senior families."
+        canonicalPath="/articles"
+        includeMaGeoTargeting={true}
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Articles & Resources", url: "/articles" }
+        ]}
+        additionalSchemas={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Blog",
+            name: "PrivateInHomeCareGiver Articles & Resources",
+            description: "Expert articles about Massachusetts private pay in-home senior care, caregiver tips, health conditions, and family guidance.",
+            url: "https://privateinhomecaregiver.com/articles",
+            publisher: {
+              "@type": "Organization",
+              name: "PrivateInHomeCareGiver",
+              url: "https://privateinhomecaregiver.com",
+              logo: "https://privateinhomecaregiver.com/logo.png"
+            },
+            author: {
+              "@type": "Organization",
+              name: "PrivateInHomeCareGiver"
+            },
+            about: {
+              "@type": "Thing",
+              name: "Massachusetts Private Pay Senior Care"
+            },
+            audience: {
+              "@type": "Audience",
+              audienceType: "Senior Care Families in Massachusetts"
+            },
+            inLanguage: "en-US"
+          }
+        ]}
       />
       <Header />
       <div className="container mx-auto px-4 py-12">

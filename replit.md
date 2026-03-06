@@ -2,7 +2,7 @@
 
 ## Overview
 
-PrivateInHomeCareGiver is a healthcare service platform designed to connect Massachusetts families with Personal Care Assistants (PCAs) for various in-home care services, including personal care, companionship, homemaking, and dementia support. The platform features a public-facing website for service discovery, caregiver job listings, and educational articles, complemented by a comprehensive admin portal. The project aims to establish itself as a leading provider of trusted in-home care services across Massachusetts.
+PrivateInHomeCareGiver is a healthcare service platform connecting Massachusetts families with Personal Care Assistants (PCAs) for in-home care services like personal care, companionship, homemaking, and dementia support. The platform features a public-facing website for service discovery, caregiver job listings, and educational content, alongside a comprehensive admin portal. The project aims to become a leading provider of trusted in-home care services across Massachusetts.
 
 ## User Preferences
 
@@ -12,102 +12,47 @@ Preferred communication style: Simple, everyday language.
 
 ### UI/UX & Frontend
 
-The frontend is a React with TypeScript single-page application (SPA) utilizing Vite and Wouter for routing. Design is based on shadcn/ui (Radix UI + Tailwind CSS), emphasizing trust, warmth, accessibility, and mobile-first responsiveness. State management is handled by TanStack Query. Key features include a public homepage, articles, consultation forms with CAPTCHA, dynamic service and location pages, and a comprehensive admin dashboard.
+The frontend is a React with TypeScript single-page application built with Vite and Wouter for routing. It uses shadcn/ui (Radix UI + Tailwind CSS) for a design focused on trust, warmth, accessibility, and mobile-first responsiveness. TanStack Query manages state. Key features include a public homepage, articles, consultation forms with CAPTCHA, dynamic service and location pages, and an extensive admin dashboard.
 
-The platform includes extensive SEO and GEO (Generative Engine Optimization) features: database-driven metadata, dynamic sitemap generation (priority 0.8, weekly changefreq, lastmod from lastEnrichedAt), structured data (JSON-LD for multiple schemas), Open Graph tags, Twitter Cards, and Massachusetts geo-targeting. It supports Progressive Web App (PWA) capabilities.
+The platform has advanced SEO and GEO features, including database-driven metadata, dynamic sitemap generation, structured data (JSON-LD for multiple schemas), Open Graph tags, Twitter Cards, and Massachusetts geo-targeting. It also supports Progressive Web App (PWA) capabilities and integrates an `/llms.txt` file for AI system context and `robots.txt` for AI crawler directives, allowing major AI bots.
 
-**Platinum SEO/GEO Stack (Facility Detail Pages):**
-- 5 JSON-LD schema blocks per page: Facility (NursingHome/Hospital/LodgingBusiness), BreadcrumbList, FAQPage, Review (LocalBusiness with individual reviews), SpecialAnnouncement (for closed facilities)
-- `speakable` property pointing to `#about-this-facility` and `#facility-faqs` CSS selectors for AI voice extraction
-- `sameAs` linking to Google Maps place_id and official website
-- `hasMap` with Google Maps coordinates link
-- `openingHoursSpecification` from stored Google Places data
-- `medicalSpecialty` for NursingHome/Hospital types
-- `additionalProperty` for bed count, Medicare/Medicaid certification, county
-- `knowsAbout` array for AI entity recognition
-- Dual `@type` array for NursingHome: `["NursingHome", "MedicalOrganization"]`
-- **`/llms.txt`** - AI system context file (llmstxt.org standard) describing site authority, service area, facility types, and GEO targeting keywords
-- Robots.txt includes `LLMs:` reference to llms.txt for AI crawler discovery
-- All major AI bots allowed: GPTBot, PerplexityBot, ClaudeBot, Google-Extended, Applebot, Meta-ExternalAgent, YouBot, cohere-ai
-
-Specific features include:
-- A comprehensive Massachusetts Care Directory with 65+ municipalities, search/filter functionality, and dynamic city pages.
-- SEO-optimized care type location pages (e.g., `/personal-care/massachusetts/boston-ma`) for 7 care types, complete with structured data and geo-targeting.
-- An enhanced careers page for caregiver recruitment.
-- A Caregiver Resources Hub with articles, videos, and podcasts, categorized for easy navigation.
-- Educational "Care Options" landing pages (e.g., `/nursing-homes/massachusetts`) to guide families through different care types.
-- A statewide senior care Facility Directory covering 7 facility types (nursing homes, assisted living, memory care, independent living, continuing care, hospice, hospitals) with 796+ facilities across all 14 Massachusetts counties, featuring search, filtering, reviews, and type-specific FAQs.
-- A dedicated Hospital Directory (`/find-hospital`) with 60 Massachusetts hospitals, specialty filtering, and ER badge detection.
-- A Quiz Lead Generation System with 12 interactive assessment quizzes for lead capture, scoring, and automated email notifications.
-- **Senior Concierge Services** (`/concierge-services/massachusetts`) - Comprehensive non-medical lifestyle support pages with 8 service types (errand running, appointment coordination, meal planning, medication management, bill organization, special occasions, social engagement, home organization), 12 FAQs, city-specific sub-pages for 24 MA cities, full SEO/GEO optimization with 4 JSON-LD schemas (FAQPage, Service, LocalBusiness, BreadcrumbList).
-- **Non-Medical Transportation** (`/non-medical-transportation/massachusetts`) - Private pay senior transportation service pages with 6 transport types (medical appointments, dialysis, shopping, social, business, recreational), wheelchair accessibility information, 12 FAQs, city-specific sub-pages with local hospital listings, full SEO/GEO optimization.
+Specific implementations include:
+- A comprehensive Massachusetts Care Directory covering 65+ municipalities with search/filter.
+- SEO-optimized care type location pages (e.g., `/personal-care/massachusetts/boston-ma`).
+- An enhanced careers page and a Caregiver Resources Hub (articles, videos, podcasts).
+- Educational "Care Options" landing pages (e.g., `/nursing-homes/massachusetts`).
+- A statewide senior care Facility Directory (7 facility types, 796+ facilities across 14 counties) with search, filtering, and reviews.
+- A dedicated Hospital Directory (`/find-hospital`) with 60 Massachusetts hospitals.
+- A Quiz Lead Generation System with 12 interactive assessment quizzes for lead capture.
+- Senior Concierge Services and Non-Medical Transportation pages with city-specific sub-pages and full SEO/GEO optimization.
 
 ### Backend
 
-The backend is built with Express.js, Node.js, and TypeScript, providing a RESTful API for public inquiries and admin CRUD operations. Data persistence uses Drizzle ORM for PostgreSQL (with `MemStorage` for development and `DbStorage` for production with Supabase). Zod schemas are used for validation.
+The backend uses Express.js, Node.js, and TypeScript, providing a RESTful API. Drizzle ORM is used with PostgreSQL (Supabase in production). Zod schemas ensure validation.
 
-The database schema includes tables for users, jobs, articles (with FAQs), inquiries, page metadata, caregivers, job applications, lead magnets, intake forms, directory data (locations, pages, FAQs, reviews), care type data, media (videos, podcasts), and facility FAQs. The `facilityFaqs` table stores personalized FAQs for each of the 796 facilities with categories including Location, Contact, Insurance, Capacity, Quality, Services, Amenities, Care, Admissions, Visits, Safety, and Emergency.
+The database schema includes tables for users, jobs, articles, inquiries, page metadata, caregivers, job applications, lead magnets, intake forms, and directory data (locations, pages, FAQs, reviews, facilities, care types, media). A `facilityFaqs` table stores personalized FAQs for each of the 796 facilities, manageable via dedicated API endpoints and an admin interface.
 
-#### Facility FAQ System
-- **Database Table**: `facilityFaqs` with fields: id, facilityId, question, answer, category, displayOrder, isActive, createdAt, updatedAt
-- **Public API**: `GET /api/facilities/:slug/faqs` returns FAQs ordered by displayOrder
-- **Admin API**: 
-  - `POST /api/admin/facilities/:id/faqs` - Create FAQ with Zod validation
-  - `PATCH /api/admin/facility-faqs/:id` - Update FAQ
-  - `DELETE /api/admin/facility-faqs/:id` - Delete FAQ
-- **Seed Endpoint**: `POST /api/seed/facility-faqs` generates 6-10 personalized FAQs per facility using actual facility data (name, location, services, ratings, insurance acceptance, bed capacity)
-- **Frontend Display**: FAQs displayed in accordion format on facility detail pages using Radix UI
-- **Admin Management**: FAQ management dialog in admin facilities page with add/edit/delete functionality
+A Smart Facility Data Synchronization system uses MD5 hashing to detect changes in Google Places data, flagging facilities that need content regeneration. It tracks business status (operational, closed) and updates facility names and other details from Google Places. Admin APIs provide statistics on data freshness and allow manual enrichment.
 
-#### Smart Facility Data Synchronization
-- **Change Detection**: Uses MD5 hashing (`dataHash` field) to detect when facility data has changed from Google Places
-- **Regeneration Tracking**: `needsRegeneration` flag marks facilities needing content updates after data changes
-- **Business Status**: Tracks Google Places `businessStatus` (OPERATIONAL, CLOSED_TEMPORARILY, CLOSED_PERMANENTLY)
-- **Closure Detection**: `isClosed` flag automatically set to "yes" for permanently closed facilities
-- **Data Freshness**: `lastEnrichedAt` timestamp tracks when facility was last synced with Google Places
-- **Name Correction**: Enrichment now updates `name` from Google Places `displayName` — fixes AI-hallucinated facility names. All 7 fields updated per enrichment: name, address, phone, website, rating, lat/lng, opening hours, accessibility, Google reviews.
-- **Admin API**:
-  - `GET /api/admin/facilities/stats` - Data freshness statistics (enriched count, stale data, closed facilities)
-  - `GET /api/admin/facilities/needs-regeneration` - List facilities needing content updates
-  - `POST /api/admin/facilities/:id/mark-regenerated` - Clear regeneration flag after updating content
-  - `POST /api/admin/facilities/:id/enrich` - Refresh single facility from Google Places with smart change detection
-- **Enrichment Logic**: Only updates database and marks for regeneration when data actually changes (hash comparison)
-- **Frontend Features**: Data Freshness card in admin, closure badges, refresh buttons, "Needs Update" indicators
+Security measures include `bcrypt` for password hashing, `express-session` with a PostgreSQL store, `helmet` for security headers, API hardening, anti-spam (honeypot, disposable email blocking, server-side CAPTCHA), IP-based geo-blocking, DOMPurify for HTML sanitization, and audit logging. Admin login uses reCAPTCHA.
 
-Security is multi-layered, incorporating `bcrypt` for password hashing, `express-session` with a PostgreSQL-backed store, `helmet` for security headers, API hardening against common vulnerabilities, anti-spam measures (honeypot, disposable email blocking, server-side CAPTCHA), IP-based geo-blocking, DOMPurify for HTML sanitization, and audit logging. Admin login supports reCAPTCHA. SSN fields have been removed for compliance.
+HIPAA Technical Safeguards are implemented:
+- **Automatic Logoff**: 15-minute inactivity timeout with a warning component.
+- **Audit Controls**: Enhanced middleware for structured logging of PHI access and actions.
+- **Transmission Security**: TLS 1.3 enforced, HTTPS-only, security headers.
+- **Access Control**: reCAPTCHA v2 on 7 PHI form endpoints, session-based authentication for admin.
+- **PHI Field-Level Encryption Utility**: AES-256-GCM utility for future PHI field encryption.
 
-#### HIPAA Technical Safeguards
-The platform implements HIPAA Security Rule technical safeguards (§164.312):
-
-- **Automatic Logoff (§164.312(a)(2)(iii))**: 15-minute inactivity timeout with rolling sessions. Session timeout warning component (`client/src/components/SessionTimeoutWarning.tsx`) displays non-dismissable dialog at 2 minutes before expiry, forcing user to either continue or logout. Session extend endpoint (`POST /api/session/extend`) resets rolling timeout on user activity.
-- **Audit Controls (§164.312(b))**: Enhanced HIPAA audit middleware (`server/middleware/hipaa-audit.ts`) provides structured logging with PHI field detection, action classification (CREATE/READ/UPDATE/DELETE/EXPORT/LOGIN/LOGOUT), user attribution via session.userId, IP/user-agent tracking, and outcome logging (success/failure).
-- **Transmission Security (§164.312(e)(1))**: TLS 1.3 enforced, HTTPS-only, helmet security headers configured in server/index.ts.
-- **Access Control (§164.312(a)(1))**: reCAPTCHA v2 on all 7 PHI form endpoints (inquiries, intake, referrals, job applications, general apply, non-solicitation, initial-assessment), session-based authentication for admin portal.
-- **PHI Field-Level Encryption Utility (§164.312(a)(2)(iv))**: Ready utility at `server/utils/phi-encryption.ts` using AES-256-GCM with scrypt key derivation. Integration into storage layer deferred pending data migration strategy for PHI fields (dateOfBirth, healthInsuranceNo, medicalHistory in intake forms).
-
-**PHI Form Endpoints with reCAPTCHA**: All 7 endpoints validate captchaToken server-side before processing:
-- POST /api/inquiries
-- POST /api/intake
-- POST /api/referrals
-- POST /api/jobs/:id/apply
-- POST /api/jobs/general-apply
-- POST /api/forms/non-solicitation
-- POST /api/forms/initial-assessment
-
-**Documentation**: Comprehensive HIPAA deployment checklist at `docs/HIPAA_DEPLOYMENT_CHECKLIST.md`.
-
-Content management supports draft/published states and uses TipTap for rich text editing. The platform includes a lead magnet system, a 4-step job application process, a dedicated consultation system, and a comprehensive health care plan assessment intake form. A dual-purpose HIPAA NPP and consumer Privacy Policy is implemented. Automated email notifications via Resend API are configured for inquiries, applications, and referrals.
-
-The Admin Dashboard offers comprehensive management with KPI statistics, filterable data tables, detailed modals for submissions, and status tracking.
+Content management supports draft/published states and uses TipTap. The platform includes a lead magnet system, a 4-step job application process, a consultation system, and a health care plan assessment intake form. A dual-purpose HIPAA NPP and consumer Privacy Policy is implemented. Automated email notifications are configured via Resend API. The Admin Dashboard offers comprehensive management with KPIs and filterable data.
 
 ### Key Architectural Decisions
 
-- **Monorepo Structure**: Enables shared types and schemas between client and server for end-to-end type safety.
-- **Schema Validation**: Drizzle schemas with Zod validators serve as the single source of truth for data validation.
-- **Content Workflow**: Implements draft/published states for content items.
-- **Performance Optimization**: Includes lazy loading for route components, code splitting, and optimized font loading.
-- **Supabase Integration**: `DbStorage` is fully implemented for Supabase PostgreSQL, pending network connectivity, with critical Row Level Security (RLS) implementation planned.
-- **Facility Photo Storage**: 707/707 facility hero photos permanently stored on disk in `uploads/facility-photos/{facilityId}.jpg` (219MB). Served via `express.static` — no API key, no expiry. Admin "Download All Photos" button in Facilities Management triggers download with rate-limit-safe batching (concurrency=3, exponential backoff). Proxy endpoint (`/api/proxy/facility-photo`) serves as fallback with auto-refresh for expired Google Places references using stored `google_place_id`.
+-   **Monorepo Structure**: Shared types and schemas between client and server for end-to-end type safety.
+-   **Schema Validation**: Drizzle schemas with Zod are the single source of truth for data validation.
+-   **Content Workflow**: Draft/published states for content items.
+-   **Performance Optimization**: Lazy loading, code splitting, optimized font loading.
+-   **Supabase Integration**: `DbStorage` implemented for Supabase PostgreSQL, with Row Level Security (RLS) planned.
+-   **Facility Photo Storage**: 707 facility hero photos stored locally and served via `express.static`. A proxy endpoint handles fallback for expired Google Places references.
 
 ## External Dependencies
 

@@ -6,6 +6,11 @@ interface BreadcrumbItem {
   url: string;
 }
 
+interface FaqItem {
+  question: string;
+  answer: string;
+}
+
 interface PageSEOProps {
   pageSlug: string;
   fallbackTitle?: string;
@@ -28,6 +33,8 @@ interface PageSEOProps {
     serviceType?: string;
     areaServed?: string;
   };
+  faqItems?: FaqItem[];
+  additionalSchemas?: object[];
   noindex?: boolean;
 }
 
@@ -67,6 +74,8 @@ export default function PageSEO({
   breadcrumbs,
   articleData,
   serviceData,
+  faqItems,
+  additionalSchemas,
   noindex = false
 }: PageSEOProps) {
   const pageMeta = usePageMeta(pageSlug);
@@ -219,6 +228,39 @@ export default function PageSEO({
     }
   } : null;
 
+  // Generate FAQPage Schema
+  const faqSchema = faqItems && faqItems.length > 0 ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems.map(item => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer
+      }
+    }))
+  } : null;
+
+  // Generate Service Schema
+  const serviceSchema = serviceData ? {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: serviceData.serviceName || title,
+    serviceType: serviceData.serviceType || "Senior Care",
+    provider: {
+      "@type": "Organization",
+      name: COMPANY_INFO.name,
+      url: COMPANY_INFO.url
+    },
+    areaServed: {
+      "@type": "State",
+      name: serviceData.areaServed || "Massachusetts"
+    },
+    description: description,
+    url: canonicalUrl
+  } : null;
+
   // Determine OG type
   const ogType = pageType === "article" ? "article" : 
                  pageType === "profile" ? "profile" : "website";
@@ -272,6 +314,11 @@ export default function PageSEO({
       <script type="application/ld+json">{JSON.stringify(organizationSchema)}</script>
       {breadcrumbSchema && <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>}
       {articleSchema && <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>}
+      {faqSchema && <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>}
+      {serviceSchema && <script type="application/ld+json">{JSON.stringify(serviceSchema)}</script>}
+      {additionalSchemas && additionalSchemas.map((schema, i) => (
+        <script key={`additional-schema-${i}`} type="application/ld+json">{JSON.stringify(schema)}</script>
+      ))}
     </Helmet>
   );
 }

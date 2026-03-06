@@ -48,6 +48,37 @@ export default function PodcastsPage() {
         fallbackTitle="Care Podcasts | PrivateInHomeCareGiver"
         fallbackDescription="Listen to our podcast series featuring caregiver stories, expert interviews, health topics, and caregiving tips for Massachusetts families."
         canonicalPath="/podcasts"
+        includeMaGeoTargeting={true}
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Caregiver Resources", url: "/caregiver-resources" },
+          { name: "Podcasts", url: "/podcasts" }
+        ]}
+        additionalSchemas={[
+          {
+            "@context": "https://schema.org",
+            "@type": "PodcastSeries",
+            name: "PrivateInHomeCareGiver Care Podcast",
+            description: "Podcast series featuring caregiver stories, expert interviews, health topics, and caregiving tips for Massachusetts senior care families.",
+            url: "https://privateinhomecaregiver.com/podcasts",
+            author: {
+              "@type": "Organization",
+              name: "PrivateInHomeCareGiver",
+              url: "https://privateinhomecaregiver.com"
+            },
+            publisher: {
+              "@type": "Organization",
+              name: "PrivateInHomeCareGiver",
+              url: "https://privateinhomecaregiver.com",
+              logo: "https://privateinhomecaregiver.com/logo.png"
+            },
+            inLanguage: "en-US",
+            about: {
+              "@type": "Thing",
+              name: "Massachusetts Senior In-Home Care"
+            }
+          }
+        ]}
       />
       <div className="min-h-screen flex flex-col">
         <Header />

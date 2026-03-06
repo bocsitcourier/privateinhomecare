@@ -143,6 +143,48 @@ export default function PodcastDetailPage() {
         fallbackTitle={`${podcast.title} | Care Podcasts | PrivateInHomeCareGiver`}
         fallbackDescription={podcast.description || `Listen to ${podcast.title} - a care podcast episode from PrivateInHomeCareGiver.`}
         canonicalPath={`/podcasts/${podcast.slug}`}
+        includeMaGeoTargeting={true}
+        pageType="article"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Caregiver Resources", url: "/caregiver-resources" },
+          { name: "Podcasts", url: "/podcasts" },
+          { name: podcast.title, url: `/podcasts/${podcast.slug}` }
+        ]}
+        additionalSchemas={[
+          {
+            "@context": "https://schema.org",
+            "@type": "PodcastEpisode",
+            name: podcast.title,
+            description: podcast.description || podcast.title,
+            url: `https://privateinhomecaregiver.com/podcasts/${podcast.slug}`,
+            datePublished: podcast.publishedAt ? new Date(podcast.publishedAt).toISOString() : new Date().toISOString(),
+            duration: podcast.durationSeconds ? `PT${podcast.durationSeconds}S` : undefined,
+            audio: podcast.audioUrl ? {
+              "@type": "AudioObject",
+              contentUrl: podcast.audioUrl,
+              duration: podcast.durationSeconds ? `PT${podcast.durationSeconds}S` : undefined,
+              encodingFormat: "audio/mpeg"
+            } : undefined,
+            author: {
+              "@type": "Organization",
+              name: "PrivateInHomeCareGiver",
+              url: "https://privateinhomecaregiver.com"
+            },
+            publisher: {
+              "@type": "Organization",
+              name: "PrivateInHomeCareGiver",
+              url: "https://privateinhomecaregiver.com",
+              logo: "https://privateinhomecaregiver.com/logo.png"
+            },
+            partOfSeries: {
+              "@type": "PodcastSeries",
+              name: "PrivateInHomeCareGiver Care Podcast",
+              url: "https://privateinhomecaregiver.com/podcasts"
+            },
+            inLanguage: "en-US"
+          }
+        ]}
       />
       <div className="min-h-screen flex flex-col">
         <Header />

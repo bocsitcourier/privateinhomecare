@@ -139,6 +139,34 @@ export default function CaregiverResourcesPage() {
         fallbackTitle="Caregiver Resources | In-Home Care Guide | PrivateInHomeCareGiver"
         fallbackDescription="Comprehensive caregiver resources for Massachusetts families. Find guides on choosing care, costs, health conditions, and self-care for family caregivers."
         canonicalPath="/caregiver-resources"
+        includeMaGeoTargeting={true}
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Caregiver Resources", url: "/caregiver-resources" }
+        ]}
+        additionalSchemas={[
+          {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: "Caregiver Resources Hub – Massachusetts Senior Care",
+            description: "Comprehensive caregiver resources for Massachusetts families including guides, videos, podcasts, articles, and expert advice on in-home senior care.",
+            url: "https://privateinhomecaregiver.com/caregiver-resources",
+            publisher: {
+              "@type": "Organization",
+              name: "PrivateInHomeCareGiver",
+              url: "https://privateinhomecaregiver.com"
+            },
+            about: {
+              "@type": "Thing",
+              name: "Massachusetts Private Pay In-Home Senior Care"
+            },
+            audience: {
+              "@type": "Audience",
+              audienceType: "Family Caregivers and Seniors in Massachusetts"
+            },
+            inLanguage: "en-US"
+          }
+        ]}
       />
       <div className="min-h-screen flex flex-col">
         <Header />

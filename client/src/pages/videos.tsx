@@ -47,6 +47,31 @@ export default function VideosPage() {
         fallbackTitle="Care Videos | PrivateInHomeCareGiver"
         fallbackDescription="Watch educational videos about in-home care, caregiver training, health conditions, and family support resources in Massachusetts."
         canonicalPath="/videos"
+        includeMaGeoTargeting={true}
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Caregiver Resources", url: "/caregiver-resources" },
+          { name: "Videos", url: "/videos" }
+        ]}
+        additionalSchemas={[
+          {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: "Senior Care Educational Videos – Massachusetts",
+            description: "Watch educational videos about in-home care, caregiver training, health conditions, and family support resources in Massachusetts.",
+            url: "https://privateinhomecaregiver.com/videos",
+            publisher: {
+              "@type": "Organization",
+              name: "PrivateInHomeCareGiver",
+              url: "https://privateinhomecaregiver.com"
+            },
+            about: {
+              "@type": "Thing",
+              name: "Massachusetts In-Home Senior Care"
+            },
+            inLanguage: "en-US"
+          }
+        ]}
       />
       <div className="min-h-screen flex flex-col">
         <Header />

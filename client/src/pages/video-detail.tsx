@@ -90,6 +90,40 @@ export default function VideoDetailPage() {
         fallbackTitle={video.metaTitle || `${video.title} | PrivateInHomeCareGiver`}
         fallbackDescription={video.metaDescription || video.description || "Watch this educational video from PrivateInHomeCareGiver."}
         canonicalPath={`/videos/${slug}`}
+        includeMaGeoTargeting={true}
+        pageType="article"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Caregiver Resources", url: "/caregiver-resources" },
+          { name: "Videos", url: "/videos" },
+          { name: video.title, url: `/videos/${slug}` }
+        ]}
+        additionalSchemas={[
+          {
+            "@context": "https://schema.org",
+            "@type": "VideoObject",
+            name: video.title,
+            description: video.description || video.title,
+            thumbnailUrl: video.thumbnailUrl || `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`,
+            uploadDate: video.createdAt ? new Date(video.createdAt).toISOString() : new Date().toISOString(),
+            duration: video.durationSeconds ? `PT${video.durationSeconds}S` : undefined,
+            embedUrl: video.youtubeId ? `https://www.youtube.com/embed/${video.youtubeId}` : undefined,
+            contentUrl: video.youtubeId ? `https://www.youtube.com/watch?v=${video.youtubeId}` : undefined,
+            url: `https://privateinhomecaregiver.com/videos/${slug}`,
+            publisher: {
+              "@type": "Organization",
+              name: "PrivateInHomeCareGiver",
+              url: "https://privateinhomecaregiver.com",
+              logo: "https://privateinhomecaregiver.com/logo.png"
+            },
+            author: {
+              "@type": "Organization",
+              name: "PrivateInHomeCareGiver"
+            },
+            inLanguage: "en-US",
+            keywords: ["Massachusetts senior care", "in-home care", "caregiver resources", categoryLabels[video.category] || video.category]
+          }
+        ]}
       />
       <div className="min-h-screen flex flex-col">
         <Header />
