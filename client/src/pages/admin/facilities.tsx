@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -55,6 +55,8 @@ import {
   AlertTriangle,
   Database,
   XOctagon,
+  Download,
+  ImageIcon,
 } from "lucide-react";
 import type { Facility, FacilityFaq } from "@shared/schema";
 
@@ -79,7 +81,42 @@ export function FacilitiesManagementContent() {
   const { data: facilities, isLoading } = useQuery<Facility[]>({
     queryKey: ["/api/admin/facilities"],
   });
-  
+
+  // Photo download progress polling
+  interface DownloadProgress { total: number; done: number; errors: number; running: boolean; startedAt?: string }
+  const [isPolling, setIsPolling] = useState(false);
+
+  const { data: downloadProgress } = useQuery<DownloadProgress>({
+    queryKey: ["/api/admin/facilities/download-progress"],
+    enabled: isPolling,
+    refetchInterval: isPolling ? 2000 : false,
+  });
+
+  useEffect(() => {
+    if (downloadProgress && !downloadProgress.running && isPolling) {
+      setIsPolling(false);
+      toast({
+        title: "Photos Downloaded",
+        description: `${downloadProgress.done} photos saved permanently. ${downloadProgress.errors > 0 ? `${downloadProgress.errors} errors.` : ""}`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/facilities"] });
+    }
+  }, [downloadProgress?.running]);
+
+  const downloadPhotosMutation = useMutation({
+    mutationFn: () => apiRequest("POST", "/api/admin/facilities/download-hero-photos"),
+    onSuccess: () => {
+      setIsPolling(true);
+      toast({
+        title: "Download Started",
+        description: "Downloading all facility hero photos in the background...",
+      });
+    },
+    onError: () => {
+      toast({ variant: "destructive", title: "Error", description: "Failed to start photo download." });
+    },
+  });
+
   // Data freshness stats query
   interface FacilityStats {
     total: number;
@@ -299,6 +336,60 @@ export function FacilitiesManagementContent() {
             </CardContent>
           </Card>
         )}
+
+      {/* Permanent Photo Storage */}
+      <Card>
+        <CardHeader className="py-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <ImageIcon className="h-5 w-5" />
+            Permanent Photo Storage
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
+            <div className="flex-1">
+              <p className="text-sm text-muted-foreground">
+                Download all facility hero photos from Google and store them permanently on this server.
+                Once downloaded, photos never expire and require no API key to serve.
+              </p>
+              {downloadProgress && downloadProgress.running && (
+                <div className="mt-3 space-y-1">
+                  <div className="flex items-center gap-2 text-sm">
+                    <RefreshCw className="h-4 w-4 animate-spin text-blue-500" />
+                    <span>Downloading: {downloadProgress.done} / {downloadProgress.total}</span>
+                    {downloadProgress.errors > 0 && (
+                      <span className="text-red-500">{downloadProgress.errors} errors</span>
+                    )}
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div
+                      className="bg-blue-500 h-2 rounded-full transition-all"
+                      style={{ width: `${Math.round((downloadProgress.done / downloadProgress.total) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+              {downloadProgress && !downloadProgress.running && downloadProgress.done > 0 && (
+                <p className="mt-2 text-sm text-green-600 font-medium">
+                  {downloadProgress.done} photos stored permanently. {downloadProgress.errors > 0 ? `(${downloadProgress.errors} errors)` : ""}
+                </p>
+              )}
+            </div>
+            <Button
+              onClick={() => downloadPhotosMutation.mutate()}
+              disabled={downloadPhotosMutation.isPending || (downloadProgress?.running ?? false)}
+              data-testid="button-download-photos"
+            >
+              {downloadProgress?.running ? (
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4 mr-2" />
+              )}
+              {downloadProgress?.running ? "Downloading..." : "Download All Photos"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
         <Card>
           <CardHeader>

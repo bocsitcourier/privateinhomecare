@@ -4872,6 +4872,16 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
     }
   });
 
+  // In-memory progress tracker for photo downloads (declared here so all routes below can reference it)
+  let photoDownloadProgress: { total: number; done: number; errors: number; running: boolean; startedAt?: string } = {
+    total: 0, done: 0, errors: 0, running: false
+  };
+
+  // Admin: Get photo download progress (must be before /:id to avoid route conflict)
+  app.get("/api/admin/facilities/download-progress", requireAuth, (_req: Request, res: Response) => {
+    res.json(photoDownloadProgress);
+  });
+
   // Admin: Get facility by ID
   app.get("/api/admin/facilities/:id", requireAuth, async (req: Request, res: Response) => {
     try {
@@ -5209,6 +5219,95 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
       console.error("Error migrating photo URLs:", error);
       res.status(500).json({ message: "Migration failed" });
     }
+  });
+
+  // Admin: Download all facility hero photos permanently to uploads/facility-photos/
+  app.post("/api/admin/facilities/download-hero-photos", requireAuth, async (req: Request, res: Response) => {
+    if (photoDownloadProgress.running) {
+      return res.status(409).json({ message: "Download already in progress", progress: photoDownloadProgress });
+    }
+
+    const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+    if (!apiKey) return res.status(500).json({ message: "GOOGLE_PLACES_API_KEY not configured" });
+
+    const allFacilities = await storage.listFacilities({});
+    const toDownload = allFacilities.filter(f =>
+      f.heroImageUrl?.startsWith("/api/proxy/facility-photo") && f.googlePlaceId
+    );
+
+    photoDownloadProgress = { total: toDownload.length, done: 0, errors: 0, running: true, startedAt: new Date().toISOString() };
+    res.json({ message: `Started downloading ${toDownload.length} hero photos`, total: toDownload.length });
+
+    // Run downloads in background with low concurrency to avoid Google API rate limits
+    const dir = path.join(process.cwd(), "uploads", "facility-photos");
+    await fs.mkdir(dir, { recursive: true });
+
+    const CONCURRENCY = 3;
+    const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+    const fetchWithRetry = async (url: string, opts?: RequestInit, retries = 3): Promise<Response> => {
+      for (let attempt = 0; attempt <= retries; attempt++) {
+        const res = await fetch(url, opts);
+        if (res.status === 429 && attempt < retries) {
+          await sleep(3000 + attempt * 2000); // 3s, 5s, 7s backoff
+          continue;
+        }
+        return res;
+      }
+      return fetch(url, opts);
+    };
+
+    const queue = [...toDownload];
+
+    const downloadOne = async (facility: typeof toDownload[number]) => {
+      try {
+        const parsedUrl = new URL(facility.heroImageUrl!, "http://localhost");
+        const photoName = parsedUrl.searchParams.get("name");
+        if (!photoName) throw new Error("No photo name in URL");
+
+        // Try stored reference first; if expired, refresh from Place ID
+        let googleUrl = `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=1200&key=${apiKey}`;
+        let imgRes = await fetchWithRetry(googleUrl);
+
+        if (!imgRes.ok) {
+          // Fetch fresh photo reference from Place ID
+          await sleep(500); // small pause before second Google call
+          const placeRes = await fetchWithRetry(
+            `https://places.googleapis.com/v1/places/${facility.googlePlaceId}`,
+            { headers: { "X-Goog-Api-Key": apiKey, "X-Goog-FieldMask": "photos" } }
+          );
+          if (!placeRes.ok) throw new Error(`Place lookup failed: ${placeRes.status}`);
+          const placeData = await placeRes.json();
+          if (!placeData.photos?.length) throw new Error("No photos available");
+          const freshName = placeData.photos[0].name;
+          await sleep(300);
+          googleUrl = `https://places.googleapis.com/v1/${freshName}/media?maxWidthPx=1200&key=${apiKey}`;
+          imgRes = await fetchWithRetry(googleUrl);
+          if (!imgRes.ok) throw new Error(`Fresh photo fetch failed: ${imgRes.status}`);
+        }
+
+        const buffer = Buffer.from(await imgRes.arrayBuffer());
+        const filePath = path.join(dir, `${facility.id}.jpg`);
+        await fs.writeFile(filePath, buffer);
+
+        await storage.updateFacility(facility.id, {
+          heroImageUrl: `/uploads/facility-photos/${facility.id}.jpg`,
+        });
+        photoDownloadProgress.done++;
+      } catch (err) {
+        console.error(`[PhotoDownload] Error for facility ${facility.id} (${facility.name}):`, err);
+        photoDownloadProgress.errors++;
+      }
+    };
+
+    (async () => {
+      while (queue.length > 0) {
+        const batch = queue.splice(0, CONCURRENCY);
+        await Promise.all(batch.map(downloadOne));
+      }
+      photoDownloadProgress.running = false;
+      console.log(`[PhotoDownload] Complete: ${photoDownloadProgress.done} downloaded, ${photoDownloadProgress.errors} errors`);
+    })();
   });
 
   // Admin: Mark facility regeneration complete

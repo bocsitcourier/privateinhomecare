@@ -92,6 +92,7 @@ The Admin Dashboard offers comprehensive management with KPI statistics, filtera
 - **Content Workflow**: Implements draft/published states for content items.
 - **Performance Optimization**: Includes lazy loading for route components, code splitting, and optimized font loading.
 - **Supabase Integration**: `DbStorage` is fully implemented for Supabase PostgreSQL, pending network connectivity, with critical Row Level Security (RLS) implementation planned.
+- **Facility Photo Storage**: 686/707 facility hero photos permanently stored on disk in `uploads/facility-photos/{facilityId}.jpg` (219MB). Served via `express.static` — no API key, no expiry. Admin "Download All Photos" button in Facilities Management triggers download with rate-limit-safe batching (concurrency=3, exponential backoff). 21 facilities still use proxy fallback. Proxy endpoint (`/api/proxy/facility-photo`) serves as fallback with auto-refresh for expired Google Places references using stored `google_place_id`.
 
 ## External Dependencies
 
