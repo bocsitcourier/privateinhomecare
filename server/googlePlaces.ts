@@ -65,7 +65,7 @@ export interface EnrichmentResult {
 
 function buildPhotoUrl(photoName: string, maxWidth: number = 800): string {
   if (!GOOGLE_PLACES_API_KEY) return "";
-  return `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=${maxWidth}&key=${GOOGLE_PLACES_API_KEY}`;
+  return `/api/proxy/facility-photo?name=${encodeURIComponent(photoName)}&w=${maxWidth}`;
 }
 
 export async function enrichFacility(facility: Facility): Promise<EnrichmentResult> {

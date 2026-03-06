@@ -243,6 +243,7 @@ export interface IStorage {
   listFacilities(filters?: { facilityType?: string; city?: string; county?: string; status?: string; featured?: string }): Promise<Facility[]>;
   getFacility(id: string): Promise<Facility | undefined>;
   getFacilityBySlug(slug: string): Promise<Facility | undefined>;
+  getFacilityByPlaceId(placeId: string): Promise<Facility | undefined>;
   createFacility(facility: InsertFacility): Promise<Facility>;
   updateFacility(id: string, facility: UpdateFacility): Promise<Facility | undefined>;
   deleteFacility(id: string): Promise<boolean>;
@@ -1932,6 +1933,10 @@ export class MemStorage implements IStorage {
 
   async getFacilityBySlug(slug: string): Promise<Facility | undefined> {
     return Array.from(this.facilitiesMap.values()).find(f => f.slug === slug);
+  }
+
+  async getFacilityByPlaceId(placeId: string): Promise<Facility | undefined> {
+    return Array.from(this.facilitiesMap.values()).find(f => f.googlePlaceId === placeId);
   }
 
   async createFacility(facility: InsertFacility): Promise<Facility> {
@@ -3859,6 +3864,11 @@ export class DbStorage implements IStorage {
 
   async getFacilityBySlug(slug: string): Promise<Facility | undefined> {
     const result = await this.db.select().from(facilities).where(eq(facilities.slug, slug)).limit(1);
+    return result[0];
+  }
+
+  async getFacilityByPlaceId(placeId: string): Promise<Facility | undefined> {
+    const result = await this.db.select().from(facilities).where(eq(facilities.googlePlaceId, placeId)).limit(1);
     return result[0];
   }
 

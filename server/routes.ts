@@ -4537,6 +4537,83 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
   });
 
   // ===========================================
+  // FACILITY PHOTO PROXY
+  // ===========================================
+  // Serves Google Places photos through the server so the API key stays
+  // server-side and images work on any deployment (Digital Ocean, etc.)
+  // Auto-refreshes expired photo references using the stored Google Place ID.
+  app.get("/api/proxy/facility-photo", async (req: Request, res: Response) => {
+    try {
+      const { name, w } = req.query;
+      if (!name || typeof name !== "string") {
+        return res.status(400).send("Photo name required");
+      }
+      const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+      if (!apiKey) {
+        return res.status(500).send("Image service not configured");
+      }
+      const width = parseInt(w as string) || 1200;
+
+      // First attempt with stored photo reference
+      let photoName = name;
+      let googleUrl = `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=${width}&key=${apiKey}`;
+      let response = await fetch(googleUrl);
+
+      // If reference expired (Google returns 400), auto-refresh using the Place ID
+      if (response.status === 400) {
+        const placeIdMatch = photoName.match(/^places\/([^/]+)\/photos\//);
+        if (placeIdMatch) {
+          const placeId = placeIdMatch[1];
+          try {
+            // Fetch fresh photos directly by Place ID
+            const placeRes = await fetch(
+              `https://places.googleapis.com/v1/places/${placeId}`,
+              { headers: { "X-Goog-Api-Key": apiKey, "X-Goog-FieldMask": "photos" } }
+            );
+            if (placeRes.ok) {
+              const placeData = await placeRes.json();
+              if (placeData.photos && placeData.photos.length > 0) {
+                const newNames: string[] = placeData.photos.slice(0, 10).map((p: { name: string }) => p.name);
+                const toProxy = (n: string) => `/api/proxy/facility-photo?name=${encodeURIComponent(n)}&w=1200`;
+
+                // Update DB with fresh proxy URLs (fire-and-forget)
+                const facility = await storage.getFacilityByPlaceId(placeId);
+                if (facility) {
+                  storage.updateFacility(facility.id, {
+                    heroImageUrl: toProxy(newNames[0]),
+                    galleryImages: newNames.slice(1).map(toProxy),
+                  }).catch(() => {});
+                }
+
+                // Serve the fresh first photo
+                photoName = newNames[0];
+                googleUrl = `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=${width}&key=${apiKey}`;
+                response = await fetch(googleUrl);
+              }
+            }
+          } catch (refreshErr) {
+            console.error("Error refreshing expired photo reference:", refreshErr);
+          }
+        }
+      }
+
+      if (!response.ok) {
+        return res.status(404).send("Image not available");
+      }
+
+      const contentType = response.headers.get("content-type") || "image/jpeg";
+      res.setHeader("Content-Type", contentType);
+      res.setHeader("Cache-Control", "public, max-age=604800"); // Cache 7 days
+      res.setHeader("Vary", "Accept");
+
+      const buffer = await response.arrayBuffer();
+      res.send(Buffer.from(buffer));
+    } catch (error) {
+      console.error("Error proxying facility photo:", error);
+      res.status(500).send("Failed to load image");
+    }
+  });
+
   // FACILITIES
   // ===========================================
   
@@ -5099,6 +5176,41 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
     }
   });
   
+  // Admin: Migrate all facility photo URLs from direct Google URLs to proxy URLs
+  // Run once after deploy to make images work on any server (Digital Ocean etc.)
+  app.post("/api/admin/facilities/migrate-photo-urls", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const allFacilities = await storage.listFacilities({});
+      const toMigrate = allFacilities.filter(f =>
+        f.heroImageUrl?.startsWith("https://places.googleapis.com") ||
+        (f.galleryImages && (f.galleryImages as string[]).some((u: string) => u.startsWith("https://places.googleapis.com")))
+      );
+
+      let updated = 0;
+      const convertUrl = (url: string): string => {
+        if (!url.startsWith("https://places.googleapis.com")) return url;
+        const match = url.match(/v1\/(.+?)\/media/);
+        if (!match) return url;
+        return `/api/proxy/facility-photo?name=${encodeURIComponent(match[1])}&w=1200`;
+      };
+
+      for (const facility of toMigrate) {
+        const newHeroUrl = facility.heroImageUrl ? convertUrl(facility.heroImageUrl) : facility.heroImageUrl;
+        const newGallery = (facility.galleryImages as string[] | null)?.map(convertUrl) ?? facility.galleryImages;
+        await storage.updateFacility(facility.id, {
+          heroImageUrl: newHeroUrl,
+          galleryImages: newGallery,
+        });
+        updated++;
+      }
+
+      res.json({ success: true, total: allFacilities.length, migrated: updated });
+    } catch (error) {
+      console.error("Error migrating photo URLs:", error);
+      res.status(500).json({ message: "Migration failed" });
+    }
+  });
+
   // Admin: Mark facility regeneration complete
   app.post("/api/admin/facilities/:id/mark-regenerated", requireAuth, async (req: Request, res: Response) => {
     try {
