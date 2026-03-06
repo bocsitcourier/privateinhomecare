@@ -4,7 +4,6 @@ import crypto from "crypto";
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
 const PLACES_API_URL = "https://places.googleapis.com/v1/places:searchText";
 
-// Create MD5 hash of key data fields to detect changes
 export function createDataHash(data: { address?: string | null; phone?: string | null; rating?: string | null }): string {
   const hashInput = JSON.stringify({
     addr: data.address || "",
@@ -25,6 +24,40 @@ interface PlacePhoto {
   }>;
 }
 
+interface PlaceReview {
+  name?: string;
+  relativePublishTimeDescription?: string;
+  rating?: number;
+  text?: { text: string; languageCode: string };
+  authorAttribution?: {
+    displayName?: string;
+    uri?: string;
+    photoUri?: string;
+  };
+  publishTime?: string;
+}
+
+interface PlaceOpeningHours {
+  openNow?: boolean;
+  periods?: Array<{
+    open: { day: number; hour: number; minute: number };
+    close?: { day: number; hour: number; minute: number };
+  }>;
+  weekdayDescriptions?: string[];
+}
+
+interface PlaceAccessibilityOptions {
+  wheelchairAccessibleParking?: boolean;
+  wheelchairAccessibleEntrance?: boolean;
+  wheelchairAccessibleRestroom?: boolean;
+  wheelchairAccessibleSeating?: boolean;
+}
+
+interface PlaceLocation {
+  latitude?: number;
+  longitude?: number;
+}
+
 interface PlaceResult {
   formattedAddress?: string;
   nationalPhoneNumber?: string;
@@ -37,10 +70,23 @@ interface PlaceResult {
   displayName?: { text: string };
   businessStatus?: "OPERATIONAL" | "CLOSED_TEMPORARILY" | "CLOSED_PERMANENTLY";
   photos?: PlacePhoto[];
+  reviews?: PlaceReview[];
+  regularOpeningHours?: PlaceOpeningHours;
+  accessibilityOptions?: PlaceAccessibilityOptions;
+  location?: PlaceLocation;
 }
 
 interface PlacesResponse {
   places?: PlaceResult[];
+}
+
+export interface GoogleReview {
+  authorName: string;
+  authorPhotoUrl?: string;
+  rating: number;
+  text: string;
+  publishTime: string;
+  relativeTime: string;
 }
 
 export interface EnrichmentResult {
@@ -59,6 +105,11 @@ export interface EnrichmentResult {
     isClosed: "yes" | "no";
     heroImageUrl: string | null;
     galleryImages: string[];
+    latitude: string | null;
+    longitude: string | null;
+    openingHours: { weekdayDescriptions?: string[]; openNow?: boolean } | null;
+    accessibilityOptions: { wheelchairAccessibleEntrance?: boolean; wheelchairAccessibleParking?: boolean; wheelchairAccessibleRestroom?: boolean } | null;
+    googleReviews: GoogleReview[];
   };
   error?: string;
 }
@@ -86,7 +137,23 @@ export async function enrichFacility(facility: Facility): Promise<EnrichmentResu
       headers: {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
-        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.internationalPhoneNumber,places.rating,places.userRatingCount,places.googleMapsUri,places.websiteUri,places.businessStatus,places.photos",
+        "X-Goog-FieldMask": [
+          "places.id",
+          "places.displayName",
+          "places.formattedAddress",
+          "places.nationalPhoneNumber",
+          "places.internationalPhoneNumber",
+          "places.rating",
+          "places.userRatingCount",
+          "places.googleMapsUri",
+          "places.websiteUri",
+          "places.businessStatus",
+          "places.photos",
+          "places.location",
+          "places.regularOpeningHours",
+          "places.accessibilityOptions",
+          "places.reviews",
+        ].join(","),
       },
       body: JSON.stringify({
         textQuery: searchQuery,
@@ -125,7 +192,6 @@ export async function enrichFacility(facility: Facility): Promise<EnrichmentResu
     const place = data.places[0];
     const isClosed = place.businessStatus === "CLOSED_PERMANENTLY" ? "yes" : "no";
     
-    // Extract photo URLs from Google Places
     const photoUrls: string[] = [];
     if (place.photos && place.photos.length > 0) {
       for (const photo of place.photos.slice(0, 10)) {
@@ -135,6 +201,39 @@ export async function enrichFacility(facility: Facility): Promise<EnrichmentResu
       }
     }
     const heroImageUrl = photoUrls.length > 0 ? photoUrls[0] : null;
+
+    // Parse GPS coordinates
+    const latitude = place.location?.latitude ? String(place.location.latitude) : null;
+    const longitude = place.location?.longitude ? String(place.location.longitude) : null;
+
+    // Parse opening hours
+    const openingHours = place.regularOpeningHours
+      ? {
+          weekdayDescriptions: place.regularOpeningHours.weekdayDescriptions,
+          openNow: place.regularOpeningHours.openNow,
+        }
+      : null;
+
+    // Parse accessibility options
+    const accessibilityOptions = place.accessibilityOptions
+      ? {
+          wheelchairAccessibleEntrance: place.accessibilityOptions.wheelchairAccessibleEntrance,
+          wheelchairAccessibleParking: place.accessibilityOptions.wheelchairAccessibleParking,
+          wheelchairAccessibleRestroom: place.accessibilityOptions.wheelchairAccessibleRestroom,
+        }
+      : null;
+
+    // Parse Google reviews (up to 5)
+    const googleReviews: GoogleReview[] = (place.reviews || [])
+      .filter(r => r.rating && r.text?.text)
+      .map(r => ({
+        authorName: r.authorAttribution?.displayName || "Anonymous",
+        authorPhotoUrl: r.authorAttribution?.photoUri,
+        rating: r.rating!,
+        text: r.text!.text,
+        publishTime: r.publishTime || new Date().toISOString(),
+        relativeTime: r.relativePublishTimeDescription || "",
+      }));
     
     return {
       facilityId: facility.id,
@@ -152,6 +251,11 @@ export async function enrichFacility(facility: Facility): Promise<EnrichmentResu
         isClosed,
         heroImageUrl,
         galleryImages: photoUrls.slice(1),
+        latitude,
+        longitude,
+        openingHours,
+        accessibilityOptions,
+        googleReviews,
       },
     };
   } catch (error) {

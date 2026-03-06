@@ -5103,12 +5103,18 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
           phone: result.data.phone || facility.phone,
           website: result.data.website || facility.website,
           overallRating: result.data.rating || facility.overallRating,
+          reviewCount: result.data.reviewCount || facility.reviewCount,
           googleMapsUrl: result.data.googleMapsUrl,
           googlePlaceId: result.data.googlePlaceId,
           businessStatus: result.data.businessStatus,
           isClosed: result.data.isClosed,
           heroImageUrl: result.data.heroImageUrl || facility.heroImageUrl,
           galleryImages: result.data.galleryImages.length > 0 ? result.data.galleryImages : (facility.galleryImages || undefined),
+          latitude: result.data.latitude || facility.latitude,
+          longitude: result.data.longitude || facility.longitude,
+          openingHours: result.data.openingHours,
+          accessibilityOptions: result.data.accessibilityOptions,
+          googleReviews: result.data.googleReviews.length > 0 ? result.data.googleReviews : (facility.googleReviews || undefined),
           lastEnrichedAt: new Date(),
           dataHash: newHash,
           needsRegeneration: dataChanged ? "yes" : facility.needsRegeneration,
@@ -5361,13 +5367,30 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
         
         if (result.success && result.data) {
           try {
+            const newHash = createDataHash({
+              address: result.data.address,
+              phone: result.data.phone,
+              rating: result.data.rating,
+            });
             await storage.updateFacility(facility.id, {
               address: result.data.address || facility.address,
               phone: result.data.phone || facility.phone,
               website: result.data.website || facility.website,
               overallRating: result.data.rating || facility.overallRating,
+              reviewCount: result.data.reviewCount || facility.reviewCount,
               googleMapsUrl: result.data.googleMapsUrl,
               googlePlaceId: result.data.googlePlaceId,
+              businessStatus: result.data.businessStatus,
+              isClosed: result.data.isClosed,
+              heroImageUrl: result.data.heroImageUrl || facility.heroImageUrl,
+              galleryImages: result.data.galleryImages.length > 0 ? result.data.galleryImages : (facility.galleryImages || undefined),
+              latitude: result.data.latitude || facility.latitude,
+              longitude: result.data.longitude || facility.longitude,
+              openingHours: result.data.openingHours,
+              accessibilityOptions: result.data.accessibilityOptions,
+              googleReviews: result.data.googleReviews.length > 0 ? result.data.googleReviews : (facility.googleReviews || undefined),
+              lastEnrichedAt: new Date(),
+              dataHash: newHash,
             });
             successful++;
             console.log(`[${successful + failed}/${facilities.length}] Enriched: ${facility.name}`);

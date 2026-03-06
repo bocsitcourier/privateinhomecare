@@ -1159,7 +1159,12 @@ export const facilities = pgTable("facilities", {
   isClosed: text("is_closed").default("no"), // yes, no - for permanently closed facilities
   closureReason: text("closure_reason"), // Reason for closure if applicable
   lastEnrichedAt: timestamp("last_enriched_at"), // When Google Places data was last fetched
-  
+
+  // Extended Google Places data
+  openingHours: jsonb("opening_hours").$type<{ weekdayDescriptions?: string[]; openNow?: boolean } | null>(),
+  accessibilityOptions: jsonb("accessibility_options").$type<{ wheelchairAccessibleEntrance?: boolean; wheelchairAccessibleParking?: boolean; wheelchairAccessibleRestroom?: boolean } | null>(),
+  googleReviews: jsonb("google_reviews").$type<Array<{ authorName: string; authorPhotoUrl?: string; rating: number; text: string; publishTime: string; relativeTime: string }>>().default([]),
+
   // Smart sync fields for change detection
   dataHash: text("data_hash"), // MD5 hash of key fields to detect changes
   needsRegeneration: text("needs_regeneration").default("no"), // yes, no - marks facilities needing content update

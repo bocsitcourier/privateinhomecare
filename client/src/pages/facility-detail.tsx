@@ -37,7 +37,9 @@ import {
   Activity,
   HelpCircle,
   ExternalLink,
-  Navigation
+  Navigation,
+  Accessibility,
+  Map as MapIcon
 } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
 
@@ -93,6 +95,50 @@ function RatingStars({ rating, size = "default" }: { rating: number; size?: "def
         <Star key={`empty-${i}`} className={`${starClass} text-gray-300 dark:text-gray-600`} />
       ))}
     </div>
+  );
+}
+
+interface GoogleReviewItem {
+  authorName: string;
+  authorPhotoUrl?: string;
+  rating: number;
+  text: string;
+  publishTime: string;
+  relativeTime: string;
+}
+
+function GoogleReviewCard({ review }: { review: GoogleReviewItem }) {
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between gap-2 mb-2 flex-wrap">
+          <div className="flex items-center gap-2">
+            {review.authorPhotoUrl ? (
+              <img
+                src={review.authorPhotoUrl}
+                alt={review.authorName}
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-medium">
+                {review.authorName.charAt(0)}
+              </div>
+            )}
+            <div>
+              <p className="font-medium text-sm">{review.authorName}</p>
+              {review.relativeTime && (
+                <p className="text-xs text-muted-foreground">{review.relativeTime}</p>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <RatingStars rating={review.rating} />
+            <SiGoogle className="w-3 h-3 text-muted-foreground ml-1" />
+          </div>
+        </div>
+        <p className="text-muted-foreground text-sm leading-relaxed">{review.text}</p>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -336,6 +382,14 @@ export default function FacilityDetailPage() {
   const canonicalUrl = `${baseUrl}/facility/${facility.slug}`;
   const ogImage = facility.heroImageUrl || getFacilityTypeImage(facility.facilityType).hero;
 
+  const osmMapUrl = (facility.latitude && facility.longitude)
+    ? (() => {
+        const lat = parseFloat(facility.latitude as string);
+        const lng = parseFloat(facility.longitude as string);
+        return `https://www.openstreetmap.org/export/embed.html?bbox=${(lng - 0.008).toFixed(6)},${(lat - 0.005).toFixed(6)},${(lng + 0.008).toFixed(6)},${(lat + 0.005).toFixed(6)}&layer=mapnik&marker=${lat},${lng}`;
+      })()
+    : null;
+
   return (
     <>
       <Helmet>
@@ -349,12 +403,8 @@ export default function FacilityDetailPage() {
         
         <meta name="geo.region" content="US-MA" />
         <meta name="geo.placename" content={`${facility.city}, Massachusetts`} />
-        {facility.latitude && facility.longitude && (
-          <>
-            <meta name="geo.position" content={`${facility.latitude};${facility.longitude}`} />
-            <meta name="ICBM" content={`${facility.latitude}, ${facility.longitude}`} />
-          </>
-        )}
+        {facility.latitude && facility.longitude && <meta name="geo.position" content={`${facility.latitude};${facility.longitude}`} />}
+        {facility.latitude && facility.longitude && <meta name="ICBM" content={`${facility.latitude}, ${facility.longitude}`} />}
         
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDescription} />
@@ -436,6 +486,12 @@ export default function FacilityDetailPage() {
                   <Badge className="bg-amber-500/90 text-white border-amber-400">
                     <Star className="w-3 h-3 mr-1 fill-white" />
                     Top Rated
+                  </Badge>
+                )}
+                {facility.accessibilityOptions?.wheelchairAccessibleEntrance && (
+                  <Badge className="bg-blue-600/90 text-white border-blue-500" data-testid="badge-wheelchair-accessible">
+                    <Accessibility className="w-3 h-3 mr-1" />
+                    Wheelchair Accessible
                   </Badge>
                 )}
               </div>
@@ -522,6 +578,32 @@ export default function FacilityDetailPage() {
                   </Card>
                 )}
 
+                {osmMapUrl && (
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between gap-2">
+                      <CardTitle className="flex items-center gap-2">
+                        <MapIcon className="w-5 h-5" />
+                        Location Map
+                      </CardTitle>
+                      <Button variant="outline" size="sm" asChild>
+                        <a href={generateGoogleMapsUrl(facility)} target="_blank" rel="noopener noreferrer">
+                          <Navigation className="w-4 h-4 mr-2" />
+                          Get Directions
+                        </a>
+                      </Button>
+                    </CardHeader>
+                    <CardContent className="p-0 overflow-hidden rounded-b-lg">
+                      <iframe
+                        title={String("Map showing location of " + facility.name)}
+                        src={osmMapUrl}
+                        className="w-full h-[280px] border-0"
+                        loading="lazy"
+                        data-testid="iframe-facility-map"
+                      />
+                    </CardContent>
+                  </Card>
+                )}
+
                 {facility.services && facility.services.length > 0 && (
                   <Card>
                     <CardHeader>
@@ -586,21 +668,34 @@ export default function FacilityDetailPage() {
                     <Button variant="outline" size="sm" asChild>
                       <a href={generateGoogleReviewsUrl(facility)} target="_blank" rel="noopener noreferrer">
                         <SiGoogle className="w-4 h-4 mr-2" />
-                        Google Reviews
+                        All Reviews
                         <ExternalLink className="w-3 h-3 ml-1" />
                       </a>
                     </Button>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {reviews.length > 0 ? (
-                      reviews.map(review => (
-                        <ReviewCard key={review.id} review={review} />
-                      ))
-                    ) : (
+                    {reviews.length > 0 && reviews.map(review => (
+                      <ReviewCard key={review.id} review={review} />
+                    ))}
+
+                    {facility.googleReviews && facility.googleReviews.length > 0 && (
+                      <>
+                        {reviews.length > 0 && <Separator />}
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <SiGoogle className="w-3 h-3" />
+                          Reviews from Google
+                        </p>
+                        {(facility.googleReviews as GoogleReviewItem[]).map((review, i) => (
+                          <GoogleReviewCard key={i} review={review} />
+                        ))}
+                      </>
+                    )}
+
+                    {reviews.length === 0 && (!facility.googleReviews || facility.googleReviews.length === 0) && (
                       <div className="text-center py-6">
                         <Star className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
                         <p className="text-muted-foreground mb-4">
-                          No reviews yet on our platform. Check Google for more reviews.
+                          No reviews yet. Check Google for more reviews.
                         </p>
                         <Button variant="outline" asChild>
                           <a href={generateGoogleReviewsUrl(facility)} target="_blank" rel="noopener noreferrer">
@@ -690,6 +785,67 @@ export default function FacilityDetailPage() {
                       <p className="text-sm text-muted-foreground">per month</p>
                       {facility.pricingNotes && (
                         <p className="text-sm text-muted-foreground mt-2">{facility.pricingNotes}</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+
+                {facility.openingHours?.weekdayDescriptions && facility.openingHours.weekdayDescriptions.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        Hours
+                        {facility.openingHours.openNow !== undefined && (
+                          <Badge variant={facility.openingHours.openNow ? "default" : "secondary"} className="text-xs">
+                            {facility.openingHours.openNow ? "Open Now" : "Closed Now"}
+                          </Badge>
+                        )}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-1">
+                      {facility.openingHours.weekdayDescriptions.map((day, i) => {
+                        const [dayName, ...rest] = day.split(": ");
+                        const hours = rest.join(": ");
+                        return (
+                          <div key={i} className="flex justify-between text-sm gap-2">
+                            <span className="font-medium shrink-0">{dayName}</span>
+                            <span className="text-muted-foreground text-right">{hours}</span>
+                          </div>
+                        );
+                      })}
+                    </CardContent>
+                  </Card>
+                )}
+
+                {facility.accessibilityOptions && (
+                  Object.values(facility.accessibilityOptions).some(v => v === true)
+                ) && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Accessibility className="w-4 h-4" />
+                        Accessibility
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      {facility.accessibilityOptions.wheelchairAccessibleEntrance && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
+                          <span>Wheelchair accessible entrance</span>
+                        </div>
+                      )}
+                      {facility.accessibilityOptions.wheelchairAccessibleParking && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
+                          <span>Accessible parking</span>
+                        </div>
+                      )}
+                      {facility.accessibilityOptions.wheelchairAccessibleRestroom && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
+                          <span>Accessible restrooms</span>
+                        </div>
                       )}
                     </CardContent>
                   </Card>

@@ -7,6 +7,7 @@ import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { hipaaAuditMiddleware } from "./middleware/hipaa-audit";
+import { startAutoRefreshScheduler } from "./scheduler";
 
 const app = express();
 app.set('trust proxy', 1);
@@ -73,7 +74,8 @@ app.use(helmet({
       frameSrc: [
         "'self'",
         "https://www.google.com",
-        "https://www.youtube.com"
+        "https://www.youtube.com",
+        "https://www.openstreetmap.org"
       ],
       connectSrc: [
         "'self'",
@@ -334,5 +336,6 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+    startAutoRefreshScheduler();
   });
 })();
