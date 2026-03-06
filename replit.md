@@ -14,7 +14,21 @@ Preferred communication style: Simple, everyday language.
 
 The frontend is a React with TypeScript single-page application (SPA) utilizing Vite and Wouter for routing. Design is based on shadcn/ui (Radix UI + Tailwind CSS), emphasizing trust, warmth, accessibility, and mobile-first responsiveness. State management is handled by TanStack Query. Key features include a public homepage, articles, consultation forms with CAPTCHA, dynamic service and location pages, and a comprehensive admin dashboard.
 
-The platform includes extensive SEO features such as database-driven metadata, dynamic sitemap generation, structured data (JSON-LD for various schemas), Open Graph tags, Twitter Cards, and Massachusetts geo-targeting. It supports Progressive Web App (PWA) capabilities.
+The platform includes extensive SEO and GEO (Generative Engine Optimization) features: database-driven metadata, dynamic sitemap generation (priority 0.8, weekly changefreq, lastmod from lastEnrichedAt), structured data (JSON-LD for multiple schemas), Open Graph tags, Twitter Cards, and Massachusetts geo-targeting. It supports Progressive Web App (PWA) capabilities.
+
+**Platinum SEO/GEO Stack (Facility Detail Pages):**
+- 5 JSON-LD schema blocks per page: Facility (NursingHome/Hospital/LodgingBusiness), BreadcrumbList, FAQPage, Review (LocalBusiness with individual reviews), SpecialAnnouncement (for closed facilities)
+- `speakable` property pointing to `#about-this-facility` and `#facility-faqs` CSS selectors for AI voice extraction
+- `sameAs` linking to Google Maps place_id and official website
+- `hasMap` with Google Maps coordinates link
+- `openingHoursSpecification` from stored Google Places data
+- `medicalSpecialty` for NursingHome/Hospital types
+- `additionalProperty` for bed count, Medicare/Medicaid certification, county
+- `knowsAbout` array for AI entity recognition
+- Dual `@type` array for NursingHome: `["NursingHome", "MedicalOrganization"]`
+- **`/llms.txt`** - AI system context file (llmstxt.org standard) describing site authority, service area, facility types, and GEO targeting keywords
+- Robots.txt includes `LLMs:` reference to llms.txt for AI crawler discovery
+- All major AI bots allowed: GPTBot, PerplexityBot, ClaudeBot, Google-Extended, Applebot, Meta-ExternalAgent, YouBot, cohere-ai
 
 Specific features include:
 - A comprehensive Massachusetts Care Directory with 65+ municipalities, search/filter functionality, and dynamic city pages.
@@ -51,6 +65,7 @@ The database schema includes tables for users, jobs, articles (with FAQs), inqui
 - **Business Status**: Tracks Google Places `businessStatus` (OPERATIONAL, CLOSED_TEMPORARILY, CLOSED_PERMANENTLY)
 - **Closure Detection**: `isClosed` flag automatically set to "yes" for permanently closed facilities
 - **Data Freshness**: `lastEnrichedAt` timestamp tracks when facility was last synced with Google Places
+- **Name Correction**: Enrichment now updates `name` from Google Places `displayName` — fixes AI-hallucinated facility names. All 7 fields updated per enrichment: name, address, phone, website, rating, lat/lng, opening hours, accessibility, Google reviews.
 - **Admin API**:
   - `GET /api/admin/facilities/stats` - Data freshness statistics (enriched count, stale data, closed facilities)
   - `GET /api/admin/facilities/needs-regeneration` - List facilities needing content updates

@@ -94,6 +94,7 @@ export interface EnrichmentResult {
   facilityName: string;
   success: boolean;
   data?: {
+    displayName: string | null;
     address: string | null;
     phone: string | null;
     website: string | null;
@@ -240,6 +241,7 @@ export async function enrichFacility(facility: Facility): Promise<EnrichmentResu
       facilityName: facility.name,
       success: true,
       data: {
+        displayName: place.displayName?.text || null,
         address: place.formattedAddress || null,
         phone: place.nationalPhoneNumber || place.internationalPhoneNumber || null,
         website: place.websiteUri || null,

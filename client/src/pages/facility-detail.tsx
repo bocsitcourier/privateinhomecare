@@ -191,10 +191,10 @@ export default function FacilityDetailPage() {
   const Icon = typeInfo?.icon || Building2;
 
   const facilitySchemaType = useMemo(() => {
-    const typeMap: Record<string, string> = {
-      'nursing-home': 'NursingHome',
-      'hospital': 'Hospital',
-      'hospice': 'MedicalBusiness',
+    const typeMap: Record<string, string | string[]> = {
+      'nursing-home': ['NursingHome', 'MedicalOrganization'],
+      'hospital': ['Hospital', 'MedicalOrganization'],
+      'hospice': ['LocalBusiness', 'MedicalOrganization'],
       'assisted-living': 'LodgingBusiness',
       'memory-care': 'LodgingBusiness',
       'independent-living': 'LodgingBusiness',
@@ -206,7 +206,73 @@ export default function FacilityDetailPage() {
   const schemaJson = useMemo(() => {
     if (!facility) return null;
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://privateinhomecaregiver.com";
-    
+
+    // Build opening hours specification from stored Google Places data
+    const openingHoursSpec = facility.openingHours?.weekdayDescriptions?.length
+      ? (() => {
+          const is24Hours = facility.openingHours!.weekdayDescriptions!.every((d: string) =>
+            d.toLowerCase().includes("24 hours")
+          );
+          if (is24Hours) {
+            return [{
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+              "opens": "00:00",
+              "closes": "23:59"
+            }];
+          }
+          return facility.openingHours!.weekdayDescriptions!.map((desc: string) => ({
+            "@type": "OpeningHoursSpecification",
+            "description": desc
+          }));
+        })()
+      : undefined;
+
+    // Build sameAs links to authoritative sources
+    const sameAsLinks: string[] = [];
+    if (facility.googlePlaceId) {
+      sameAsLinks.push(`https://maps.google.com/maps?q=place_id:${facility.googlePlaceId}`);
+    }
+    if (facility.website) sameAsLinks.push(facility.website);
+
+    // Build knowsAbout topics for AI entity recognition
+    const knowsAbout: string[] = ["Senior Care", "Elder Care", "Massachusetts Senior Services"];
+    if (facility.facilityType === 'nursing-home') knowsAbout.push("Nursing Home Care", "Skilled Nursing", "Geriatric Medicine", "Rehabilitation");
+    if (facility.facilityType === 'assisted-living') knowsAbout.push("Assisted Living", "Senior Living", "Personal Care Assistance");
+    if (facility.facilityType === 'memory-care') knowsAbout.push("Memory Care", "Dementia Care", "Alzheimer's Care", "Cognitive Support");
+    if (facility.facilityType === 'hospice') knowsAbout.push("Hospice Care", "Palliative Care", "End-of-Life Care", "Comfort Care");
+    if (facility.facilityType === 'hospital') knowsAbout.push("Hospital Care", "Medical Services", "Emergency Care", "Acute Care");
+    if (facility.facilityType === 'independent-living') knowsAbout.push("Independent Living", "Senior Apartments", "Active Adult Living");
+    if (facility.facilityType === 'continuing-care') knowsAbout.push("Continuing Care", "Life Plan Community", "CCRC");
+    if (facility.specializations) {
+      (facility.specializations as string[]).forEach(s => knowsAbout.push(s));
+    }
+
+    // Build additionalProperty for structured data richness
+    const additionalProps: Array<{ "@type": string; name: string; value: string | number }> = [];
+    if (facility.totalBeds) additionalProps.push({ "@type": "PropertyValue", "name": "Total Beds", "value": facility.totalBeds });
+    if (facility.certifiedBeds) additionalProps.push({ "@type": "PropertyValue", "name": "Certified Beds", "value": facility.certifiedBeds });
+    if (facility.acceptsMedicare && facility.acceptsMedicare !== "unknown") {
+      additionalProps.push({ "@type": "PropertyValue", "name": "Medicare Certified", "value": facility.acceptsMedicare === "yes" ? "Yes" : "No" });
+    }
+    if (facility.acceptsMedicaid && facility.acceptsMedicaid !== "unknown") {
+      additionalProps.push({ "@type": "PropertyValue", "name": "Medicaid Certified", "value": facility.acceptsMedicaid === "yes" ? "Yes" : "No" });
+    }
+    if (facility.county) {
+      additionalProps.push({ "@type": "PropertyValue", "name": "County", "value": `${facility.county} County, Massachusetts` });
+    }
+    if (facility.priceRangeMin && facility.priceRangeMax) {
+      additionalProps.push({ "@type": "PropertyValue", "name": "Monthly Cost Range", "value": `$${facility.priceRangeMin.toLocaleString()} - $${facility.priceRangeMax.toLocaleString()}` });
+    }
+
+    // Medical specialty for clinical facility types
+    const medicalSpecialty: string[] | undefined =
+      facility.facilityType === 'nursing-home' ? ["Geriatric", "GeneralPractice"] :
+      facility.facilityType === 'hospital' ? ["GeneralPractice", "Emergency"] :
+      facility.facilityType === 'memory-care' ? ["Geriatric", "Neurological"] :
+      facility.facilityType === 'hospice' ? ["Geriatric"] :
+      undefined;
+
     return {
       "@context": "https://schema.org",
       "@type": facilitySchemaType,
@@ -217,7 +283,7 @@ export default function FacilityDetailPage() {
         "@type": "PostalAddress",
         "streetAddress": facility.address,
         "addressLocality": facility.city,
-        "addressRegion": facility.state,
+        "addressRegion": facility.state || "MA",
         "postalCode": facility.zipCode,
         "addressCountry": "US"
       },
@@ -228,11 +294,14 @@ export default function FacilityDetailPage() {
           "longitude": facility.longitude
         }
       }),
+      ...(facility.latitude && facility.longitude && {
+        "hasMap": `https://maps.google.com/?q=${facility.latitude},${facility.longitude}`
+      }),
       ...(facility.phone && { "telephone": facility.phone }),
       ...(facility.website && { "url": facility.website }),
       ...(facility.email && { "email": facility.email }),
       ...(facility.heroImageUrl && { "image": facility.heroImageUrl }),
-      ...(facility.overallRating && parseFloat(facility.overallRating) > 0 && { 
+      ...(facility.overallRating && parseFloat(facility.overallRating) > 0 && {
         "aggregateRating": {
           "@type": "AggregateRating",
           "ratingValue": facility.overallRating,
@@ -243,17 +312,28 @@ export default function FacilityDetailPage() {
       }),
       "areaServed": {
         "@type": "State",
-        "name": "Massachusetts"
+        "name": "Massachusetts",
+        "sameAs": "https://www.wikidata.org/wiki/Q771"
       },
-      ...(facility.services && facility.services.length > 0 && {
-        "amenityFeature": facility.services.map(s => ({
+      ...(facility.services && (facility.services as string[]).length > 0 && {
+        "amenityFeature": (facility.services as string[]).map(s => ({
           "@type": "LocationFeatureSpecification",
-          "name": s
+          "name": s,
+          "value": true
         }))
       }),
-      "priceRange": facility.priceRangeMin && facility.priceRangeMax 
-        ? `$${facility.priceRangeMin.toLocaleString()} - $${facility.priceRangeMax.toLocaleString()}/mo`
-        : undefined
+      ...(openingHoursSpec && { "openingHoursSpecification": openingHoursSpec }),
+      ...(sameAsLinks.length > 0 && { "sameAs": sameAsLinks }),
+      "knowsAbout": knowsAbout,
+      ...(additionalProps.length > 0 && { "additionalProperty": additionalProps }),
+      ...(medicalSpecialty && { "medicalSpecialty": medicalSpecialty }),
+      "speakable": {
+        "@type": "SpeakableSpecification",
+        "cssSelector": ["#about-this-facility", "#facility-faqs"]
+      },
+      ...(facility.priceRangeMin && facility.priceRangeMax && {
+        "priceRange": `$${facility.priceRangeMin.toLocaleString()} - $${facility.priceRangeMax.toLocaleString()}/mo`
+      })
     };
   }, [facility, facilitySchemaType]);
 
@@ -309,6 +389,73 @@ export default function FacilityDetailPage() {
       }))
     };
   }, [faqs]);
+
+  const reviewSchema = useMemo(() => {
+    if (!facility) return null;
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://privateinhomecaregiver.com";
+    
+    const allReviews = [
+      ...reviews.map((r: FacilityReview) => ({
+        "@type": "Review",
+        "author": { "@type": "Person", "name": r.reviewerName || "Anonymous" },
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": String(r.rating || 5),
+          "bestRating": "5",
+          "worstRating": "1"
+        },
+        "reviewBody": r.content,
+        "datePublished": r.createdAt ? new Date(r.createdAt).toISOString().split('T')[0] : undefined
+      })),
+      ...((facility.googleReviews as GoogleReviewItem[] || []).map((r: GoogleReviewItem) => ({
+        "@type": "Review",
+        "author": { "@type": "Person", "name": r.authorName },
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": String(r.rating),
+          "bestRating": "5",
+          "worstRating": "1"
+        },
+        "reviewBody": r.text,
+        "datePublished": r.publishTime ? r.publishTime.split('T')[0] : undefined
+      })))
+    ].filter(r => r.reviewBody);
+    
+    if (allReviews.length === 0) return null;
+    
+    return {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "@id": `${baseUrl}/facility/${facility.slug}#reviews`,
+      "name": facility.name,
+      "review": allReviews
+    };
+  }, [facility, reviews]);
+
+  const closureSchema = useMemo(() => {
+    if (!facility || facility.isClosed !== "yes") return null;
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://privateinhomecaregiver.com";
+    
+    return {
+      "@context": "https://schema.org",
+      "@type": "SpecialAnnouncement",
+      "name": `${facility.name} - Permanently Closed`,
+      "text": `${facility.name}, located at ${facility.address}, ${facility.city}, MA has permanently closed and is no longer accepting residents or patients.`,
+      "category": "https://www.wikidata.org/wiki/Q55099993",
+      "datePosted": new Date().toISOString().split('T')[0],
+      "announcementLocation": {
+        "@type": "LocalBusiness",
+        "@id": `${baseUrl}/facility/${facility.slug}`,
+        "name": facility.name,
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": facility.address,
+          "addressLocality": facility.city,
+          "addressRegion": facility.state || "MA"
+        }
+      }
+    };
+  }, [facility]);
 
   const seoKeywords = useMemo(() => {
     if (!facility) return [];
@@ -434,6 +581,16 @@ export default function FacilityDetailPage() {
         {faqSchema && (
           <script type="application/ld+json">
             {JSON.stringify(faqSchema)}
+          </script>
+        )}
+        {reviewSchema && (
+          <script type="application/ld+json">
+            {JSON.stringify(reviewSchema)}
+          </script>
+        )}
+        {closureSchema && (
+          <script type="application/ld+json">
+            {JSON.stringify(closureSchema)}
           </script>
         )}
       </Helmet>
@@ -568,7 +725,7 @@ export default function FacilityDetailPage() {
             <div className="grid md:grid-cols-3 gap-6">
               <div className="md:col-span-2 space-y-6">
                 {facility.description && (
-                  <Card>
+                  <Card id="about-this-facility">
                     <CardHeader>
                       <CardTitle>About This Facility</CardTitle>
                     </CardHeader>
@@ -638,7 +795,7 @@ export default function FacilityDetailPage() {
                 )}
 
                 {faqs.length > 0 && (
-                  <Card>
+                  <Card id="facility-faqs">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <HelpCircle className="w-5 h-5" />
