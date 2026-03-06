@@ -13,6 +13,7 @@ export default function ApplicationThankYouPage() {
         pageSlug="application-thank-you"
         fallbackTitle="Application Received — PrivateInHomeCareGiver"
         fallbackDescription="Thank you for your job application. We will review your submission and contact you soon."
+        noindex={true}
       />
       <Header />
 

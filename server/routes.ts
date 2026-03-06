@@ -2772,6 +2772,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Robots.txt for SEO
+  // Redirect /directory to /locations (canonical URL) - prevents duplicate content
+  app.get("/directory", (req, res) => {
+    res.redirect(301, "/locations");
+  });
+
   app.get("/robots.txt", (req, res) => {
     const baseUrl = process.env.REPLIT_DEV_DOMAIN 
       ? `https://${process.env.REPLIT_DEV_DOMAIN}`
@@ -2887,6 +2892,12 @@ Disallow: /admin/
 Disallow: /api/admin/
 Disallow: /login
 Disallow: /caregiver-log
+Disallow: /intake
+Disallow: /hipaa-acknowledgment
+Disallow: /non-solicitation-agreement
+Disallow: /initial-assessment
+Disallow: /application-thank-you
+Disallow: /system-requirements
 
 # Allow public API endpoints for structured data
 Allow: /api/articles
@@ -2920,13 +2931,10 @@ Allow: /api/podcasts
         { loc: '/careers', priority: '0.8', changefreq: 'weekly' },
         { loc: '/apply', priority: '0.7', changefreq: 'monthly' },
         { loc: '/consultation', priority: '0.9', changefreq: 'monthly' },
-        { loc: '/refer-a-friend', priority: '0.7', changefreq: 'monthly' },
-        { loc: '/intake', priority: '0.7', changefreq: 'monthly' },
-        { loc: '/hipaa-acknowledgment', priority: '0.7', changefreq: 'monthly' },
-        { loc: '/caregiver-log', priority: '0.6', changefreq: 'monthly' },
         { loc: '/privacy-policy', priority: '0.5', changefreq: 'yearly' },
-        { loc: '/terms-of-service', priority: '0.5', changefreq: 'yearly' },
         { loc: '/terms-and-conditions', priority: '0.5', changefreq: 'yearly' },
+        { loc: '/aging-resources', priority: '0.7', changefreq: 'monthly' },
+        { loc: '/caregiver-resources', priority: '0.8', changefreq: 'weekly' },
       ];
 
       const articles = await storage.listArticles();
@@ -2973,14 +2981,7 @@ Allow: /api/podcasts
         xml += '  </url>\n';
       });
 
-      // Job pages (if they have individual pages)
-      publishedJobs.forEach(job => {
-        xml += '  <url>\n';
-        xml += `    <loc>${baseUrl}/careers#${job.id}</loc>\n`;
-        xml += '    <changefreq>weekly</changefreq>\n';
-        xml += '    <priority>0.6</priority>\n';
-        xml += '  </url>\n';
-      });
+      // Note: Individual job anchors (#id) are NOT added to sitemap as fragment URLs cause Soft 404s
 
       // Caregiver profile pages
       activeCaregivers.forEach(caregiver => {
@@ -3057,19 +3058,41 @@ Allow: /api/podcasts
       xml += '    <priority>0.7</priority>\n';
       xml += '  </url>\n';
 
-      // Caregiver Resources page
-      xml += '  <url>\n';
-      xml += `    <loc>${baseUrl}/caregiver-resources</loc>\n`;
-      xml += '    <changefreq>weekly</changefreq>\n';
-      xml += '    <priority>0.8</priority>\n';
-      xml += '  </url>\n';
+      // Individual video detail pages
+      try {
+        const videos = await storage.listVideos();
+        videos.forEach((video: any) => {
+          if (video.slug) {
+            xml += '  <url>\n';
+            xml += `    <loc>${baseUrl}/videos/${video.slug}</loc>\n`;
+            if (video.publishedAt || video.createdAt) {
+              xml += `    <lastmod>${new Date(video.publishedAt || video.createdAt).toISOString().split('T')[0]}</lastmod>\n`;
+            }
+            xml += '    <changefreq>monthly</changefreq>\n';
+            xml += '    <priority>0.6</priority>\n';
+            xml += '  </url>\n';
+          }
+        });
+      } catch (_) {}
 
-      // Aging Resources page
-      xml += '  <url>\n';
-      xml += `    <loc>${baseUrl}/aging-resources</loc>\n`;
-      xml += '    <changefreq>monthly</changefreq>\n';
-      xml += '    <priority>0.7</priority>\n';
-      xml += '  </url>\n';
+      // Individual podcast detail pages
+      try {
+        const podcasts = await storage.listPodcasts();
+        podcasts.forEach((podcast: any) => {
+          if (podcast.slug) {
+            xml += '  <url>\n';
+            xml += `    <loc>${baseUrl}/podcasts/${podcast.slug}</loc>\n`;
+            if (podcast.publishedAt || podcast.createdAt) {
+              xml += `    <lastmod>${new Date(podcast.publishedAt || podcast.createdAt).toISOString().split('T')[0]}</lastmod>\n`;
+            }
+            xml += '    <changefreq>monthly</changefreq>\n';
+            xml += '    <priority>0.6</priority>\n';
+            xml += '  </url>\n';
+          }
+        });
+      } catch (_) {}
+
+      // Note: caregiver-resources and aging-resources are included in static pages above
 
       // Quiz pages
       const quizTypes = ['care-needs', 'caregiver-stress', 'daily-living', 'memory', 'fall-risk', 'medication', 'nutrition', 'social', 'financial', 'planning', 'caregiver-readiness', 'home-safety'];

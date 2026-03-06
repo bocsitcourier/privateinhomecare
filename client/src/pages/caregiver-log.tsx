@@ -231,6 +231,7 @@ export default function CaregiverLogPage() {
         pageSlug="caregiver-log"
         fallbackTitle="Caregiver Daily Log - PrivateInHomeCareGiver"
         fallbackDescription="Submit your daily activity log to document client care and activities. Secure and confidential."
+        noindex={true}
       />
 
       <main className="max-w-4xl mx-auto px-6 py-12">

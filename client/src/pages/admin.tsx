@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Helmet } from "react-helmet";
 import { useLocation } from "wouter";
 import ReCAPTCHA from "react-google-recaptcha";
 import { Card, CardContent } from "@/components/ui/card";
@@ -282,7 +283,12 @@ export default function AdminPage() {
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex items-center justify-center p-4">
+      <>
+        <Helmet>
+          <title>Admin Login | PrivateInHomeCareGiver</title>
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
+        <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex items-center justify-center p-4">
         <Card className="w-full max-w-md shadow-xl">
           <CardContent className="p-8">
             <div className="text-center mb-8">
@@ -348,10 +354,16 @@ export default function AdminPage() {
           </CardContent>
         </Card>
       </div>
+      </>
     );
   }
 
   return (
+    <>
+    <Helmet>
+      <title>Admin Dashboard | PrivateInHomeCareGiver</title>
+      <meta name="robots" content="noindex, nofollow" />
+    </Helmet>
     <div className="min-h-screen bg-background flex">
       {/* Mobile menu overlay */}
       {mobileMenuOpen && (
@@ -495,5 +507,6 @@ export default function AdminPage() {
         </main>
       </div>
     </div>
+    </>
   );
 }

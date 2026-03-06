@@ -419,7 +419,7 @@ export default function IntakePage() {
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950 py-12 px-4">
-        <PageSEO pageSlug="intake" />
+        <PageSEO pageSlug="intake" noindex={true} />
         <div className="container max-w-2xl mx-auto">
           <Card className="border-2 border-green-500 shadow-lg">
             <CardHeader className="text-center pb-6">
@@ -454,7 +454,7 @@ export default function IntakePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950 py-12 px-4">
-      <PageSEO pageSlug="intake" />
+      <PageSEO pageSlug="intake" noindex={true} />
       <div className="container max-w-4xl mx-auto">
         <div className="mb-8">
           <Link href="/" data-testid="link-back">

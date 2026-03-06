@@ -106,6 +106,7 @@ export default function HipaaAcknowledgment() {
           pageSlug="hipaa-acknowledgment"
           fallbackTitle="HIPAA Privacy Acknowledgment Submitted | PrivateInHomeCareGiver"
           fallbackDescription="Your HIPAA Privacy Information Acknowledgment has been successfully submitted."
+          noindex={true}
         />
         <div className="max-w-2xl mx-auto">
           <Card className="border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950">
@@ -142,6 +143,7 @@ export default function HipaaAcknowledgment() {
         pageSlug="hipaa-acknowledgment"
         fallbackTitle="HIPAA Privacy Information Acknowledgment | PrivateInHomeCareGiver"
         fallbackDescription="Complete your HIPAA Privacy Information Acknowledgment of Receipt form for PrivateInHomeCareGiver."
+        noindex={true}
       />
       
       <div className="max-w-4xl mx-auto">

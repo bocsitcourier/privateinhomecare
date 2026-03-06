@@ -184,6 +184,7 @@ export default function NonSolicitationAgreementPage() {
           pageSlug="non-solicitation-agreement"
           fallbackTitle="Non-Solicitation Agreement | Private In-Home Caregiver"
           fallbackDescription="Complete and sign the Non-Solicitation & Placement Agreement for Private In-Home Caregiver services."
+          noindex={true}
         />
         <div className="min-h-screen flex flex-col">
           <Header />
@@ -215,6 +216,7 @@ export default function NonSolicitationAgreementPage() {
         pageSlug="non-solicitation-agreement"
         fallbackTitle="Non-Solicitation Agreement | Private In-Home Caregiver"
         fallbackDescription="Complete and sign the Non-Solicitation & Placement Agreement for Private In-Home Caregiver services."
+        noindex={true}
       />
       <div className="min-h-screen flex flex-col">
         <Header />

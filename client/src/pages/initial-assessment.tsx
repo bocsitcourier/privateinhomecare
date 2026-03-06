@@ -302,6 +302,7 @@ export default function InitialAssessmentPage() {
           pageSlug="initial-assessment"
           fallbackTitle="Initial Assessment & Service Agreement | Private In-Home Caregiver"
           fallbackDescription="Complete the comprehensive care assessment and service agreement for Private In-Home Caregiver services."
+          noindex={true}
         />
         <div className="min-h-screen flex flex-col">
           <Header />
@@ -333,6 +334,7 @@ export default function InitialAssessmentPage() {
         pageSlug="initial-assessment"
         fallbackTitle="Initial Assessment & Service Agreement | Private In-Home Caregiver"
         fallbackDescription="Complete the comprehensive care assessment and service agreement for Private In-Home Caregiver services."
+        noindex={true}
       />
       <div className="min-h-screen flex flex-col">
         <Header />
