@@ -1,5 +1,5 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 import * as schema from "@shared/schema";
 
 if (!process.env.DATABASE_URL) {
@@ -8,19 +8,15 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-const client = postgres(process.env.DATABASE_URL, {
-  prepare: false,              // REQUIRED for pgBouncer/Supabase transaction pooler
-  ssl: process.env.DATABASE_URL?.includes('localhost') ? false : { rejectUnauthorized: false }, // Smart: off for localhost, TLS for prod
-  max: 10,                     // Maximum number of connections (production-ready)
-  idle_timeout: 20,            // Idle timeout in seconds
-  connect_timeout: 10,         // Connection timeout in seconds
-  onnotice: () => { },          // Disable notices to reduce noise
-  transform: {
-    undefined: null            // Transform undefined to null for PostgreSQL
-  }
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL?.includes('localhost') ? false : { rejectUnauthorized: false },
+  max: 10,
+  idleTimeoutMillis: 20000,
+  connectionTimeoutMillis: 10000,
 });
 
-export const db = drizzle(client, { schema });
+export const db = drizzle(pool, { schema });
 
 // Helper function to handle database operations with retry logic
 export async function withRetry<T>(
@@ -36,15 +32,12 @@ export async function withRetry<T>(
     } catch (error: any) {
       lastError = error;
 
-      // Log the error
       console.error(`[DB] Operation failed (attempt ${i + 1}/${maxRetries + 1}):`, error.message);
 
-      // If this is the last attempt, throw the error
       if (i === maxRetries) {
         throw error;
       }
 
-      // Check if it's a connection error that we should retry
       const isRetryableError = error.message?.includes('Connection terminated') ||
         error.message?.includes('connection error') ||
         error.message?.includes('timeout') ||
@@ -52,10 +45,9 @@ export async function withRetry<T>(
         error.code === 'ETIMEDOUT';
 
       if (!isRetryableError) {
-        throw error; // Don't retry non-connection errors
+        throw error;
       }
 
-      // Wait before retrying (exponential backoff)
       await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
     }
   }
