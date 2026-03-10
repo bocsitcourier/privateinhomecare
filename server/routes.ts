@@ -6,7 +6,7 @@ import path from "path";
 import { promises as fs } from "fs";
 import express from "express";
 import rateLimit from "express-rate-limit";
-import { 
+import {
   insertJobSchema, updateJobSchema,
   insertArticleSchema, updateArticleSchema,
   insertInquirySchema, updateInquirySchema, replySchema,
@@ -29,21 +29,21 @@ import {
   type PageMeta
 } from "@shared/schema";
 import DOMPurify from 'isomorphic-dompurify';
-import { 
-  hashPassword, verifyPassword, 
-  generateRecoveryCode, hashRecoveryCode, verifyRecoveryCode 
+import {
+  hashPassword, verifyPassword,
+  generateRecoveryCode, hashRecoveryCode, verifyRecoveryCode
 } from "./auth-utils";
-import { 
-  sendEmail, 
+import {
+  sendEmail,
   generateApplicationNotificationEmail,
   generateInquiryNotificationEmail,
-  generateReferralNotificationEmail 
+  generateReferralNotificationEmail
 } from "./email-utils";
 import { z } from "zod";
-import { 
-  sanitizeHeaders, 
-  validateContentType, 
-  detectSQLInjection, 
+import {
+  sanitizeHeaders,
+  validateContentType,
+  detectSQLInjection,
   detectXSS,
   auditLog,
   sanitizeErrors
@@ -90,16 +90,16 @@ async function seedAdminUser() {
 
     const recoveryCodes: string[] = [];
     const codeHashes: string[] = [];
-    
+
     for (let i = 0; i < 8; i++) {
       const code = generateRecoveryCode();
       recoveryCodes.push(code);
       const hash = await hashRecoveryCode(code);
       codeHashes.push(hash);
     }
-    
+
     await storage.createRecoveryCodes(user.id, codeHashes);
-    
+
     console.log("[STARTUP] ✓ Admin user created - Username: admin, Password: demo123");
     console.log("[STARTUP] ✓ Recovery codes generated:", recoveryCodes.length);
   } catch (error: any) {
@@ -161,7 +161,7 @@ async function seedComprehensiveArticles(forceReseed = false) {
     const batch8Module = await import("./seeds/articles-batch-8");
     const batch9Module = await import("./seeds/articles-batch-9");
     const batch10Module = await import("./seeds/articles-batch-10");
-    
+
     const baseArticles = comprehensiveArticlesModule.default || comprehensiveArticlesModule.comprehensiveArticles;
     const batch2Articles = batch2Module.articlesBatch2 || [];
     const batch3Articles = batch3Module.articlesBatch3 || [];
@@ -172,19 +172,19 @@ async function seedComprehensiveArticles(forceReseed = false) {
     const batch8Articles = batch8Module.articlesBatch8 || [];
     const batch9Articles = batch9Module.articlesBatch9 || [];
     const batch10Articles = batch10Module.articlesBatch10 || [];
-    
+
     const comprehensiveArticles = [...baseArticles, ...batch2Articles, ...batch3Articles, ...batch4Articles, ...batch5Articles, ...batch6Articles, ...batch7Articles, ...batch8Articles, ...batch9Articles, ...batch10Articles];
-    
+
     let created = 0;
     let skipped = 0;
-    
+
     for (const articleData of comprehensiveArticles) {
       const existing = await storage.getArticleBySlug(articleData.slug);
       if (existing && !forceReseed) {
         skipped++;
         continue;
       }
-      
+
       if (existing && forceReseed) {
         await storage.deleteArticle(existing.id);
       }
@@ -228,7 +228,7 @@ async function seedComprehensiveArticles(forceReseed = false) {
 const rateLimitHandler = (req: Request, res: Response) => {
   const ip = req.ip || req.socket.remoteAddress;
   console.warn(`[SECURITY] Rate limit exceeded for IP: ${ip} on ${req.method} ${req.path}`);
-  res.status(429).json({ 
+  res.status(429).json({
     error: "Too many requests. Please try again later.",
     retryAfter: res.getHeader('Retry-After')
   });
@@ -305,16 +305,16 @@ function isDisposableEmail(email: string): boolean {
 async function verifyCaptcha(token: string): Promise<{ success: boolean; error?: string }> {
   const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
   const isProduction = process.env.NODE_ENV === 'production';
-  
+
   // Skip CAPTCHA verification in development mode
   if (!isProduction) {
     return { success: true };
   }
-  
+
   if (!recaptchaSecret) {
     return { success: false, error: "Server configuration error. Please contact support." };
   }
-  
+
   try {
     const verifyResponse = await fetch('https://www.google.com/recaptcha/api/siteverify', {
       method: 'POST',
@@ -322,7 +322,7 @@ async function verifyCaptcha(token: string): Promise<{ success: boolean; error?:
       body: `secret=${recaptchaSecret}&response=${token}`
     });
     const verifyData = await verifyResponse.json();
-    
+
     if (!verifyData.success) {
       return { success: false, error: "CAPTCHA verification failed. Please try again." };
     }
@@ -358,7 +358,7 @@ const upload = multer({
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowedTypes.test(file.mimetype);
-    
+
     if (mimetype && extname) {
       return cb(null, true);
     } else {
@@ -379,10 +379,10 @@ const resumeUpload = multer({
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     ];
-    
+
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowedMimeTypes.includes(file.mimetype);
-    
+
     if (mimetype && extname) {
       return cb(null, true);
     } else {
@@ -400,12 +400,12 @@ const mediaUpload = multer({
     const videoTypes = /mp4|webm|mov|avi|mkv|m4v/;
     const audioTypes = /mp3|wav|ogg|m4a|aac|flac/;
     const imageTypes = /jpeg|jpg|png|gif|webp/;
-    
+
     const ext = path.extname(file.originalname).toLowerCase().replace('.', '');
     const isVideo = videoTypes.test(ext) || file.mimetype.startsWith('video/');
     const isAudio = audioTypes.test(ext) || file.mimetype.startsWith('audio/');
     const isImage = imageTypes.test(ext) || file.mimetype.startsWith('image/');
-    
+
     if (isVideo || isAudio || isImage) {
       return cb(null, true);
     } else {
@@ -415,44 +415,44 @@ const mediaUpload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  
+
   // Seed admin user and demo articles on startup
   await seedAdminUser();
   await seedDemoArticles();
-  
+
   // ============================================================================
   // SECURITY HARDENING MIDDLEWARE - Applied globally
   // ============================================================================
-  
+
   // Sanitize response headers (prevent information leakage)
   app.use(sanitizeHeaders);
-  
+
   // Validate content types for POST/PUT/PATCH requests
   app.use(validateContentType);
-  
+
   // Detect SQL injection attempts
   app.use(detectSQLInjection);
-  
+
   // Detect XSS attack attempts
   app.use(detectXSS);
-  
+
   // Audit logging for sensitive operations
   app.use(auditLog);
-  
+
   app.use('/api', generalApiLimiter);
-  
+
   app.use('/uploads', (req, res, next) => {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     next();
   });
   app.use('/uploads', express.static('uploads'));
-  
+
   app.use('/attached_assets', (req, res, next) => {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     next();
   });
   app.use('/attached_assets', express.static('attached_assets'));
-  
+
   // Serve video files from public/videos directory
   app.use('/videos', (req, res, next) => {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
@@ -460,33 +460,167 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   });
   app.use('/videos', express.static('public/videos'));
-  
+
   // Serve thumbnail images from public/thumbnails directory
   app.use('/thumbnails', (req, res, next) => {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     next();
   });
   app.use('/thumbnails', express.static('public/thumbnails'));
-  
+
+  // ============================================================================
+  // ContentualyzAI RECEIVER API (v1) — External publishing endpoint
+  // Authenticated via x-api-key header, NOT session-based.
+  // ============================================================================
+
+  const requireApiKey = (req: Request, res: Response, next: NextFunction) => {
+    const apiKey = req.headers['x-api-key'] || req.query.apiKey;
+    const expectedKey = process.env.APEX_API_KEY;
+
+    if (!expectedKey) {
+      console.error('[RECEIVER] APEX_API_KEY not configured in environment');
+      return res.status(500).json({ error: 'Receiver not configured' });
+    }
+
+    if (!apiKey || apiKey !== expectedKey) {
+      const ip = req.ip || req.socket.remoteAddress || 'unknown';
+      console.warn(`[RECEIVER] Unauthorized request from ${ip} — invalid API key`);
+      return res.status(401).json({ error: 'Invalid API key' });
+    }
+
+    next();
+  };
+
+  // Health check — ContentualyzAI uses this to verify connectivity
+  app.get('/api/v1/health', (req: Request, res: Response) => {
+    res.json({
+      status: 'ok',
+      name: 'PrivateInHomeCareGiver',
+      version: '1.0',
+      timestamp: new Date().toISOString(),
+    });
+  });
+
+  // Create/upsert an article from ContentualyzAI
+  app.post('/api/v1/articles', requireApiKey, async (req: Request, res: Response) => {
+    try {
+      const body = req.body;
+      console.log(`[RECEIVER] Incoming article: "${body.title}"`);
+
+      if (!body.title) {
+        return res.status(400).json({ error: 'title is required' });
+      }
+
+      // Generate slug from title if not provided
+      const slug = body.slug || body.title
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .substring(0, 120)
+        .replace(/^-|-$/g, '');
+
+      // Map ContentualyzAI payload → our article schema
+      // ContentualyzAI sends Bocsit-style fields: content, featuredImage, metaKeywords, published
+      const articleContent = body.content || body.body || '';
+
+      // Parse keywords: accept array, comma-separated string, or space-separated metaKeywords
+      let keywords: string[] = [];
+      if (Array.isArray(body.keywords)) {
+        keywords = body.keywords.map((k: string) => k.trim()).filter((k: string) => k.length > 0);
+      } else if (typeof body.metaKeywords === 'string' && body.metaKeywords.trim()) {
+        keywords = body.metaKeywords.split(',').map((k: string) => k.trim()).filter((k: string) => k.length > 0);
+      } else if (typeof body.keywords === 'string' && body.keywords.trim()) {
+        keywords = body.keywords.split(',').map((k: string) => k.trim()).filter((k: string) => k.length > 0);
+      }
+
+      // Determine status
+      const status = body.status === 'draft' ? 'draft'
+        : body.published === false ? 'draft'
+          : 'published';
+
+      // Sanitize HTML body
+      const sanitizedBody = DOMPurify.sanitize(articleContent, {
+        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 's', 'code', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'a', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'iframe', 'hr', 'span', 'div', 'figure', 'figcaption'],
+        ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'style', 'target', 'rel', 'width', 'height', 'colspan', 'rowspan', 'align', 'frameborder', 'allow', 'allowfullscreen'],
+        ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|tel:)/i,
+        ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling'],
+      });
+
+      const articleData = {
+        title: body.title,
+        slug,
+        excerpt: body.excerpt || body.metaDescription || '',
+        body: sanitizedBody,
+        category: body.category || 'Care Tips',
+        heroImageUrl: body.featuredImage || body.heroImageUrl || null,
+        metaTitle: body.metaTitle || body.title,
+        metaDescription: body.metaDescription || body.excerpt || '',
+        keywords,
+        status,
+        publishedAt: status === 'published' ? new Date() : null,
+      };
+
+      // Upsert by title to avoid duplicates
+      const article = await storage.upsertArticleByTitle(body.title, articleData);
+
+      console.log(`[RECEIVER] ✓ Article upserted: "${article.title}" (${article.id})`);
+      res.status(201).json({
+        success: true,
+        article: {
+          id: article.id,
+          title: article.title,
+          slug: article.slug,
+          status: article.status,
+          url: `/articles/${article.slug}`,
+        },
+      });
+    } catch (error: any) {
+      console.error('[RECEIVER] ✗ Failed to create article:', error.message);
+      res.status(500).json({ error: 'Failed to create article', details: error.message });
+    }
+  });
+
+  // List recent published articles (for ContentualyzAI to verify content)
+  app.get('/api/v1/articles', requireApiKey, async (req: Request, res: Response) => {
+    try {
+      const articles = await storage.listArticles('published');
+      const recent = articles.slice(0, 20).map(a => ({
+        id: a.id,
+        title: a.title,
+        slug: a.slug,
+        category: a.category,
+        status: a.status,
+        publishedAt: a.publishedAt,
+        url: `/articles/${a.slug}`,
+      }));
+      res.json({ total: articles.length, articles: recent });
+    } catch (error: any) {
+      console.error('[RECEIVER] Failed to list articles:', error.message);
+      res.status(500).json({ error: 'Failed to list articles' });
+    }
+  });
+
+
   app.post("/api/auth/login", authLimiter, async (req, res) => {
     try {
       const { username, password, captchaToken } = req.body;
-      
+
       // Defensive: check for required fields
       if (!password || typeof password !== 'string') {
         return res.status(400).json({ error: "Password is required" });
       }
-      
+
       // Check if CAPTCHA is required (configured AND in production)
       const isProduction = process.env.NODE_ENV === 'production';
       const captchaRequired = !!process.env.RECAPTCHA_SECRET_KEY && isProduction;
-      
+
       // Require CAPTCHA token only in production
       if (captchaRequired) {
         if (!captchaToken || typeof captchaToken !== 'string') {
           return res.status(400).json({ error: "CAPTCHA verification required" });
         }
-        
+
         // Verify CAPTCHA with defensive error handling
         let captchaResult;
         try {
@@ -495,18 +629,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error("[AUTH] CAPTCHA verification error:", captchaError);
           return res.status(500).json({ error: "CAPTCHA verification failed. Please try again." });
         }
-        
+
         if (!captchaResult?.success) {
           return res.status(400).json({ error: captchaResult?.error || "CAPTCHA verification failed" });
         }
       }
-      
+
       // Get user with defensive fallback
       const user = await storage.getUserByUsername(username?.trim() || "admin");
       if (!user) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
-      
+
       // Verify password with defensive error handling
       let isValidPassword = false;
       try {
@@ -515,17 +649,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("[AUTH] Password verification error:", pwError);
         return res.status(500).json({ error: "Authentication failed. Please try again." });
       }
-      
+
       if (isValidPassword) {
         // Defensive: ensure session is available
         if (!req.session) {
           console.error("[AUTH] Session not available");
           return res.status(500).json({ error: "Session error. Please refresh and try again." });
         }
-        
+
         req.session.isAuthenticated = true;
         req.session.userId = user.id;
-        
+
         // Save session with callback to ensure it's persisted
         req.session.save((err) => {
           if (err) {
@@ -549,7 +683,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.session) {
         return res.json({ success: true });
       }
-      
+
       req.session.destroy((err) => {
         if (err) {
           console.error("[AUTH] Logout error:", err);
@@ -606,7 +740,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const data = changePasswordSchema.parse(req.body);
       const user = await storage.getUser(userId);
-      
+
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
@@ -618,9 +752,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const hashedPassword = await hashPassword(data.newPassword);
       await storage.updateUserPassword(userId, hashedPassword);
-      
-      req.session.destroy(() => {});
-      
+
+      req.session.destroy(() => { });
+
       res.json({ success: true, message: "Password changed successfully. Please login again." });
     } catch (error: any) {
       if (error.name === 'ZodError') {
@@ -638,22 +772,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       await storage.deleteRecoveryCodes(userId);
-      
+
       const recoveryCodes: string[] = [];
       const codeHashes: string[] = [];
-      
+
       for (let i = 0; i < 8; i++) {
         const code = generateRecoveryCode();
         recoveryCodes.push(code);
         const hash = await hashRecoveryCode(code);
         codeHashes.push(hash);
       }
-      
+
       await storage.createRecoveryCodes(userId, codeHashes);
-      
-      res.json({ 
+
+      res.json({
         codes: recoveryCodes,
-        message: "Recovery codes generated. Save these in a secure location." 
+        message: "Recovery codes generated. Save these in a secure location."
       });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -675,22 +809,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const recoveryCodes: string[] = [];
       const codeHashes: string[] = [];
-      
+
       for (let i = 0; i < 8; i++) {
         const code = generateRecoveryCode();
         recoveryCodes.push(code);
         const hash = await hashRecoveryCode(code);
         codeHashes.push(hash);
       }
-      
+
       await storage.createRecoveryCodes(user.id, codeHashes);
-      
-      res.json({ 
-        success: true, 
+
+      res.json({
+        success: true,
         message: "Admin user created successfully",
         username: "admin",
         password: "demo123",
-        recoveryCodes: recoveryCodes 
+        recoveryCodes: recoveryCodes
       });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -701,8 +835,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const forceReseed = req.query.force === 'true';
       const result = await seedComprehensiveArticles(forceReseed);
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         message: `Comprehensive articles seeded successfully`,
         ...result
       });
@@ -716,9 +850,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
-      
+
       const fileUrl = `/uploads/${req.file.filename}`;
-      res.json({ 
+      res.json({
         url: fileUrl,
         filename: req.file.filename,
         originalName: req.file.originalname,
@@ -734,9 +868,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
-      
+
       const fileUrl = `/uploads/${req.file.filename}`;
-      res.json({ 
+      res.json({
         url: fileUrl,
         filename: req.file.filename,
         originalName: req.file.originalname,
@@ -753,9 +887,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
-      
+
       const fileUrl = `/uploads/${req.file.filename}`;
-      res.json({ 
+      res.json({
         url: fileUrl,
         filename: req.file.filename,
         originalName: req.file.originalname,
@@ -775,7 +909,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const ipMasked = maskIp(req.ip || req.socket.remoteAddress);
       const userAgent = req.headers['user-agent'] || '';
-      
+
       await storage.createPageView({
         slug,
         referrer: referrer || null,
@@ -795,7 +929,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!eventType || !mediaType) {
         return res.status(400).json({ error: "Event type and media type required" });
       }
-      
+
       await storage.createMediaEvent({
         mediaId: mediaId || null,
         mediaTitle: mediaTitle || null,
@@ -822,29 +956,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/inquiries", publicFormLimiter, async (req, res) => {
     try {
       const { captchaToken, website, ...inquiryData } = req.body;
-      
+
       if (checkHoneypot(website, req)) {
         return res.status(400).json({ error: "Invalid submission" });
       }
-      
+
       if (inquiryData.email && isDisposableEmail(inquiryData.email)) {
         const ip = req.ip || req.socket.remoteAddress || 'unknown';
         console.warn(`[SECURITY] Disposable email domain blocked: ${inquiryData.email} from IP: ${ip}`);
         return res.status(400).json({ error: "Please use a permanent email address" });
       }
-      
+
       if (!captchaToken) {
         return res.status(400).json({ error: "CAPTCHA verification required" });
       }
-      
+
       const captchaResult = await verifyCaptcha(captchaToken);
       if (!captchaResult.success) {
         return res.status(400).json({ error: captchaResult.error || "CAPTCHA verification failed" });
       }
-      
+
       const data = insertInquirySchema.parse(inquiryData);
       const inquiry = await storage.createInquiry(data);
-      
+
       // Send email notification
       const hrEmail = process.env.HR_EMAIL || 'info@privateinhomecaregiver.com';
       const emailHtml = generateInquiryNotificationEmail({
@@ -854,13 +988,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         service: inquiry.service || undefined,
         message: inquiry.message || undefined,
       });
-      
+
       await sendEmail({
         to: hrEmail,
         subject: `New Consultation Request - ${inquiry.name}`,
         html: emailHtml,
       });
-      
+
       res.json(inquiry);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -871,7 +1005,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/forms/non-solicitation", publicFormLimiter, async (req, res) => {
     try {
       const formData = req.body;
-      
+
       // HIPAA: Verify reCAPTCHA to prevent bot submissions
       if (formData.captchaToken) {
         const captchaResult = await verifyCaptcha(formData.captchaToken);
@@ -881,11 +1015,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else if (process.env.NODE_ENV === 'production') {
         return res.status(400).json({ error: "CAPTCHA verification required" });
       }
-      
+
       if (formData.email && isDisposableEmail(formData.email)) {
         return res.status(400).json({ error: "Please use a permanent email address" });
       }
-      
+
       const agreementData = {
         email: formData.email,
         clientFullName: formData.clientFullName,
@@ -905,9 +1039,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         agreementDate: formData.signatureDate,
         status: "active",
       };
-      
+
       const agreement = await storage.createNonSolicitationAgreement(agreementData);
-      
+
       // Send confirmation email if email is configured
       try {
         await sendEmail({
@@ -925,7 +1059,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } catch (emailError) {
         console.error("Failed to send confirmation email:", emailError);
       }
-      
+
       res.status(201).json({ success: true, id: agreement.id });
     } catch (error: any) {
       console.error("Non-solicitation form error:", error);
@@ -936,7 +1070,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/forms/initial-assessment", publicFormLimiter, async (req, res) => {
     try {
       const formData = req.body;
-      
+
       // HIPAA: Verify reCAPTCHA to prevent bot submissions
       if (formData.captchaToken) {
         const captchaResult = await verifyCaptcha(formData.captchaToken);
@@ -946,11 +1080,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else if (process.env.NODE_ENV === 'production') {
         return res.status(400).json({ error: "CAPTCHA verification required" });
       }
-      
+
       if (formData.email && isDisposableEmail(formData.email)) {
         return res.status(400).json({ error: "Please use a permanent email address" });
       }
-      
+
       const assessmentData = {
         email: formData.email,
         clientFullName: formData.clientFullName,
@@ -1006,9 +1140,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         signatureDate: formData.signatureDate,
         status: "pending",
       };
-      
+
       const assessment = await storage.createInitialAssessment(assessmentData);
-      
+
       // Send confirmation email
       try {
         await sendEmail({
@@ -1028,7 +1162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } catch (emailError) {
         console.error("Failed to send confirmation email:", emailError);
       }
-      
+
       res.status(201).json({ success: true, id: assessment.id });
     } catch (error: any) {
       console.error("Initial assessment form error:", error);
@@ -1040,37 +1174,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/forms/concierge-request", publicFormLimiter, async (req, res) => {
     try {
       const { captchaToken, website, ...formData } = req.body;
-      
+
       // Honeypot check
       if (checkHoneypot(website, req)) {
         return res.status(400).json({ error: "Invalid submission" });
       }
-      
+
       // Disposable email check
       if (formData.contactEmail && isDisposableEmail(formData.contactEmail)) {
         const ip = req.ip || req.socket.remoteAddress || 'unknown';
         console.warn(`[SECURITY] Disposable email domain blocked: ${formData.contactEmail} from IP: ${ip}`);
         return res.status(400).json({ error: "Please use a permanent email address" });
       }
-      
+
       // CAPTCHA verification
       if (!captchaToken) {
         return res.status(400).json({ error: "CAPTCHA verification required" });
       }
-      
+
       const captchaResult = await verifyCaptcha(captchaToken);
       if (!captchaResult.success) {
         return res.status(400).json({ error: captchaResult.error || "CAPTCHA verification failed" });
       }
-      
+
       // Validate and create request
       const validatedData = insertConciergeRequestSchema.omit({ captchaToken: true }).parse(formData);
       const request = await storage.createConciergeRequest(validatedData);
-      
+
       // Send notification email
       const hrEmail = process.env.HR_EMAIL || 'info@privateinhomecaregiver.com';
       const servicesText = (validatedData.servicesNeeded || []).join(', ');
-      
+
       await sendEmail({
         to: hrEmail,
         subject: `New Concierge Services Request - ${validatedData.seniorName}`,
@@ -1095,7 +1229,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           <p><strong>How Heard About Us:</strong> ${validatedData.howHeardAboutUs || 'Not specified'}</p>
         `
       });
-      
+
       res.status(201).json({ success: true, id: request.id });
     } catch (error: any) {
       console.error("Concierge request form error:", error);
@@ -1107,38 +1241,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/forms/transportation-request", publicFormLimiter, async (req, res) => {
     try {
       const { captchaToken, website, ...formData } = req.body;
-      
+
       // Honeypot check
       if (checkHoneypot(website, req)) {
         return res.status(400).json({ error: "Invalid submission" });
       }
-      
+
       // Disposable email check
       if (formData.contactEmail && isDisposableEmail(formData.contactEmail)) {
         const ip = req.ip || req.socket.remoteAddress || 'unknown';
         console.warn(`[SECURITY] Disposable email domain blocked: ${formData.contactEmail} from IP: ${ip}`);
         return res.status(400).json({ error: "Please use a permanent email address" });
       }
-      
+
       // CAPTCHA verification
       if (!captchaToken) {
         return res.status(400).json({ error: "CAPTCHA verification required" });
       }
-      
+
       const captchaResult = await verifyCaptcha(captchaToken);
       if (!captchaResult.success) {
         return res.status(400).json({ error: captchaResult.error || "CAPTCHA verification failed" });
       }
-      
+
       // Validate and create request
       const validatedData = insertTransportationRequestSchema.omit({ captchaToken: true }).parse(formData);
       const request = await storage.createTransportationRequest(validatedData);
-      
+
       // Send notification email
       const hrEmail = process.env.HR_EMAIL || 'info@privateinhomecaregiver.com';
       const transportText = (validatedData.transportTypes || []).join(', ');
       const mobilityText = (validatedData.mobilityAids || []).join(', ');
-      
+
       await sendEmail({
         to: hrEmail,
         subject: `New Transportation Request - ${validatedData.seniorName}`,
@@ -1169,7 +1303,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           <p><strong>How Heard About Us:</strong> ${validatedData.howHeardAboutUs || 'Not specified'}</p>
         `
       });
-      
+
       res.status(201).json({ success: true, id: request.id });
     } catch (error: any) {
       console.error("Transportation request form error:", error);
@@ -1260,7 +1394,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      res.json({ 
+      res.json({
         message: `Seeded ${created.length} new page metadata entries`,
         created: created.length,
         total: pages.length
@@ -1610,7 +1744,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/admin/pages", requireAuth, async (req, res) => {
     try {
-      const data = req.body.id 
+      const data = req.body.id
         ? updatePageMetaSchema.parse(req.body)
         : insertPageMetaSchema.parse(req.body);
       const page = await storage.upsertPageMeta(data);
@@ -1766,17 +1900,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/jobs/:id/apply", publicFormLimiter, async (req, res) => {
     try {
       const { website, ...requestBody } = req.body;
-      
+
       if (checkHoneypot(website, req)) {
         return res.status(400).json({ error: "Invalid submission" });
       }
-      
+
       if (requestBody.email && isDisposableEmail(requestBody.email)) {
         const ip = req.ip || req.socket.remoteAddress || 'unknown';
         console.warn(`[SECURITY] Disposable email domain blocked: ${requestBody.email} from IP: ${ip}`);
         return res.status(400).json({ error: "Please use a permanent email address" });
       }
-      
+
       // Validate that the job exists and is published
       const job = await storage.getJob(req.params.id);
       if (!job) {
@@ -1802,7 +1936,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Remove captchaToken before storing (it's not part of the database schema)
       const { captchaToken, ...applicationData } = data;
       const application = await storage.createJobApplication(applicationData);
-      
+
       // Send email notification to HR
       const hrEmail = process.env.HR_EMAIL || 'hr@example.com';
       const emailHtml = generateApplicationNotificationEmail({
@@ -1821,13 +1955,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         resumeUrl: application.resumeUrl || undefined,
         coverLetter: application.coverLetter || undefined,
       });
-      
+
       await sendEmail({
         to: hrEmail,
         subject: `New Job Application: ${job.title} - ${application.fullName}`,
         html: emailHtml,
       });
-      
+
       res.json(application);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -1837,11 +1971,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/jobs/general-apply", publicFormLimiter, async (req, res) => {
     try {
       const { website, ...requestBody } = req.body;
-      
+
       if (checkHoneypot(website, req)) {
         return res.status(400).json({ error: "Invalid submission" });
       }
-      
+
       if (requestBody.email && isDisposableEmail(requestBody.email)) {
         const ip = req.ip || req.socket.remoteAddress || 'unknown';
         console.warn(`[SECURITY] Disposable email domain blocked: ${requestBody.email} from IP: ${ip}`);
@@ -1865,7 +1999,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Remove captchaToken before storing (it's not part of the database schema)
       const { captchaToken, ...applicationData } = data;
       const application = await storage.createJobApplication(applicationData);
-      
+
       // Send email notification to HR
       const hrEmail = process.env.HR_EMAIL || 'hr@example.com';
       const emailHtml = generateApplicationNotificationEmail({
@@ -1884,13 +2018,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         resumeUrl: application.resumeUrl || undefined,
         coverLetter: application.coverLetter || undefined,
       });
-      
+
       await sendEmail({
         to: hrEmail,
         subject: `New General Job Application - ${application.fullName}`,
         html: emailHtml,
       });
-      
+
       res.json(application);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -1923,11 +2057,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/intake", publicFormLimiter, async (req, res) => {
     try {
       const { website, ...requestBody } = req.body;
-      
+
       if (checkHoneypot(website, req)) {
         return res.status(400).json({ error: "Invalid submission" });
       }
-      
+
       if (requestBody.clientEmail && isDisposableEmail(requestBody.clientEmail)) {
         const ip = req.ip || req.socket.remoteAddress || 'unknown';
         console.warn(`[SECURITY] Disposable email domain blocked: ${requestBody.clientEmail} from IP: ${ip}`);
@@ -1953,11 +2087,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/caregiver-log", publicFormLimiter, async (req, res) => {
     try {
       const { website, ...requestBody } = req.body;
-      
+
       if (checkHoneypot(website, req)) {
         return res.status(400).json({ error: "Invalid submission" });
       }
-      
+
       if (requestBody.caregiverEmail && isDisposableEmail(requestBody.caregiverEmail)) {
         const ip = req.ip || req.socket.remoteAddress || 'unknown';
         console.warn(`[SECURITY] Disposable email domain blocked: ${requestBody.caregiverEmail} from IP: ${ip}`);
@@ -2019,7 +2153,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { status, clientName } = req.query;
       const logs = await storage.listCaregiverLogs(
-        status as string | undefined, 
+        status as string | undefined,
         clientName as string | undefined
       );
       res.json(logs);
@@ -2079,14 +2213,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/non-solicitation-agreements", requireAuth, async (req, res) => {
     try {
       const { captchaToken, ...formData } = req.body;
-      
+
       if (captchaToken) {
         const captchaResult = await verifyCaptcha(captchaToken);
         if (!captchaResult.success) {
           return res.status(400).json({ error: "CAPTCHA verification failed" });
         }
       }
-      
+
       const data = insertNonSolicitationSchema.omit({ captchaToken: true }).parse(formData);
       const agreement = await storage.createNonSolicitationAgreement(data);
       res.status(201).json(agreement);
@@ -2181,14 +2315,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/initial-assessments", requireAuth, async (req, res) => {
     try {
       const { captchaToken, ...formData } = req.body;
-      
+
       if (captchaToken) {
         const captchaResult = await verifyCaptcha(captchaToken);
         if (!captchaResult.success) {
           return res.status(400).json({ error: "CAPTCHA verification failed" });
         }
       }
-      
+
       const data = insertInitialAssessmentSchema.omit({ captchaToken: true }).parse(formData);
       const assessment = await storage.createInitialAssessment(data);
       res.status(201).json(assessment);
@@ -2293,14 +2427,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/client-intakes", requireAuth, async (req, res) => {
     try {
       const { captchaToken, ...formData } = req.body;
-      
+
       if (captchaToken) {
         const captchaResult = await verifyCaptcha(captchaToken);
         if (!captchaResult.success) {
           return res.status(400).json({ error: "CAPTCHA verification failed" });
         }
       }
-      
+
       const data = insertClientIntakeSchema.omit({ captchaToken: true }).parse(formData);
       const intake = await storage.createClientIntake(data);
       res.status(201).json(intake);
@@ -2383,7 +2517,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/hipaa-acknowledgment", publicFormLimiter, async (req, res) => {
     try {
       const { website, ...requestBody } = req.body;
-      
+
       if (checkHoneypot(website, req)) {
         return res.status(400).json({ error: "Invalid submission" });
       }
@@ -2443,7 +2577,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/lead-magnets", publicFormLimiter, async (req, res) => {
     try {
       const { website, ...requestBody } = req.body;
-      
+
       if (checkHoneypot(website, req)) {
         return res.status(400).json({ error: "Invalid submission" });
       }
@@ -2494,7 +2628,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/referrals", publicFormLimiter, async (req, res) => {
     try {
       const { website, ...requestBody } = req.body;
-      
+
       if (checkHoneypot(website, req)) {
         return res.status(400).json({ error: "Invalid submission" });
       }
@@ -2514,7 +2648,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { captchaToken, ...referralData } = data;
       const referral = await storage.createReferral(referralData);
-      
+
       // Send email notification
       const hrEmail = process.env.HR_EMAIL || 'info@privateinhomecaregiver.com';
       const emailHtml = generateReferralNotificationEmail({
@@ -2529,13 +2663,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         primaryNeedForCare: referral.primaryNeedForCare,
         additionalInfo: referral.additionalInfo || undefined,
       });
-      
+
       await sendEmail({
         to: hrEmail,
         subject: `New Client Referral - ${referral.referrerName} referring ${referral.referredName}`,
         html: emailHtml,
       });
-      
+
       res.json(referral);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -2773,10 +2907,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Robots.txt for SEO
   app.get("/robots.txt", (req, res) => {
-    const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+    const baseUrl = process.env.REPLIT_DEV_DOMAIN
       ? `https://${process.env.REPLIT_DEV_DOMAIN}`
       : req.protocol + '://' + req.get('host');
-    
+
     const robotsTxt = `# robots.txt for PrivateInHomeCareGiver
 # Massachusetts Private Pay In-Home Senior Care
 
@@ -2890,7 +3024,7 @@ Allow: /api/facilities
 Allow: /api/videos
 Allow: /api/podcasts
 `;
-    
+
     res.header('Content-Type', 'text/plain');
     res.send(robotsTxt);
   });
@@ -2898,7 +3032,7 @@ Allow: /api/podcasts
   // XML Sitemap Generation
   app.get("/sitemap.xml", async (req, res) => {
     try {
-      const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+      const baseUrl = process.env.REPLIT_DEV_DOMAIN
         ? `https://${process.env.REPLIT_DEV_DOMAIN}`
         : req.protocol + '://' + req.get('host');
 
@@ -3043,7 +3177,7 @@ Allow: /api/podcasts
       xml += '    <changefreq>weekly</changefreq>\n';
       xml += '    <priority>0.7</priority>\n';
       xml += '  </url>\n';
-      
+
       xml += '  <url>\n';
       xml += `    <loc>${baseUrl}/podcasts</loc>\n`;
       xml += '    <changefreq>weekly</changefreq>\n';
@@ -3096,14 +3230,14 @@ Allow: /api/podcasts
       if (county && typeof county === 'string') filters.county = county;
       if (isCity && typeof isCity === 'string') filters.isCity = isCity;
       if (isActive && typeof isActive === 'string') filters.isActive = isActive;
-      
+
       let locations = await storage.listMaLocations(filters);
-      
+
       // Additional region filter (not in storage)
       if (region && typeof region === 'string') {
         locations = locations.filter(l => l.region === region);
       }
-      
+
       res.json(locations);
     } catch (error: any) {
       console.error("Error listing locations:", error);
@@ -3134,7 +3268,7 @@ Allow: /api/podcasts
       if (locationId && typeof locationId === 'string') filters.locationId = locationId;
       if (careType && typeof careType === 'string') filters.careType = careType;
       if (status && typeof status === 'string') filters.status = status;
-      
+
       const pages = await storage.listCareTypePages(filters);
       res.json(pages);
     } catch (error: any) {
@@ -3151,14 +3285,14 @@ Allow: /api/podcasts
       if (!page) {
         return res.status(404).json({ message: "Care type page not found" });
       }
-      
+
       // Also fetch FAQs and reviews for this page
       const faqs = await storage.listLocationFaqs(page.id);
       const reviews = await storage.listLocationReviews(page.id);
-      
+
       // Get the location details
       const location = await storage.getMaLocation(page.locationId);
-      
+
       res.json({ ...page, faqs, reviews, location });
     } catch (error: any) {
       console.error("Error getting care type page:", error);
@@ -3173,7 +3307,7 @@ Allow: /api/podcasts
       if (!q || typeof q !== 'string') {
         return res.status(400).json({ message: "Search query required" });
       }
-      
+
       const results = await storage.searchLocations(q, careType as any);
       res.json(results);
     } catch (error: any) {
@@ -3224,11 +3358,11 @@ Allow: /api/podcasts
     try {
       const { careType, citySlug } = req.params;
       const result = await storage.getCareTypePageByCareTypeAndCity(careType, citySlug);
-      
+
       if (!result) {
         return res.status(404).json({ message: "Care type page not found" });
       }
-      
+
       res.json(result);
     } catch (error: any) {
       console.error("Error getting care type page:", error);
@@ -3240,10 +3374,10 @@ Allow: /api/podcasts
   app.post("/api/directory/seed-locations", requireAuth, async (req: Request, res: Response) => {
     try {
       const { maLocationSeeds, serviceTypes } = await import("./seeds/ma-locations");
-      
+
       let locationsCreated = 0;
       let servicesCreated = 0;
-      
+
       // Seed locations
       for (const location of maLocationSeeds) {
         const existing = await storage.getMaLocationBySlug(location.slug);
@@ -3263,7 +3397,7 @@ Allow: /api/podcasts
           locationsCreated++;
         }
       }
-      
+
       // Seed service types
       for (const service of serviceTypes) {
         try {
@@ -3278,12 +3412,12 @@ Allow: /api/podcasts
           // Skip if already exists
         }
       }
-      
-      res.json({ 
-        message: "Seed completed", 
-        locationsCreated, 
+
+      res.json({
+        message: "Seed completed",
+        locationsCreated,
         servicesCreated,
-        totalLocations: maLocationSeeds.length 
+        totalLocations: maLocationSeeds.length
       });
     } catch (error: any) {
       console.error("Error seeding locations:", error);
@@ -3593,7 +3727,7 @@ Allow: /api/podcasts
 
       const placesData = await placesResponse.json();
       const places = placesData.places || [];
-      
+
       // Extract photo URLs
       const galleryImages: string[] = [];
       for (const place of places) {
@@ -3711,23 +3845,23 @@ Allow: /api/podcasts
       const skipEnriched = req.query.skipEnriched !== "false";
       const batchSize = parseInt(req.query.batchSize as string) || 5;
       const limit = parseInt(req.query.limit as string) || 100;
-      
+
       const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
       if (!GOOGLE_PLACES_API_KEY) {
         return res.status(500).json({ message: "Google Places API key not configured" });
       }
-      
+
       // Get all locations
       const allLocations = await storage.listMaLocations();
       let locationsToEnrich = allLocations;
-      
+
       if (skipEnriched) {
         locationsToEnrich = allLocations.filter(l => !l.heroImageUrl);
       }
-      
+
       // Limit the number of locations to process
       locationsToEnrich = locationsToEnrich.slice(0, limit);
-      
+
       if (locationsToEnrich.length === 0) {
         return res.json({
           message: "No locations to enrich",
@@ -3735,18 +3869,18 @@ Allow: /api/podcasts
           alreadyEnriched: allLocations.filter(l => l.heroImageUrl).length
         });
       }
-      
+
       console.log(`Starting enrichment for ${locationsToEnrich.length} locations...`);
-      
+
       let successful = 0;
       let failed = 0;
       const results: { name: string; success: boolean; error?: string }[] = [];
-      
+
       for (let i = 0; i < locationsToEnrich.length; i++) {
         const location = locationsToEnrich[i];
         try {
           const searchQuery = `${location.name}, Massachusetts, USA`;
-          
+
           const placesResponse = await fetch("https://places.googleapis.com/v1/places:searchText", {
             method: "POST",
             headers: {
@@ -3756,7 +3890,7 @@ Allow: /api/podcasts
             },
             body: JSON.stringify({ textQuery: searchQuery, maxResultCount: 1 })
           });
-          
+
           if (!placesResponse.ok) {
             const errorText = await placesResponse.text();
             console.error(`Google Places API error for ${location.name}:`, errorText);
@@ -3764,13 +3898,13 @@ Allow: /api/podcasts
             failed++;
             continue;
           }
-          
+
           const placesData = await placesResponse.json();
           const places = placesData.places || [];
-          
+
           let heroImageUrl: string | undefined;
           let galleryImages: string[] = [];
-          
+
           if (places.length > 0 && places[0].photos && places[0].photos.length > 0) {
             const photos = places[0].photos.slice(0, 5);
             for (const photo of photos) {
@@ -3782,19 +3916,19 @@ Allow: /api/podcasts
               }
             }
           }
-          
+
           const googlePlaceId = places.length > 0 ? places[0].id : null;
-          
+
           await storage.enrichLocationWithPlaces(location.id, {
             heroImageUrl,
             galleryImages,
             googlePlaceId: googlePlaceId || undefined
           });
-          
+
           console.log(`[${i + 1}/${locationsToEnrich.length}] Enriched: ${location.name} - ${heroImageUrl ? 'Has image' : 'No image'}`);
           results.push({ name: location.name, success: true });
           successful++;
-          
+
           // Rate limiting - wait between requests
           if (i < locationsToEnrich.length - 1) {
             await new Promise(resolve => setTimeout(resolve, 200));
@@ -3805,7 +3939,7 @@ Allow: /api/podcasts
           failed++;
         }
       }
-      
+
       res.json({
         message: "Location enrichment complete",
         total: locationsToEnrich.length,
@@ -3823,12 +3957,12 @@ Allow: /api/podcasts
   app.post("/api/seed/location-faqs", async (req: Request, res: Response) => {
     try {
       const skipExisting = req.query.skipExisting !== "false";
-      
+
       // Get all locations
       const allLocations = await storage.listMaLocations();
-      
+
       let locationsToSeed = allLocations;
-      
+
       if (skipExisting) {
         // Check which locations already have FAQs
         const locationsWithFaqs: string[] = [];
@@ -3840,7 +3974,7 @@ Allow: /api/podcasts
         }
         locationsToSeed = allLocations.filter(l => !locationsWithFaqs.includes(l.id));
       }
-      
+
       if (locationsToSeed.length === 0) {
         return res.json({
           message: "No locations to seed FAQs for",
@@ -3848,12 +3982,12 @@ Allow: /api/podcasts
           alreadyHaveFaqs: allLocations.length - locationsToSeed.length
         });
       }
-      
+
       console.log(`Seeding FAQs for ${locationsToSeed.length} locations...`);
-      
+
       let successful = 0;
       let totalFaqs = 0;
-      
+
       for (const location of locationsToSeed) {
         const faqTemplates = [
           {
@@ -3905,7 +4039,7 @@ Allow: /api/podcasts
             sortOrder: 7
           }
         ];
-        
+
         for (const template of faqTemplates) {
           await storage.createCityFaq({
             locationId: location.id,
@@ -3914,11 +4048,11 @@ Allow: /api/podcasts
           });
           totalFaqs++;
         }
-        
+
         successful++;
         console.log(`Seeded FAQs for ${location.name} (${successful}/${locationsToSeed.length})`);
       }
-      
+
       res.json({
         message: "FAQ seeding complete",
         locationsSeeded: successful,
@@ -3933,7 +4067,7 @@ Allow: /api/podcasts
   // =============================================
   // Videos API Routes
   // =============================================
-  
+
   // Public: List published videos
   app.get("/api/videos", async (req: Request, res: Response) => {
     try {
@@ -4205,7 +4339,7 @@ Requirements: No text, photorealistic, welcoming, trustworthy, 16:9 aspect ratio
       await fs.writeFile(filePath, Buffer.from(imageData.b64_json, "base64"));
 
       const thumbnailUrl = `/thumbnails/${fileName}`;
-      
+
       // Update video with new thumbnail
       await storage.updateVideo(req.params.id, { thumbnailUrl });
 
@@ -4239,7 +4373,7 @@ Requirements: No text, photorealistic, welcoming, trustworthy, 16:9 aspect ratio
       } else {
         videoPath = path.join(process.cwd(), 'public', video.videoUrl);
       }
-      
+
       // Check if video file exists
       try {
         await fs.access(videoPath);
@@ -4257,14 +4391,14 @@ Requirements: No text, photorealistic, welcoming, trustworthy, 16:9 aspect ratio
       // Validate timestamp format strictly (HH:MM:SS format only)
       const timestampPattern = /^\d{2}:\d{2}:\d{2}$/;
       const rawTimestamp = req.body.timestamp || '00:00:05';
-      
+
       if (!timestampPattern.test(rawTimestamp)) {
         return res.status(400).json({ message: "Invalid timestamp format. Use HH:MM:SS format." });
       }
 
       // Use spawn instead of exec to prevent command injection
       const { spawn } = await import('child_process');
-      
+
       const runFfmpeg = (ts: string): Promise<void> => {
         return new Promise((resolve, reject) => {
           const ffmpegProcess = spawn('ffmpeg', [
@@ -4275,7 +4409,7 @@ Requirements: No text, photorealistic, welcoming, trustworthy, 16:9 aspect ratio
             thumbnailPath,
             '-y'
           ]);
-          
+
           ffmpegProcess.on('close', (code) => {
             if (code === 0) {
               resolve();
@@ -4283,7 +4417,7 @@ Requirements: No text, photorealistic, welcoming, trustworthy, 16:9 aspect ratio
               reject(new Error(`ffmpeg exited with code ${code}`));
             }
           });
-          
+
           ffmpegProcess.on('error', (err) => {
             reject(err);
           });
@@ -4298,7 +4432,7 @@ Requirements: No text, photorealistic, welcoming, trustworthy, 16:9 aspect ratio
       }
 
       const thumbnailUrl = `/thumbnails/${fileName}`;
-      
+
       // Update video with new thumbnail
       await storage.updateVideo(req.params.id, { thumbnailUrl });
 
@@ -4406,7 +4540,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
       await fs.writeFile(filePath, Buffer.from(imageData.b64_json, "base64"));
 
       const thumbnailUrl = `/thumbnails/${fileName}`;
-      
+
       // Update podcast with new thumbnail
       await storage.updatePodcast(req.params.id, { thumbnailUrl });
 
@@ -4420,7 +4554,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
   // =============================================
   // Podcasts API Routes
   // =============================================
-  
+
   // Public: List published podcasts
   app.get("/api/podcasts", async (req: Request, res: Response) => {
     try {
@@ -4539,7 +4673,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
   // ===========================================
   // FACILITIES
   // ===========================================
-  
+
   // Public: List published facilities by type
   app.get("/api/facilities", async (req: Request, res: Response) => {
     try {
@@ -4596,22 +4730,22 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
       if (!facility) {
         return res.status(404).json({ message: "Facility not found" });
       }
-      
+
       // Pass full facility object to enrichFacility
       const result = await enrichFacility(facility);
       if (!result || !result.success) {
-        return res.json({ 
-          success: false, 
+        return res.json({
+          success: false,
           error: result?.error || "Failed to enrich facility",
           facility: facility
         });
       }
-      
+
       // Update facility with enriched data including photos
       const updateData: any = {
         lastEnrichedAt: new Date()
       };
-      
+
       if (result.data) {
         if (result.data.heroImageUrl) {
           updateData.heroImageUrl = result.data.heroImageUrl;
@@ -4628,12 +4762,12 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
         if (result.data.businessStatus) updateData.businessStatus = result.data.businessStatus;
         updateData.isClosed = result.data.isClosed;
       }
-      
+
       const updated = await storage.updateFacility(facility.id, updateData);
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         facility: updated,
-        enrichmentResult: result 
+        enrichmentResult: result
       });
     } catch (error) {
       console.error("Error enriching facility:", error);
@@ -4646,24 +4780,24 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
     try {
       const limit = parseInt(req.query.limit as string) || 796;
       const batchSize = parseInt(req.query.batchSize as string) || 10;
-      
+
       // Get all facilities (will search Google Places for each)
       const allFacilities = await storage.listFacilities();
       const facilitiesToEnrich = allFacilities
         .filter(f => !f.heroImageUrl) // Only enrich those without hero image
         .slice(0, limit);
-      
+
       console.log(`Enriching ${facilitiesToEnrich.length} facilities in batches of ${batchSize}...`);
-      
+
       let enriched = 0;
       let failed = 0;
       const results: any[] = [];
-      
+
       // Process in parallel batches
       for (let i = 0; i < facilitiesToEnrich.length; i += batchSize) {
         const batch = facilitiesToEnrich.slice(i, i + batchSize);
-        console.log(`Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(facilitiesToEnrich.length/batchSize)}...`);
-        
+        console.log(`Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(facilitiesToEnrich.length / batchSize)}...`);
+
         const batchResults = await Promise.all(
           batch.map(async (facility) => {
             try {
@@ -4682,13 +4816,13 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
                 if (result.data.googleMapsUrl) updateData.googleMapsUrl = result.data.googleMapsUrl;
                 if (result.data.businessStatus) updateData.businessStatus = result.data.businessStatus;
                 updateData.isClosed = result.data.isClosed;
-                
+
                 await storage.updateFacility(facility.id, updateData);
                 enriched++;
-                return { 
-                  id: facility.id, 
-                  name: facility.name, 
-                  success: true, 
+                return {
+                  id: facility.id,
+                  name: facility.name,
+                  success: true,
                   hasPhoto: !!result.data.heroImageUrl,
                   photoUrl: result.data.heroImageUrl?.substring(0, 100)
                 };
@@ -4701,13 +4835,13 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
           })
         );
         results.push(...batchResults);
-        
+
         // Small delay between batches to avoid rate limiting
         if (i + batchSize < facilitiesToEnrich.length) {
           await new Promise(resolve => setTimeout(resolve, 300));
         }
       }
-      
+
       res.json({
         total: facilitiesToEnrich.length,
         enriched,
@@ -4997,9 +5131,9 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
       if (!facility) {
         return res.status(404).json({ message: "Facility not found" });
       }
-      
+
       const result = await enrichFacility(facility);
-      
+
       if (result.success && result.data) {
         // Smart change detection using hash
         const newHash = createDataHash({
@@ -5007,10 +5141,10 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
           phone: result.data.phone,
           rating: result.data.rating,
         });
-        
+
         const existingHash = facility.dataHash;
         const dataChanged = existingHash !== newHash;
-        
+
         const updated = await storage.updateFacility(facility.id, {
           address: result.data.address || facility.address,
           phone: result.data.phone || facility.phone,
@@ -5026,11 +5160,11 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
           dataHash: newHash,
           needsRegeneration: dataChanged ? "yes" : facility.needsRegeneration,
         });
-        res.json({ 
-          success: true, 
+        res.json({
+          success: true,
           dataChanged,
-          facility: updated, 
-          enrichment: result, 
+          facility: updated,
+          enrichment: result,
           reviewCount: result.data.reviewCount,
           hasPhoto: !!result.data.heroImageUrl
         });
@@ -5042,7 +5176,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
       res.status(500).json({ message: "Failed to enrich facility" });
     }
   });
-  
+
   // Admin: Get facility data statistics (stale data reporting)
   app.get("/api/admin/facilities/stats", requireAuth, async (req: Request, res: Response) => {
     try {
@@ -5050,7 +5184,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
       const now = new Date();
       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
       const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-      
+
       const stats = {
         total: facilities.length,
         enriched: facilities.filter(f => f.googlePlaceId).length,
@@ -5067,26 +5201,26 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
         byType: {} as Record<string, number>,
         byCounty: {} as Record<string, number>,
       };
-      
+
       // Count by facility type
       facilities.forEach(f => {
         stats.byType[f.facilityType] = (stats.byType[f.facilityType] || 0) + 1;
       });
-      
+
       // Count by county
       facilities.forEach(f => {
         if (f.county) {
           stats.byCounty[f.county] = (stats.byCounty[f.county] || 0) + 1;
         }
       });
-      
+
       res.json(stats);
     } catch (error) {
       console.error("Error fetching facility stats:", error);
       res.status(500).json({ message: "Failed to fetch statistics" });
     }
   });
-  
+
   // Admin: Get facilities needing regeneration
   app.get("/api/admin/facilities/needs-regeneration", requireAuth, async (req: Request, res: Response) => {
     try {
@@ -5098,7 +5232,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
       res.status(500).json({ message: "Failed to fetch facilities" });
     }
   });
-  
+
   // Admin: Mark facility regeneration complete
   app.post("/api/admin/facilities/:id/mark-regenerated", requireAuth, async (req: Request, res: Response) => {
     try {
@@ -5120,34 +5254,34 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
     try {
       const limit = parseInt(req.query.limit as string) || 50;
       const skipEnriched = req.query.skipEnriched !== "false";
-      
+
       let facilities = await storage.listFacilities({});
-      
+
       if (skipEnriched) {
         facilities = facilities.filter(f => !f.googlePlaceId);
       }
-      
+
       facilities = facilities.slice(0, limit);
-      
+
       if (facilities.length === 0) {
-        return res.json({ 
-          message: "No facilities to enrich", 
+        return res.json({
+          message: "No facilities to enrich",
           total: 0,
           successful: 0,
-          failed: 0 
+          failed: 0
         });
       }
-      
+
       console.log(`Starting enrichment for ${facilities.length} facilities...`);
-      
+
       const results: EnrichmentResult[] = [];
       let successful = 0;
       let failed = 0;
-      
+
       for (const facility of facilities) {
         const result = await enrichFacility(facility);
         results.push(result);
-        
+
         if (result.success && result.data) {
           try {
             await storage.updateFacility(facility.id, {
@@ -5168,10 +5302,10 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
           failed++;
           console.log(`[${successful + failed}/${facilities.length}] Failed: ${facility.name} - ${result.error}`);
         }
-        
+
         await new Promise(resolve => setTimeout(resolve, 200));
       }
-      
+
       res.json({
         message: `Enrichment complete`,
         total: facilities.length,
@@ -5190,36 +5324,36 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
     try {
       const limit = parseInt(req.query.limit as string) || 25;
       const skipEnriched = req.query.skipEnriched !== "false";
-      
+
       let facilities = await storage.listFacilities({});
-      
+
       if (skipEnriched) {
         facilities = facilities.filter(f => !f.googlePlaceId);
       }
-      
+
       const totalRemaining = facilities.length;
       facilities = facilities.slice(0, limit);
-      
+
       if (facilities.length === 0) {
-        return res.json({ 
-          message: "No facilities to enrich", 
+        return res.json({
+          message: "No facilities to enrich",
           total: 0,
           remaining: 0,
           successful: 0,
-          failed: 0 
+          failed: 0
         });
       }
-      
+
       console.log(`Starting enrichment for ${facilities.length} facilities (${totalRemaining} remaining)...`);
-      
+
       let successful = 0;
       let failed = 0;
       let unchanged = 0;
       const errors: string[] = [];
-      
+
       for (const facility of facilities) {
         const result = await enrichFacility(facility);
-        
+
         if (result.success && result.data) {
           try {
             // Smart change detection using hash
@@ -5228,10 +5362,10 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
               phone: result.data.phone,
               rating: result.data.rating,
             });
-            
+
             const existingHash = facility.dataHash;
             const dataChanged = existingHash !== newHash;
-            
+
             if (!dataChanged && facility.googlePlaceId) {
               // Data unchanged - just update lastEnrichedAt timestamp
               await storage.updateFacility(facility.id, {
@@ -5272,10 +5406,10 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
           errors.push(`${facility.name}: ${result.error}`);
           console.log(`[${successful + failed + unchanged}/${facilities.length}] Failed: ${facility.name} - ${result.error}`);
         }
-        
+
         await new Promise(resolve => setTimeout(resolve, 300));
       }
-      
+
       res.json({
         message: `Enrichment complete`,
         processed: facilities.length,
@@ -5296,7 +5430,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
     try {
       const force = req.query.force === "true";
       const existing = await storage.listFacilities({});
-      
+
       if (existing.length > 0 && !force) {
         return res.json({ message: "Facilities already seeded. Use ?force=true to reseed." });
       }
@@ -5352,9 +5486,9 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
         created.push(facility);
       }
 
-      res.json({ 
+      res.json({
         message: `Successfully seeded ${created.length} facilities`,
-        count: created.length 
+        count: created.length
       });
     } catch (error) {
       console.error("Error seeding facilities:", error);
@@ -5367,7 +5501,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
     try {
       const force = req.query.force === "true";
       const existing = await storage.listFacilities({ facilityType: "hospital" });
-      
+
       if (existing.length > 0 && !force) {
         return res.json({ message: `${existing.length} hospitals already seeded. Use ?force=true to reseed.` });
       }
@@ -5414,9 +5548,9 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
         created.push(hospital);
       }
 
-      res.json({ 
+      res.json({
         message: `Successfully seeded ${created.length} Massachusetts hospitals`,
-        count: created.length 
+        count: created.length
       });
     } catch (error) {
       console.error("Error seeding hospitals:", error);
@@ -5429,7 +5563,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
     try {
       const force = req.query.force === "true";
       const facilities = await storage.listFacilities({ status: "published" });
-      
+
       // If force mode, delete all existing FAQs first
       if (force) {
         for (const facility of facilities) {
@@ -5439,7 +5573,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
           }
         }
       }
-      
+
       // Helper function to generate personalized FAQs based on actual facility data
       const generatePersonalizedFaqs = (facility: any) => {
         const name = facility.name;
@@ -5453,7 +5587,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
         const amenities = facility.amenities?.length > 0 ? facility.amenities.slice(0, 5).join(", ") : null;
         const acceptsMedicare = facility.acceptsMedicare === "yes";
         const acceptsMedicaid = facility.acceptsMedicaid === "yes";
-        
+
         const typeLabels: Record<string, string> = {
           "nursing-home": "nursing home",
           "assisted-living": "assisted living community",
@@ -5464,23 +5598,23 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
           "hospital": "hospital"
         };
         const typeLabel = typeLabels[type] || "care facility";
-        
+
         const faqs: Array<{ question: string; answer: string; category: string }> = [];
-        
+
         // Location FAQ
         faqs.push({
           category: "Location",
           question: `Where is ${name} located?`,
           answer: `${name} is located at ${address}. We serve seniors and families throughout ${city} and the surrounding Massachusetts communities. For directions or to schedule a visit, please call ${phone}.`
         });
-        
+
         // Contact FAQ
         faqs.push({
           category: "Contact",
           question: `How do I contact ${name}?`,
           answer: `You can reach ${name} by calling ${phone}${facility.website ? ` or visiting our website at ${facility.website}` : ""}. Our team is available to answer your questions about our services, schedule tours, and discuss your care needs.`
         });
-        
+
         // Insurance FAQ - personalized based on actual data
         if (acceptsMedicare || acceptsMedicaid) {
           const insuranceTypes = [];
@@ -5498,7 +5632,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
             answer: `${name} accepts various payment options including private pay and private insurance. Please contact our admissions team to discuss coverage options and verify your specific insurance plan. We can work with you to find the best payment solution for your care needs.`
           });
         }
-        
+
         // Capacity FAQ - if we have bed data
         if (beds && beds > 0) {
           faqs.push({
@@ -5507,7 +5641,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
             answer: `${name} has ${beds} beds available for residents. Our ${typeLabel} is designed to provide personalized care in a comfortable environment. Availability may vary, so please contact us to inquire about current openings.`
           });
         }
-        
+
         // Rating FAQ - if we have rating data
         if (rating) {
           faqs.push({
@@ -5516,7 +5650,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
             answer: `${name} has an overall rating of ${rating} out of 5 stars. We are committed to providing high-quality care and continuously improving our services. Our ratings reflect our dedication to resident satisfaction and care excellence.`
           });
         }
-        
+
         // Services FAQ - if we have services data
         if (services) {
           faqs.push({
@@ -5525,7 +5659,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
             answer: `${name} offers a range of services including ${services}, and more. Our ${typeLabel} is designed to meet the diverse needs of our residents. Contact us for a complete list of services available.`
           });
         }
-        
+
         // Amenities FAQ - if we have amenities data
         if (amenities) {
           faqs.push({
@@ -5534,7 +5668,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
             answer: `${name} features amenities including ${amenities}, among others. We strive to create a comfortable, home-like environment for all our residents. Schedule a tour to see our amenities in person.`
           });
         }
-        
+
         // Type-specific FAQs
         if (type === "nursing-home") {
           faqs.push({
@@ -5577,14 +5711,14 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
             answer: `${name} provides hospice care for patients with a life expectancy of six months or less as certified by a physician. Our services focus on comfort, dignity, and quality of life. Medicare, Medicaid, and most insurance plans cover hospice care.`
           });
         }
-        
+
         // Tour FAQ - for all facilities
         faqs.push({
           category: "Visits",
           question: `Can I schedule a tour of ${name}?`,
           answer: `Yes! We welcome prospective residents and families to tour ${name}. During your visit, you can see our facilities, meet our staff, and ask questions about our care programs. Call ${phone} to schedule your tour today.`
         });
-        
+
         return faqs;
       };
 
@@ -5597,7 +5731,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
           skippedCount++;
           continue; // Skip facilities that already have FAQs
         }
-        
+
         // Generate personalized FAQs for this facility
         const faqs = generatePersonalizedFaqs(facility);
 
@@ -5615,11 +5749,11 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
         }
       }
 
-      res.json({ 
+      res.json({
         message: `Successfully seeded ${createdCount} personalized FAQs for ${facilities.length - skippedCount} facilities (${skippedCount} skipped, already had FAQs)`,
         facilitiesCount: facilities.length,
         skipped: skippedCount,
-        faqsCount: createdCount 
+        faqsCount: createdCount
       });
     } catch (error) {
       console.error("Error seeding facility FAQs:", error);
@@ -5632,20 +5766,20 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
     try {
       const fs = await import('fs');
       const path = await import('path');
-      
+
       // Get all stock images
       const stockImagesDir = path.join(process.cwd(), 'attached_assets', 'stock_images');
       const allImages = fs.readdirSync(stockImagesDir)
         .filter((f: string) => f.endsWith('.jpg') || f.endsWith('.png'))
         .map((f: string) => `/attached_assets/stock_images/${f}`);
-      
+
       if (allImages.length === 0) {
         return res.status(400).json({ message: "No stock images found" });
       }
-      
+
       // Get all articles
       const articles = await storage.listArticles();
-      
+
       // Comprehensive keyword to image pattern mapping for senior care
       const keywordPatterns: Array<{ keywords: string[]; patterns: string[] }> = [
         { keywords: ["nutrition", "eating", "diet", "food", "meal"], patterns: ["nutrition", "eating", "meal", "cookin"] },
@@ -5686,25 +5820,25 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
         { keywords: ["home care", "in-home", "aging in place"], patterns: ["home_health", "aide_hel", "caregiver_helping"] },
         { keywords: ["communication", "talking", "conversation"], patterns: ["conversation", "talking", "social_conne"] },
       ];
-      
+
       // Senior-focused fallback images (happy seniors, care interactions)
       const seniorFallbackPatterns = ["happy_elderly", "elderly_senior", "nurse_caring", "senior_couple", "elderly_couple", "grandmother", "senior_woman", "elderly_man"];
-      
+
       // Track used images to ensure uniqueness
       const usedImages = new Set<string>();
       let updatedCount = 0;
-      
+
       // Function to find images matching patterns
       const findMatchingImages = (patterns: string[]): string[] => {
-        return allImages.filter((img: string) => 
+        return allImages.filter((img: string) =>
           patterns.some(pattern => img.toLowerCase().includes(pattern.toLowerCase()))
         );
       };
-      
+
       // Function to find best matching image for an article
       const findBestImage = (title: string, category: string): string => {
         const titleLower = title.toLowerCase();
-        
+
         // Check each keyword pattern
         for (const { keywords, patterns } of keywordPatterns) {
           if (keywords.some(kw => titleLower.includes(kw))) {
@@ -5717,7 +5851,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
             }
           }
         }
-        
+
         // Category-based fallback patterns
         const categoryPatterns: Record<string, string[]> = {
           "Health & Wellness": ["nutrition", "exercise", "doctor", "health", "stretching", "yoga", "blood_pressure"],
@@ -5731,7 +5865,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
           "Massachusetts Resources": ["senior_couple", "happy_elderly"],
           "Alzheimer's & Dementia": ["dementia", "alzh", "memory", "man_with_dem"],
         };
-        
+
         const patterns = categoryPatterns[category] || [];
         if (patterns.length > 0) {
           const matchingImages = findMatchingImages(patterns);
@@ -5742,7 +5876,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
             }
           }
         }
-        
+
         // Senior-focused fallback
         const seniorImages = findMatchingImages(seniorFallbackPatterns);
         for (const img of seniorImages) {
@@ -5751,7 +5885,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
             return img;
           }
         }
-        
+
         // Last resort: any unused image
         for (const img of allImages) {
           if (!usedImages.has(img)) {
@@ -5759,22 +5893,22 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
             return img;
           }
         }
-        
+
         // If all images are used, start reusing (shouldn't happen with 150+ images for 102 articles)
         return allImages[updatedCount % allImages.length];
       };
-      
+
       // Use parallel processing for faster image updates
       const imagePromises = articles.map(async (article) => {
         const imageUrl = findBestImage(article.title, article.category || "");
         await storage.updateArticle(article.id, { heroImageUrl: imageUrl });
         return 1;
       });
-      
+
       const results = await Promise.all(imagePromises);
       const finalCount = results.reduce((sum, val) => sum + val, 0);
-      
-      res.json({ 
+
+      res.json({
         message: `Successfully updated ${finalCount} articles with unique senior-focused images`,
         articlesUpdated: finalCount,
         totalImages: allImages.length
@@ -5791,7 +5925,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
       const articles = await storage.listArticles();
       const CONSULTATION_LINK = "https://www.privateinhomecaregiver.com/consultation";
       const BASE_URL = "https://www.privateinhomecaregiver.com";
-      
+
       // Related article slugs for internal linking
       const relatedArticles: Record<string, string[]> = {
         nutrition: ["create-medication-management-system", "importance-foot-care-seniors", "hydration-tips-elderly"],
@@ -5803,7 +5937,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
         hospice: ["advance-care-planning", "grief-loss-seniors", "hospital-home-transitions"],
         default: ["complete-guide-in-home-care-massachusetts", "preventing-caregiver-burnout-self-care", "home-safety-checklist-seniors-fall-prevention"]
       };
-      
+
       // Generate direct answer based on topic
       const getDirectAnswer = (title: string): string => {
         const t = title.toLowerCase();
@@ -5816,9 +5950,9 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
         if (t.includes("hospice") || t.includes("palliative")) return "Hospice and palliative care focus on comfort, dignity, and quality of life for those with serious illness. Hospice is for terminal conditions with a prognosis of six months or less, while palliative care can be provided alongside curative treatment at any stage of illness.";
         return "Quality in-home care helps Massachusetts seniors maintain independence and dignity while aging in place. Professional caregivers provide personalized assistance with daily activities, medication reminders, companionship, and specialized care for conditions like dementia, adapting services as needs change.";
       };
-      
+
       // Generate FAQ items based on topic
-      const getFaqItems = (title: string): Array<{question: string; answer: string}> => {
+      const getFaqItems = (title: string): Array<{ question: string; answer: string }> => {
         const t = title.toLowerCase();
         if (t.includes("nutrition") || t.includes("eating")) return [
           { question: "What are the most important nutrients for seniors?", answer: "Key nutrients for seniors include protein for muscle maintenance, calcium and vitamin D for bone health, B12 for energy and cognitive function, fiber for digestive health, and omega-3 fatty acids for heart and brain health." },
@@ -5847,14 +5981,14 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
           { question: "What questions should I ask when choosing a home care provider?", answer: "Ask about caregiver screening and training, supervision practices, backup plans, communication protocols, costs, insurance acceptance, and how care plans are developed and adjusted as needs change." }
         ];
       };
-      
+
       // Article content templates by topic keywords
       const generateArticleContent = (title: string, category: string, heroImageUrl?: string): string => {
         const titleLower = title.toLowerCase();
         const directAnswer = getDirectAnswer(title);
         const faqItems = getFaqItems(title);
         const imageUrl = heroImageUrl || "/attached_assets/stock_images/happy_elderly_senior.jpg";
-        
+
         // Determine related articles for internal linking
         let relatedSlugs = relatedArticles.default;
         for (const [key, slugs] of Object.entries(relatedArticles)) {
@@ -5863,7 +5997,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
             break;
           }
         }
-        
+
         // H1, Hero Image, and Direct Answer block
         const headerBlock = `<h1>${title}</h1>
 <img src="${imageUrl}" alt="${title}" class="hero-image" width="800" height="450" loading="eager" />
@@ -5912,7 +6046,7 @@ ${faqItems.map(faq => `    {
 }
 </script>
 `;
-        
+
         // Common sections that appear in all articles - extended for 2000+ word count
         const ctaSection = `
 <h2>Get Professional In-Home Care Support</h2>
@@ -6005,7 +6139,7 @@ ${faqSection}
 ${faqJsonLd}
 `;
         }
-        
+
         // Medication management articles
         if (titleLower.includes("medication") || titleLower.includes("medicine") || titleLower.includes("prescription") || titleLower.includes("drug")) {
           return `${headerBlock}
@@ -6498,7 +6632,7 @@ ${faqSection}
 ${faqJsonLd}
 `;
       };
-      
+
       // Use parallel processing for faster updates
       const updatePromises = articles.map(async (article) => {
         const content = generateArticleContent(article.title, article.category || "");
@@ -6508,11 +6642,11 @@ ${faqJsonLd}
         }
         return 0;
       });
-      
+
       const results = await Promise.all(updatePromises);
       const updatedCount = results.reduce((sum: number, val: number) => sum + val, 0);
-      
-      res.json({ 
+
+      res.json({
         message: `Successfully generated content for ${updatedCount} articles`,
         articlesUpdated: updatedCount
       });
@@ -6577,13 +6711,13 @@ ${faqJsonLd}
       // Calculate lead score based on responses
       let totalScore = 0;
       let urgencyLevel = "low";
-      
+
       if (responses && Array.isArray(responses)) {
         for (const response of responses) {
           const question = quiz.questions.find(q => q.id === response.questionId);
           if (question && question.options) {
             const options = question.options as any[];
-            
+
             // Handle single choice (answerValue)
             if (response.answerValue) {
               const selectedOption = options.find(o => o.value === response.answerValue);
@@ -6591,7 +6725,7 @@ ${faqJsonLd}
                 totalScore += selectedOption.score * question.scoreWeight;
               }
             }
-            
+
             // Handle multiple choice (answerValues array)
             if (response.answerValues && Array.isArray(response.answerValues)) {
               for (const value of response.answerValues) {
@@ -6636,7 +6770,7 @@ ${faqJsonLd}
           let scoreContribution = 0;
           if (question && question.options) {
             const options = question.options as any[];
-            
+
             // Handle single choice (answerValue)
             if (response.answerValue) {
               const selectedOption = options.find(o => o.value === response.answerValue);
@@ -6644,7 +6778,7 @@ ${faqJsonLd}
                 scoreContribution += selectedOption.score * question.scoreWeight;
               }
             }
-            
+
             // Handle multiple choice (answerValues array)
             if (response.answerValues && Array.isArray(response.answerValues)) {
               for (const value of response.answerValues) {
@@ -6673,11 +6807,11 @@ ${faqJsonLd}
           const { Resend } = await import("resend");
           const resend = new Resend(process.env.RESEND_API_KEY);
 
-          const responsesSummary = responses && Array.isArray(responses) 
+          const responsesSummary = responses && Array.isArray(responses)
             ? responses.map((r: any) => {
-                const q = quiz.questions.find(q => q.id === r.questionId);
-                return `${q?.questionText || 'Question'}: ${r.answerValue || r.answerText || 'No answer'}`;
-              }).join('\n')
+              const q = quiz.questions.find(q => q.id === r.questionId);
+              return `${q?.questionText || 'Question'}: ${r.answerValue || r.answerText || 'No answer'}`;
+            }).join('\n')
             : 'No responses recorded';
 
           await resend.emails.send({
@@ -6708,7 +6842,7 @@ ${faqJsonLd}
         }
       }
 
-      res.json({ 
+      res.json({
         success: true,
         leadId: lead.id,
         score: totalScore,
@@ -6958,25 +7092,31 @@ ${faqJsonLd}
           metaTitle: "Personal Care Assessment Quiz | PrivateInHomeCareGiver",
           metaDescription: "Take our free assessment to find the right personal care services for your loved one in Massachusetts.",
           questions: [
-            { text: "What level of assistance is needed with daily activities?", options: [
-              { value: "minimal", label: "Minimal - occasional reminders", score: 1 },
-              { value: "moderate", label: "Moderate - regular hands-on help", score: 2 },
-              { value: "extensive", label: "Extensive - assistance with most activities", score: 3 },
-              { value: "complete", label: "Complete - 24/7 care needed", score: 4 }
-            ]},
-            { text: "Which personal care tasks require assistance?", type: "multiple_choice", options: [
-              { value: "bathing", label: "Bathing and grooming", score: 1 },
-              { value: "dressing", label: "Dressing", score: 1 },
-              { value: "mobility", label: "Mobility and transfers", score: 2 },
-              { value: "toileting", label: "Toileting", score: 2 },
-              { value: "feeding", label: "Eating and feeding", score: 2 }
-            ]},
-            { text: "How urgently is care needed?", options: [
-              { value: "planning", label: "Just planning ahead", score: 1 },
-              { value: "weeks", label: "Within the next few weeks", score: 2 },
-              { value: "days", label: "Within a few days", score: 3 },
-              { value: "immediately", label: "Immediately", score: 4 }
-            ]}
+            {
+              text: "What level of assistance is needed with daily activities?", options: [
+                { value: "minimal", label: "Minimal - occasional reminders", score: 1 },
+                { value: "moderate", label: "Moderate - regular hands-on help", score: 2 },
+                { value: "extensive", label: "Extensive - assistance with most activities", score: 3 },
+                { value: "complete", label: "Complete - 24/7 care needed", score: 4 }
+              ]
+            },
+            {
+              text: "Which personal care tasks require assistance?", type: "multiple_choice", options: [
+                { value: "bathing", label: "Bathing and grooming", score: 1 },
+                { value: "dressing", label: "Dressing", score: 1 },
+                { value: "mobility", label: "Mobility and transfers", score: 2 },
+                { value: "toileting", label: "Toileting", score: 2 },
+                { value: "feeding", label: "Eating and feeding", score: 2 }
+              ]
+            },
+            {
+              text: "How urgently is care needed?", options: [
+                { value: "planning", label: "Just planning ahead", score: 1 },
+                { value: "weeks", label: "Within the next few weeks", score: 2 },
+                { value: "days", label: "Within a few days", score: 3 },
+                { value: "immediately", label: "Immediately", score: 4 }
+              ]
+            }
           ]
         },
         {
@@ -6993,23 +7133,29 @@ ${faqJsonLd}
           ctaText: "View Companion Caregivers",
           ctaUrl: "/caregivers",
           questions: [
-            { text: "What is the primary goal for companionship care?", options: [
-              { value: "social", label: "Social interaction and conversation", score: 1 },
-              { value: "activities", label: "Engagement in hobbies and activities", score: 2 },
-              { value: "errands", label: "Help with errands and outings", score: 2 },
-              { value: "supervision", label: "Safety supervision at home", score: 3 }
-            ]},
-            { text: "How many hours per week of companionship is needed?", options: [
-              { value: "few", label: "A few hours (2-4)", score: 1 },
-              { value: "parttime", label: "Part-time (10-20 hours)", score: 2 },
-              { value: "fulltime", label: "Full-time (40+ hours)", score: 3 }
-            ]},
-            { text: "Are there any cognitive concerns?", options: [
-              { value: "none", label: "No cognitive concerns", score: 1 },
-              { value: "mild", label: "Mild forgetfulness", score: 2 },
-              { value: "moderate", label: "Moderate memory issues", score: 3 },
-              { value: "dementia", label: "Diagnosed dementia/Alzheimer's", score: 4 }
-            ]}
+            {
+              text: "What is the primary goal for companionship care?", options: [
+                { value: "social", label: "Social interaction and conversation", score: 1 },
+                { value: "activities", label: "Engagement in hobbies and activities", score: 2 },
+                { value: "errands", label: "Help with errands and outings", score: 2 },
+                { value: "supervision", label: "Safety supervision at home", score: 3 }
+              ]
+            },
+            {
+              text: "How many hours per week of companionship is needed?", options: [
+                { value: "few", label: "A few hours (2-4)", score: 1 },
+                { value: "parttime", label: "Part-time (10-20 hours)", score: 2 },
+                { value: "fulltime", label: "Full-time (40+ hours)", score: 3 }
+              ]
+            },
+            {
+              text: "Are there any cognitive concerns?", options: [
+                { value: "none", label: "No cognitive concerns", score: 1 },
+                { value: "mild", label: "Mild forgetfulness", score: 2 },
+                { value: "moderate", label: "Moderate memory issues", score: 3 },
+                { value: "dementia", label: "Diagnosed dementia/Alzheimer's", score: 4 }
+              ]
+            }
           ]
         },
         {
@@ -7026,22 +7172,28 @@ ${faqJsonLd}
           ctaText: "Learn About Dementia Care",
           ctaUrl: "/dementia-care/massachusetts",
           questions: [
-            { text: "What stage of memory loss is your loved one experiencing?", options: [
-              { value: "early", label: "Early stage - mild forgetfulness", score: 1 },
-              { value: "middle", label: "Middle stage - needs reminders and supervision", score: 2 },
-              { value: "late", label: "Late stage - requires constant care", score: 3 }
-            ]},
-            { text: "Are there any behavioral challenges?", options: [
-              { value: "none", label: "No behavioral issues", score: 1 },
-              { value: "wandering", label: "Wandering tendencies", score: 2 },
-              { value: "agitation", label: "Occasional agitation", score: 2 },
-              { value: "significant", label: "Significant behavioral challenges", score: 3 }
-            ]},
-            { text: "Is overnight care needed?", options: [
-              { value: "no", label: "No, daytime only", score: 1 },
-              { value: "sometimes", label: "Sometimes overnight help", score: 2 },
-              { value: "yes", label: "Yes, 24-hour care needed", score: 3 }
-            ]}
+            {
+              text: "What stage of memory loss is your loved one experiencing?", options: [
+                { value: "early", label: "Early stage - mild forgetfulness", score: 1 },
+                { value: "middle", label: "Middle stage - needs reminders and supervision", score: 2 },
+                { value: "late", label: "Late stage - requires constant care", score: 3 }
+              ]
+            },
+            {
+              text: "Are there any behavioral challenges?", options: [
+                { value: "none", label: "No behavioral issues", score: 1 },
+                { value: "wandering", label: "Wandering tendencies", score: 2 },
+                { value: "agitation", label: "Occasional agitation", score: 2 },
+                { value: "significant", label: "Significant behavioral challenges", score: 3 }
+              ]
+            },
+            {
+              text: "Is overnight care needed?", options: [
+                { value: "no", label: "No, daytime only", score: 1 },
+                { value: "sometimes", label: "Sometimes overnight help", score: 2 },
+                { value: "yes", label: "Yes, 24-hour care needed", score: 3 }
+              ]
+            }
           ]
         },
         {
@@ -7058,22 +7210,28 @@ ${faqJsonLd}
           ctaText: "View Nursing Homes",
           ctaUrl: "/facilities/nursing-home",
           questions: [
-            { text: "What medical care is currently needed?", options: [
-              { value: "minimal", label: "Minimal - occasional doctor visits", score: 1 },
-              { value: "moderate", label: "Moderate - regular medical management", score: 2 },
-              { value: "significant", label: "Significant - daily medical care", score: 3 },
-              { value: "intensive", label: "Intensive - complex medical needs", score: 4 }
-            ]},
-            { text: "Is physical or occupational therapy needed?", options: [
-              { value: "no", label: "Not currently needed", score: 1 },
-              { value: "occasional", label: "Occasional therapy sessions", score: 2 },
-              { value: "regular", label: "Regular ongoing therapy", score: 3 }
-            ]},
-            { text: "Can the person manage most daily activities independently?", options: [
-              { value: "yes", label: "Yes, mostly independent", score: 1 },
-              { value: "some", label: "Needs some assistance", score: 2 },
-              { value: "no", label: "Needs significant help", score: 3 }
-            ]}
+            {
+              text: "What medical care is currently needed?", options: [
+                { value: "minimal", label: "Minimal - occasional doctor visits", score: 1 },
+                { value: "moderate", label: "Moderate - regular medical management", score: 2 },
+                { value: "significant", label: "Significant - daily medical care", score: 3 },
+                { value: "intensive", label: "Intensive - complex medical needs", score: 4 }
+              ]
+            },
+            {
+              text: "Is physical or occupational therapy needed?", options: [
+                { value: "no", label: "Not currently needed", score: 1 },
+                { value: "occasional", label: "Occasional therapy sessions", score: 2 },
+                { value: "regular", label: "Regular ongoing therapy", score: 3 }
+              ]
+            },
+            {
+              text: "Can the person manage most daily activities independently?", options: [
+                { value: "yes", label: "Yes, mostly independent", score: 1 },
+                { value: "some", label: "Needs some assistance", score: 2 },
+                { value: "no", label: "Needs significant help", score: 3 }
+              ]
+            }
           ]
         },
         {
@@ -7090,23 +7248,29 @@ ${faqJsonLd}
           ctaText: "Browse Assisted Living",
           ctaUrl: "/facilities/assisted-living",
           questions: [
-            { text: "What level of independence does your loved one have?", options: [
-              { value: "high", label: "Highly independent with minimal needs", score: 1 },
-              { value: "moderate", label: "Somewhat independent, needs daily support", score: 2 },
-              { value: "low", label: "Needs significant daily assistance", score: 3 }
-            ]},
-            { text: "What social environment is preferred?", options: [
-              { value: "private", label: "Prefers privacy and solitude", score: 1 },
-              { value: "mixed", label: "Balance of social and private time", score: 2 },
-              { value: "social", label: "Enjoys active social environment", score: 2 }
-            ]},
-            { text: "What amenities are most important?", type: "multiple_choice", options: [
-              { value: "meals", label: "Prepared meals", score: 1 },
-              { value: "housekeeping", label: "Housekeeping services", score: 1 },
-              { value: "transportation", label: "Transportation services", score: 1 },
-              { value: "activities", label: "Social activities and events", score: 1 },
-              { value: "healthcare", label: "On-site healthcare", score: 2 }
-            ]}
+            {
+              text: "What level of independence does your loved one have?", options: [
+                { value: "high", label: "Highly independent with minimal needs", score: 1 },
+                { value: "moderate", label: "Somewhat independent, needs daily support", score: 2 },
+                { value: "low", label: "Needs significant daily assistance", score: 3 }
+              ]
+            },
+            {
+              text: "What social environment is preferred?", options: [
+                { value: "private", label: "Prefers privacy and solitude", score: 1 },
+                { value: "mixed", label: "Balance of social and private time", score: 2 },
+                { value: "social", label: "Enjoys active social environment", score: 2 }
+              ]
+            },
+            {
+              text: "What amenities are most important?", type: "multiple_choice", options: [
+                { value: "meals", label: "Prepared meals", score: 1 },
+                { value: "housekeeping", label: "Housekeeping services", score: 1 },
+                { value: "transportation", label: "Transportation services", score: 1 },
+                { value: "activities", label: "Social activities and events", score: 1 },
+                { value: "healthcare", label: "On-site healthcare", score: 2 }
+              ]
+            }
           ]
         },
         {
@@ -7125,23 +7289,29 @@ ${faqJsonLd}
           metaTitle: "Homemaking Care Assessment | PrivateInHomeCareGiver",
           metaDescription: "Take our free assessment to find the right homemaking and household support services in Massachusetts.",
           questions: [
-            { text: "What household tasks need assistance?", type: "multiple_choice", options: [
-              { value: "cleaning", label: "Light housekeeping and cleaning", score: 1 },
-              { value: "laundry", label: "Laundry and linens", score: 1 },
-              { value: "meals", label: "Meal preparation", score: 2 },
-              { value: "shopping", label: "Grocery shopping and errands", score: 1 },
-              { value: "organization", label: "Home organization", score: 1 }
-            ]},
-            { text: "How often is homemaking help needed?", options: [
-              { value: "weekly", label: "Once a week", score: 1 },
-              { value: "twiceweek", label: "2-3 times per week", score: 2 },
-              { value: "daily", label: "Daily assistance", score: 3 }
-            ]},
-            { text: "Are there any mobility limitations to consider?", options: [
-              { value: "none", label: "No mobility issues", score: 1 },
-              { value: "some", label: "Some difficulty with movement", score: 2 },
-              { value: "significant", label: "Significant mobility challenges", score: 3 }
-            ]}
+            {
+              text: "What household tasks need assistance?", type: "multiple_choice", options: [
+                { value: "cleaning", label: "Light housekeeping and cleaning", score: 1 },
+                { value: "laundry", label: "Laundry and linens", score: 1 },
+                { value: "meals", label: "Meal preparation", score: 2 },
+                { value: "shopping", label: "Grocery shopping and errands", score: 1 },
+                { value: "organization", label: "Home organization", score: 1 }
+              ]
+            },
+            {
+              text: "How often is homemaking help needed?", options: [
+                { value: "weekly", label: "Once a week", score: 1 },
+                { value: "twiceweek", label: "2-3 times per week", score: 2 },
+                { value: "daily", label: "Daily assistance", score: 3 }
+              ]
+            },
+            {
+              text: "Are there any mobility limitations to consider?", options: [
+                { value: "none", label: "No mobility issues", score: 1 },
+                { value: "some", label: "Some difficulty with movement", score: 2 },
+                { value: "significant", label: "Significant mobility challenges", score: 3 }
+              ]
+            }
           ]
         },
         {
@@ -7160,24 +7330,30 @@ ${faqJsonLd}
           metaTitle: "Respite Care Assessment | PrivateInHomeCareGiver",
           metaDescription: "Find temporary relief care for family caregivers in Massachusetts with our free respite care assessment.",
           questions: [
-            { text: "How long do you need respite care?", options: [
-              { value: "hours", label: "A few hours", score: 1 },
-              { value: "day", label: "Full day", score: 2 },
-              { value: "overnight", label: "Overnight stay", score: 3 },
-              { value: "extended", label: "Multiple days/week", score: 4 }
-            ]},
-            { text: "What level of care does your loved one need?", options: [
-              { value: "companionship", label: "Mainly companionship and supervision", score: 1 },
-              { value: "personal", label: "Personal care assistance", score: 2 },
-              { value: "medical", label: "Medical care management", score: 3 },
-              { value: "memory", label: "Memory care support", score: 3 }
-            ]},
-            { text: "How soon do you need respite care?", options: [
-              { value: "planning", label: "Planning for the future", score: 1 },
-              { value: "month", label: "Within the next month", score: 2 },
-              { value: "week", label: "Within a week", score: 3 },
-              { value: "urgent", label: "As soon as possible", score: 4 }
-            ]}
+            {
+              text: "How long do you need respite care?", options: [
+                { value: "hours", label: "A few hours", score: 1 },
+                { value: "day", label: "Full day", score: 2 },
+                { value: "overnight", label: "Overnight stay", score: 3 },
+                { value: "extended", label: "Multiple days/week", score: 4 }
+              ]
+            },
+            {
+              text: "What level of care does your loved one need?", options: [
+                { value: "companionship", label: "Mainly companionship and supervision", score: 1 },
+                { value: "personal", label: "Personal care assistance", score: 2 },
+                { value: "medical", label: "Medical care management", score: 3 },
+                { value: "memory", label: "Memory care support", score: 3 }
+              ]
+            },
+            {
+              text: "How soon do you need respite care?", options: [
+                { value: "planning", label: "Planning for the future", score: 1 },
+                { value: "month", label: "Within the next month", score: 2 },
+                { value: "week", label: "Within a week", score: 3 },
+                { value: "urgent", label: "As soon as possible", score: 4 }
+              ]
+            }
           ]
         },
         {
@@ -7196,22 +7372,28 @@ ${faqJsonLd}
           metaTitle: "Live-In Care Assessment | PrivateInHomeCareGiver",
           metaDescription: "Discover if 24/7 live-in care is right for your loved one in Massachusetts.",
           questions: [
-            { text: "Why is live-in care being considered?", options: [
-              { value: "safety", label: "Safety concerns when alone", score: 2 },
-              { value: "medical", label: "Complex medical needs", score: 3 },
-              { value: "memory", label: "Memory issues requiring supervision", score: 3 },
-              { value: "preference", label: "Prefer aging in place vs facility", score: 1 }
-            ]},
-            { text: "What is the current living situation?", options: [
-              { value: "alone", label: "Living alone", score: 3 },
-              { value: "spouse", label: "Living with spouse/partner", score: 2 },
-              { value: "family", label: "Living with family", score: 1 }
-            ]},
-            { text: "Is there a private room available for a live-in caregiver?", options: [
-              { value: "yes", label: "Yes, private room available", score: 1 },
-              { value: "can-arrange", label: "Can arrange accommodations", score: 2 },
-              { value: "no", label: "No, need to discuss options", score: 2 }
-            ]}
+            {
+              text: "Why is live-in care being considered?", options: [
+                { value: "safety", label: "Safety concerns when alone", score: 2 },
+                { value: "medical", label: "Complex medical needs", score: 3 },
+                { value: "memory", label: "Memory issues requiring supervision", score: 3 },
+                { value: "preference", label: "Prefer aging in place vs facility", score: 1 }
+              ]
+            },
+            {
+              text: "What is the current living situation?", options: [
+                { value: "alone", label: "Living alone", score: 3 },
+                { value: "spouse", label: "Living with spouse/partner", score: 2 },
+                { value: "family", label: "Living with family", score: 1 }
+              ]
+            },
+            {
+              text: "Is there a private room available for a live-in caregiver?", options: [
+                { value: "yes", label: "Yes, private room available", score: 1 },
+                { value: "can-arrange", label: "Can arrange accommodations", score: 2 },
+                { value: "no", label: "No, need to discuss options", score: 2 }
+              ]
+            }
           ]
         },
         {
@@ -7230,25 +7412,31 @@ ${faqJsonLd}
           metaTitle: "Post-Hospital Care Assessment | PrivateInHomeCareGiver",
           metaDescription: "Get the right home care support after hospitalization or surgery in Massachusetts.",
           questions: [
-            { text: "What type of hospital stay occurred?", options: [
-              { value: "surgery", label: "Planned surgery", score: 2 },
-              { value: "emergency", label: "Emergency hospitalization", score: 3 },
-              { value: "illness", label: "Illness treatment", score: 2 },
-              { value: "rehab", label: "Rehabilitation stay", score: 2 }
-            ]},
-            { text: "What recovery support is needed?", type: "multiple_choice", options: [
-              { value: "mobility", label: "Mobility assistance", score: 2 },
-              { value: "medication", label: "Medication reminders", score: 1 },
-              { value: "wound", label: "Wound care monitoring", score: 2 },
-              { value: "therapy", label: "Therapy exercise support", score: 2 },
-              { value: "meals", label: "Meal preparation", score: 1 }
-            ]},
-            { text: "When is hospital discharge expected?", options: [
-              { value: "discharged", label: "Already discharged", score: 3 },
-              { value: "days", label: "Within a few days", score: 3 },
-              { value: "week", label: "Within a week", score: 2 },
-              { value: "planning", label: "Planning ahead", score: 1 }
-            ]}
+            {
+              text: "What type of hospital stay occurred?", options: [
+                { value: "surgery", label: "Planned surgery", score: 2 },
+                { value: "emergency", label: "Emergency hospitalization", score: 3 },
+                { value: "illness", label: "Illness treatment", score: 2 },
+                { value: "rehab", label: "Rehabilitation stay", score: 2 }
+              ]
+            },
+            {
+              text: "What recovery support is needed?", type: "multiple_choice", options: [
+                { value: "mobility", label: "Mobility assistance", score: 2 },
+                { value: "medication", label: "Medication reminders", score: 1 },
+                { value: "wound", label: "Wound care monitoring", score: 2 },
+                { value: "therapy", label: "Therapy exercise support", score: 2 },
+                { value: "meals", label: "Meal preparation", score: 1 }
+              ]
+            },
+            {
+              text: "When is hospital discharge expected?", options: [
+                { value: "discharged", label: "Already discharged", score: 3 },
+                { value: "days", label: "Within a few days", score: 3 },
+                { value: "week", label: "Within a week", score: 2 },
+                { value: "planning", label: "Planning ahead", score: 1 }
+              ]
+            }
           ]
         },
         {
@@ -7267,24 +7455,30 @@ ${faqJsonLd}
           metaTitle: "Memory Care Facility Assessment | PrivateInHomeCareGiver",
           metaDescription: "Find the right memory care community for Alzheimer's or dementia care in Massachusetts.",
           questions: [
-            { text: "What is the current memory care diagnosis?", options: [
-              { value: "early-alzheimers", label: "Early-stage Alzheimer's", score: 1 },
-              { value: "mid-alzheimers", label: "Mid-stage Alzheimer's", score: 2 },
-              { value: "late-alzheimers", label: "Late-stage Alzheimer's", score: 3 },
-              { value: "other-dementia", label: "Other form of dementia", score: 2 }
-            ]},
-            { text: "What safety concerns exist?", type: "multiple_choice", options: [
-              { value: "wandering", label: "Wandering risk", score: 2 },
-              { value: "falls", label: "Fall risk", score: 2 },
-              { value: "medication", label: "Medication management", score: 1 },
-              { value: "behavior", label: "Behavioral challenges", score: 2 }
-            ]},
-            { text: "What is most important in a memory care facility?", options: [
-              { value: "security", label: "Secure environment", score: 2 },
-              { value: "activities", label: "Engaging activities program", score: 1 },
-              { value: "medical", label: "Medical support on-site", score: 2 },
-              { value: "homelike", label: "Home-like atmosphere", score: 1 }
-            ]}
+            {
+              text: "What is the current memory care diagnosis?", options: [
+                { value: "early-alzheimers", label: "Early-stage Alzheimer's", score: 1 },
+                { value: "mid-alzheimers", label: "Mid-stage Alzheimer's", score: 2 },
+                { value: "late-alzheimers", label: "Late-stage Alzheimer's", score: 3 },
+                { value: "other-dementia", label: "Other form of dementia", score: 2 }
+              ]
+            },
+            {
+              text: "What safety concerns exist?", type: "multiple_choice", options: [
+                { value: "wandering", label: "Wandering risk", score: 2 },
+                { value: "falls", label: "Fall risk", score: 2 },
+                { value: "medication", label: "Medication management", score: 1 },
+                { value: "behavior", label: "Behavioral challenges", score: 2 }
+              ]
+            },
+            {
+              text: "What is most important in a memory care facility?", options: [
+                { value: "security", label: "Secure environment", score: 2 },
+                { value: "activities", label: "Engaging activities program", score: 1 },
+                { value: "medical", label: "Medical support on-site", score: 2 },
+                { value: "homelike", label: "Home-like atmosphere", score: 1 }
+              ]
+            }
           ]
         },
         {
@@ -7303,25 +7497,31 @@ ${faqJsonLd}
           metaTitle: "Independent Living Assessment | PrivateInHomeCareGiver",
           metaDescription: "Find the perfect independent living community for active seniors in Massachusetts.",
           questions: [
-            { text: "What is motivating the move to independent living?", options: [
-              { value: "downsize", label: "Want to downsize and simplify", score: 1 },
-              { value: "social", label: "Seeking more social connections", score: 1 },
-              { value: "maintenance", label: "Tired of home maintenance", score: 1 },
-              { value: "future", label: "Planning for future care needs", score: 2 }
-            ]},
-            { text: "What amenities are most important?", type: "multiple_choice", options: [
-              { value: "dining", label: "Restaurant-style dining", score: 1 },
-              { value: "fitness", label: "Fitness center and pool", score: 1 },
-              { value: "activities", label: "Social activities and clubs", score: 1 },
-              { value: "transportation", label: "Transportation services", score: 1 },
-              { value: "concierge", label: "Concierge services", score: 1 }
-            ]},
-            { text: "What living space do you prefer?", options: [
-              { value: "studio", label: "Studio apartment", score: 1 },
-              { value: "one-bed", label: "One-bedroom apartment", score: 1 },
-              { value: "two-bed", label: "Two-bedroom apartment", score: 2 },
-              { value: "cottage", label: "Cottage or villa", score: 2 }
-            ]}
+            {
+              text: "What is motivating the move to independent living?", options: [
+                { value: "downsize", label: "Want to downsize and simplify", score: 1 },
+                { value: "social", label: "Seeking more social connections", score: 1 },
+                { value: "maintenance", label: "Tired of home maintenance", score: 1 },
+                { value: "future", label: "Planning for future care needs", score: 2 }
+              ]
+            },
+            {
+              text: "What amenities are most important?", type: "multiple_choice", options: [
+                { value: "dining", label: "Restaurant-style dining", score: 1 },
+                { value: "fitness", label: "Fitness center and pool", score: 1 },
+                { value: "activities", label: "Social activities and clubs", score: 1 },
+                { value: "transportation", label: "Transportation services", score: 1 },
+                { value: "concierge", label: "Concierge services", score: 1 }
+              ]
+            },
+            {
+              text: "What living space do you prefer?", options: [
+                { value: "studio", label: "Studio apartment", score: 1 },
+                { value: "one-bed", label: "One-bedroom apartment", score: 1 },
+                { value: "two-bed", label: "Two-bedroom apartment", score: 2 },
+                { value: "cottage", label: "Cottage or villa", score: 2 }
+              ]
+            }
           ]
         },
         {
@@ -7340,24 +7540,30 @@ ${faqJsonLd}
           metaTitle: "Continuing Care Assessment | PrivateInHomeCareGiver",
           metaDescription: "Find the right continuing care retirement community (CCRC) in Massachusetts.",
           questions: [
-            { text: "What is the current health status?", options: [
-              { value: "excellent", label: "Excellent - fully independent", score: 1 },
-              { value: "good", label: "Good - minor health management", score: 1 },
-              { value: "fair", label: "Fair - some ongoing care needs", score: 2 },
-              { value: "planning", label: "Planning for future needs", score: 1 }
-            ]},
-            { text: "What is most important about a CCRC?", options: [
-              { value: "security", label: "Long-term care security", score: 2 },
-              { value: "lifestyle", label: "Active lifestyle amenities", score: 1 },
-              { value: "healthcare", label: "On-campus healthcare", score: 2 },
-              { value: "community", label: "Strong sense of community", score: 1 }
-            ]},
-            { text: "What type of contract is preferred?", options: [
-              { value: "lifecare", label: "Life care (Type A) - predictable costs", score: 2 },
-              { value: "modified", label: "Modified (Type B) - balance of costs", score: 2 },
-              { value: "fee-service", label: "Fee-for-service (Type C) - lower entry", score: 1 },
-              { value: "unsure", label: "Need guidance on options", score: 1 }
-            ]}
+            {
+              text: "What is the current health status?", options: [
+                { value: "excellent", label: "Excellent - fully independent", score: 1 },
+                { value: "good", label: "Good - minor health management", score: 1 },
+                { value: "fair", label: "Fair - some ongoing care needs", score: 2 },
+                { value: "planning", label: "Planning for future needs", score: 1 }
+              ]
+            },
+            {
+              text: "What is most important about a CCRC?", options: [
+                { value: "security", label: "Long-term care security", score: 2 },
+                { value: "lifestyle", label: "Active lifestyle amenities", score: 1 },
+                { value: "healthcare", label: "On-campus healthcare", score: 2 },
+                { value: "community", label: "Strong sense of community", score: 1 }
+              ]
+            },
+            {
+              text: "What type of contract is preferred?", options: [
+                { value: "lifecare", label: "Life care (Type A) - predictable costs", score: 2 },
+                { value: "modified", label: "Modified (Type B) - balance of costs", score: 2 },
+                { value: "fee-service", label: "Fee-for-service (Type C) - lower entry", score: 1 },
+                { value: "unsure", label: "Need guidance on options", score: 1 }
+              ]
+            }
           ]
         },
         {
@@ -7376,31 +7582,39 @@ ${faqJsonLd}
           metaTitle: "Hospice & Palliative Care Assessment | PrivateInHomeCareGiver",
           metaDescription: "Get guidance on hospice and palliative care options for your loved one in Massachusetts.",
           questions: [
-            { text: "What is the current health situation?", options: [
-              { value: "serious", label: "Serious illness with ongoing treatment", score: 1 },
-              { value: "declining", label: "Declining health despite treatment", score: 2 },
-              { value: "terminal", label: "Terminal diagnosis received", score: 3 },
-              { value: "end-of-life", label: "End-of-life care needed", score: 4 }
-            ]},
-            { text: "What type of care is most needed?", type: "multiple_choice", options: [
-              { value: "pain", label: "Pain and symptom management", score: 2 },
-              { value: "emotional", label: "Emotional and spiritual support", score: 1 },
-              { value: "family", label: "Family caregiver respite", score: 1 },
-              { value: "planning", label: "End-of-life planning assistance", score: 2 },
-              { value: "daily", label: "Daily personal care assistance", score: 2 }
-            ]},
-            { text: "Where would care ideally be provided?", options: [
-              { value: "home", label: "At home with family", score: 2 },
-              { value: "facility", label: "In a hospice facility", score: 2 },
-              { value: "nursing", label: "In current nursing home", score: 2 },
-              { value: "unsure", label: "Unsure - need guidance", score: 1 }
-            ]},
-            { text: "How soon is care needed?", options: [
-              { value: "immediately", label: "Immediately", score: 4 },
-              { value: "days", label: "Within a few days", score: 3 },
-              { value: "weeks", label: "Within a few weeks", score: 2 },
-              { value: "planning", label: "Planning ahead", score: 1 }
-            ]}
+            {
+              text: "What is the current health situation?", options: [
+                { value: "serious", label: "Serious illness with ongoing treatment", score: 1 },
+                { value: "declining", label: "Declining health despite treatment", score: 2 },
+                { value: "terminal", label: "Terminal diagnosis received", score: 3 },
+                { value: "end-of-life", label: "End-of-life care needed", score: 4 }
+              ]
+            },
+            {
+              text: "What type of care is most needed?", type: "multiple_choice", options: [
+                { value: "pain", label: "Pain and symptom management", score: 2 },
+                { value: "emotional", label: "Emotional and spiritual support", score: 1 },
+                { value: "family", label: "Family caregiver respite", score: 1 },
+                { value: "planning", label: "End-of-life planning assistance", score: 2 },
+                { value: "daily", label: "Daily personal care assistance", score: 2 }
+              ]
+            },
+            {
+              text: "Where would care ideally be provided?", options: [
+                { value: "home", label: "At home with family", score: 2 },
+                { value: "facility", label: "In a hospice facility", score: 2 },
+                { value: "nursing", label: "In current nursing home", score: 2 },
+                { value: "unsure", label: "Unsure - need guidance", score: 1 }
+              ]
+            },
+            {
+              text: "How soon is care needed?", options: [
+                { value: "immediately", label: "Immediately", score: 4 },
+                { value: "days", label: "Within a few days", score: 3 },
+                { value: "weeks", label: "Within a few weeks", score: 2 },
+                { value: "planning", label: "Planning ahead", score: 1 }
+              ]
+            }
           ]
         }
       ];
@@ -7409,7 +7623,7 @@ ${faqJsonLd}
       for (const quizDef of quizDefinitions) {
         const { questions, ...quizData } = quizDef;
         const quiz = await storage.createQuiz(quizData);
-        
+
         let order = 1;
         for (const q of questions) {
           await storage.createQuizQuestion({
@@ -7425,7 +7639,7 @@ ${faqJsonLd}
         createdQuizzes.push(quiz);
       }
 
-      res.json({ 
+      res.json({
         message: `Successfully seeded ${createdQuizzes.length} quizzes`,
         count: createdQuizzes.length,
         quizzes: createdQuizzes.map(q => ({ slug: q.slug, title: q.title }))
@@ -7664,7 +7878,7 @@ ${faqJsonLd}
   app.post("/api/admin/videos/import-youtube-channel", requireAuth, async (req: Request, res: Response) => {
     try {
       const { channelUrl } = req.body;
-      
+
       if (!channelUrl) {
         return res.status(400).json({ message: "Channel URL is required" });
       }
