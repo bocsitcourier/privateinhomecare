@@ -162,7 +162,7 @@ export default function ArticlesPage() {
     );
   }
 
-  const categories = [...new Set(articles?.map(a => a.category).filter(Boolean))];
+  const categories = Array.from(new Set(articles?.map(a => a.category).filter(Boolean)));
   
   const filteredArticles = articles?.filter(article => {
     const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||

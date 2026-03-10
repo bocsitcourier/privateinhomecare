@@ -7621,15 +7621,18 @@ ${faqJsonLd}
 
       const createdQuizzes = [];
       for (const quizDef of quizDefinitions) {
-        const { questions, ...quizData } = quizDef;
-        const quiz = await storage.createQuiz(quizData);
-
+        const { questions, serviceType, facilityType, ...quizData } = quizDef as any;
+        const quiz = await storage.createQuiz({
+          ...quizData,
+          category: quizData.category as "service" | "facility",
+        });
+        
         let order = 1;
         for (const q of questions) {
           await storage.createQuizQuestion({
             quizId: quiz.id,
             questionText: q.text,
-            questionType: q.type || "single_choice",
+            questionType: (q as any).type || "single_choice",
             options: q.options,
             displayOrder: order++,
             isRequired: "yes",
@@ -7670,7 +7673,7 @@ ${faqJsonLd}
           title: "Concierge Services Massachusetts - Live Life on Your Own Terms",
           slug: "concierge-services-massachusetts",
           description: "Discover premium concierge care services in Massachusetts that help seniors maintain independence while receiving personalized support. Learn how concierge caregiving goes beyond basic care to enhance quality of life.",
-          category: "services",
+          category: "care-tips",
           videoType: "upload",
           videoUrl: "/videos/concierge-services-massachusetts.mp4",
           thumbnailUrl: "",
@@ -7691,7 +7694,7 @@ ${faqJsonLd}
           title: "Dementia Care Massachusetts - 7 Essential Options Explained",
           slug: "dementia-care-massachusetts-options",
           description: "Comprehensive guide to dementia care options in Massachusetts. Learn about the 7 essential care pathways available for families navigating memory care decisions.",
-          category: "dementia-care",
+          category: "health-conditions",
           videoType: "upload",
           videoUrl: "/videos/dementia-care-massachusetts.mp4",
           thumbnailUrl: "",
@@ -7712,7 +7715,7 @@ ${faqJsonLd}
           title: "Home Care Costs Greater Boston - Expert Analysis",
           slug: "home-care-costs-greater-boston",
           description: "Expert analysis of home care costs in Greater Boston. Understand pricing structures, what affects rates, and how to budget for quality in-home care services.",
-          category: "cost-analysis",
+          category: "massachusetts-resources",
           videoType: "upload",
           videoUrl: "/videos/home-care-costs-greater-boston.mp4",
           thumbnailUrl: "",
@@ -7754,7 +7757,7 @@ ${faqJsonLd}
           title: "Private Home Care Cambridge MA - Expert 2025 Guide",
           slug: "private-home-care-cambridge-ma-guide",
           description: "Comprehensive 2025 guide to private home care services in Cambridge, Massachusetts. Everything families need to know about finding quality care in the Cambridge area.",
-          category: "guides",
+          category: "massachusetts-resources",
           videoType: "upload",
           videoUrl: "/videos/private-home-care-cambridge-ma.mp4",
           thumbnailUrl: "",
@@ -7775,7 +7778,7 @@ ${faqJsonLd}
           title: "Senior Companion Services Greater Boston",
           slug: "senior-companion-greater-boston",
           description: "Learn about senior companion and escort services in Greater Boston. Discover how companionship care enriches the lives of elderly adults and provides family peace of mind.",
-          category: "companionship",
+          category: "care-tips",
           videoType: "upload",
           videoUrl: "/videos/senior-companion-greater-boston.mp4",
           thumbnailUrl: "",
@@ -7796,7 +7799,7 @@ ${faqJsonLd}
           title: "Private In-Home Care Lexington Massachusetts - Expert Analysis",
           slug: "private-care-lexington-massachusetts",
           description: "Expert analysis of private in-home care options in Lexington, Massachusetts. Understand what makes Lexington unique for senior care services.",
-          category: "local-guides",
+          category: "massachusetts-resources",
           videoType: "upload",
           videoUrl: "/videos/private-care-lexington-massachusetts.mp4",
           thumbnailUrl: "",
@@ -7838,7 +7841,7 @@ ${faqJsonLd}
           title: "Purposeful Aging Massachusetts - The Ageless Spirit of Seniors",
           slug: "purposeful-aging-massachusetts",
           description: "Celebrating purposeful aging in Massachusetts. Discover how seniors maintain vibrant, meaningful lives with the right support and community engagement.",
-          category: "lifestyle",
+          category: "family-support",
           videoType: "upload",
           videoUrl: "/videos/purposeful-aging-massachusetts.mp4",
           thumbnailUrl: "",

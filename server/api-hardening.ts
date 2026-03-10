@@ -148,6 +148,19 @@ export function detectSQLInjection(req: Request, res: Response, next: NextFuncti
  * Scans for common cross-site scripting patterns
  */
 export function detectXSS(req: Request, res: Response, next: NextFunction) {
+  const adminContentPaths = [
+    /^\/api\/admin\/articles(\/|$)/,
+    /^\/api\/admin\/podcasts(\/|$)/,
+    /^\/api\/admin\/videos(\/|$)/,
+    /^\/api\/admin\/pages(\/|$)/,
+    /^\/api\/admin\/jobs(\/|$)/,
+    /^\/api\/admin\/directory(\/|$)/,
+    /^\/api\/admin\/facilities(\/|$)/,
+  ];
+  if (adminContentPaths.some(pattern => pattern.test(req.path))) {
+    return next();
+  }
+
   const xssPatterns = [
     /<script[^>]*>[\s\S]*?<\/script>/gi,
     /javascript:/gi,

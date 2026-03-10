@@ -44,6 +44,7 @@ const CareTypeLocationPage = lazy(() => import("@/pages/care-type-location"));
 const VideosPage = lazy(() => import("@/pages/videos"));
 const VideoDetailPage = lazy(() => import("@/pages/video-detail"));
 const PodcastsPage = lazy(() => import("@/pages/podcasts"));
+const PodcastDetailPage = lazy(() => import("@/pages/podcast-detail"));
 const CaregiverResourcesPage = lazy(() => import("@/pages/caregiver-resources"));
 const NursingHomesPage = lazy(() => import("@/pages/care-options/nursing-homes"));
 const AssistedLivingPage = lazy(() => import("@/pages/care-options/assisted-living"));
@@ -105,6 +106,7 @@ function Router() {
         <Route path="/caregiver-resources" component={CaregiverResourcesPage} />
         <Route path="/videos" component={VideosPage} />
         <Route path="/videos/:slug" component={VideoDetailPage} />
+        <Route path="/podcasts/:slug" component={PodcastDetailPage} />
         <Route path="/podcasts" component={PodcastsPage} />
         <Route path="/aging-resources" component={AgingResourcesPage} />
         <Route path="/find-hospital" component={FindHospitalPage} />
