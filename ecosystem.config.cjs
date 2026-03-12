@@ -65,6 +65,10 @@ module.exports = {
         AI_INTEGRATIONS_OPENAI_BASE_URL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
         YOUTUBE_API_KEY: process.env.YOUTUBE_API_KEY,
 
+        // ContentualyzAI Receiver
+        APEX_API_KEY: process.env.APEX_API_KEY,
+        APEX_ENGINE_URL: process.env.APEX_ENGINE_URL,
+
       },
     },
   ],

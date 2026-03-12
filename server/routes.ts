@@ -492,7 +492,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // Health check — ContentualyzAI uses this to verify connectivity
-  app.get('/api/v1/health', (req: Request, res: Response) => {
+  app.get('/api/v1/status/ping', (req: Request, res: Response) => {
     res.json({
       status: 'ok',
       name: 'PrivateInHomeCareGiver',
@@ -7626,7 +7626,7 @@ ${faqJsonLd}
           ...quizData,
           category: quizData.category as "service" | "facility",
         });
-        
+
         let order = 1;
         for (const q of questions) {
           await storage.createQuizQuestion({
