@@ -473,6 +473,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authenticated via x-api-key header, NOT session-based.
   // ============================================================================
 
+  // In-memory activity log — stores the last 200 receiver events
+  const receiverLog: Array<{
+    timestamp: string;
+    action: string;
+    status: 'success' | 'error' | 'unauthorized' | 'ping';
+    ip: string;
+    detail: string;
+  }> = [];
+
+  function logEvent(action: string, status: typeof receiverLog[0]['status'], ip: string, detail: string) {
+    receiverLog.unshift({ timestamp: new Date().toISOString(), action, status, ip, detail });
+    if (receiverLog.length > 200) receiverLog.pop();
+  }
+
   const requireApiKey = (req: Request, res: Response, next: NextFunction) => {
     const apiKey = req.headers['x-api-key'] || req.query.apiKey;
     const expectedKey = process.env.APEX_API_KEY;
@@ -485,6 +499,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!apiKey || apiKey !== expectedKey) {
       const ip = req.ip || req.socket.remoteAddress || 'unknown';
       console.warn(`[RECEIVER] Unauthorized request from ${ip} — invalid API key`);
+      logEvent(req.method + ' ' + req.path, 'unauthorized', ip, 'Invalid or missing API key');
       return res.status(401).json({ error: 'Invalid API key' });
     }
 
@@ -493,6 +508,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Health check — ContentualyzAI uses this to verify connectivity
   app.get('/api/v1/status/ping', (req: Request, res: Response) => {
+    const ip = req.ip || req.socket.remoteAddress || 'unknown';
+    logEvent('GET /api/v1/status/ping', 'ping', ip, 'Health check from ContentualyzAI');
+    console.log(`[RECEIVER] Ping from ${ip}`);
     res.json({
       status: 'ok',
       name: 'PrivateInHomeCareGiver',
@@ -503,9 +521,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Create/upsert an article from ContentualyzAI
   app.post('/api/v1/articles', requireApiKey, async (req: Request, res: Response) => {
+    const ip = req.ip || req.socket.remoteAddress || 'unknown';
     try {
       const body = req.body;
       console.log(`[RECEIVER] Incoming article: "${body.title}"`);
+      logEvent('POST /api/v1/articles', 'success', ip, `Receiving article: "${body.title || '(no title)'}"`);
+
 
       if (!body.title) {
         return res.status(400).json({ error: 'title is required' });
@@ -564,6 +585,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Upsert by title to avoid duplicates
       const article = await storage.upsertArticleByTitle(body.title, articleData);
 
+      logEvent('POST /api/v1/articles', 'success', ip, `Article upserted: "${article.title}" → /articles/${article.slug}`);
       console.log(`[RECEIVER] ✓ Article upserted: "${article.title}" (${article.id})`);
       res.status(201).json({
         success: true,
@@ -576,6 +598,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
       });
     } catch (error: any) {
+      logEvent('POST /api/v1/articles', 'error', ip, `Failed: ${error.message}`);
       console.error('[RECEIVER] ✗ Failed to create article:', error.message);
       res.status(500).json({ error: 'Failed to create article', details: error.message });
     }
@@ -583,8 +606,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // List recent published articles (for ContentualyzAI to verify content)
   app.get('/api/v1/articles', requireApiKey, async (req: Request, res: Response) => {
+    const ip = req.ip || req.socket.remoteAddress || 'unknown';
     try {
       const articles = await storage.listArticles('published');
+      logEvent('GET /api/v1/articles', 'success', ip, `Listed ${articles.length} published articles`);
       const recent = articles.slice(0, 20).map(a => ({
         id: a.id,
         title: a.title,
@@ -596,9 +621,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }));
       res.json({ total: articles.length, articles: recent });
     } catch (error: any) {
+      logEvent('GET /api/v1/articles', 'error', ip, `Failed: ${error.message}`);
       console.error('[RECEIVER] Failed to list articles:', error.message);
       res.status(500).json({ error: 'Failed to list articles' });
     }
+  });
+
+  // Activity log — ContentualyzAI (or admin) can query all receiver events
+  app.get('/api/v1/logs', requireApiKey, (req: Request, res: Response) => {
+    const limit = Math.min(parseInt(req.query.limit as string) || 50, 200);
+    res.json({
+      total: receiverLog.length,
+      logs: receiverLog.slice(0, limit),
+    });
   });
 
 
