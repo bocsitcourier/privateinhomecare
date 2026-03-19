@@ -108,6 +108,7 @@ export interface IStorage {
   deleteArticle(id: string): Promise<boolean>;
   publishArticle(id: string): Promise<Article | undefined>;
   unpublishArticle(id: string): Promise<Article | undefined>;
+  upsertArticleByTitle(title: string, article: InsertArticle): Promise<Article>;
   
   listArticleFaqs(articleId: string): Promise<ArticleFaq[]>;
   getArticleFaq(id: string): Promise<ArticleFaq | undefined>;
@@ -768,6 +769,14 @@ export class MemStorage implements IStorage {
     };
     this.articles.set(id, updated);
     return updated;
+  }
+
+  async upsertArticleByTitle(title: string, article: InsertArticle): Promise<Article> {
+    const existing = Array.from(this.articles.values()).find(a => a.title === title);
+    if (existing) {
+      return (await this.updateArticle(existing.id, article))!;
+    }
+    return this.createArticle(article);
   }
 
   async listArticleFaqs(articleId: string): Promise<ArticleFaq[]> {
@@ -2986,6 +2995,14 @@ export class DbStorage implements IStorage {
       .where(eq(articles.id, id))
       .returning();
     return result[0];
+  }
+
+  async upsertArticleByTitle(title: string, article: InsertArticle): Promise<Article> {
+    const existing = await this.db.select().from(articles).where(eq(articles.title, title)).limit(1);
+    if (existing.length > 0) {
+      return (await this.updateArticle(existing[0].id, article))!;
+    }
+    return this.createArticle(article);
   }
 
   async listArticleFaqs(articleId: string): Promise<ArticleFaq[]> {
