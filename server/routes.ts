@@ -62,7 +62,7 @@ const maskIp = (ip: string | undefined): string => {
 };
 
 const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY || 'sk-placeholder-not-used-in-dev',
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
 });
 
@@ -581,6 +581,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status,
         publishedAt: status === 'published' ? new Date() : null,
       };
+
+      // Detailed field inspection log — visible in PM2 logs AND via GET /api/v1/logs
+      const fieldDetail = [
+        `title: ${articleData.title}`,
+        `slug: ${articleData.slug}`,
+        `status: ${articleData.status}`,
+        `category: ${articleData.category}`,
+        `heroImageUrl: ${articleData.heroImageUrl ?? '(none)'}`,
+        `excerpt: ${articleData.excerpt ? '✓ ' + articleData.excerpt.substring(0, 80) : '(none)'}`,
+        `metaTitle: ${articleData.metaTitle}`,
+        `metaDesc: ${articleData.metaDescription ? '✓ ' + articleData.metaDescription.substring(0, 80) : '(none)'}`,
+        `keywords: [${articleData.keywords.join(', ') || 'none'}]`,
+        `bodyLength: ${sanitizedBody.length} chars`,
+        `publishedAt: ${articleData.publishedAt?.toISOString() ?? '(draft)'}`,
+      ].join(' | ');
+      console.log('[RECEIVER] FIELDS | ' + fieldDetail);
+      logEvent('POST /api/v1/articles', 'success', ip, 'FIELDS | ' + fieldDetail);
 
       // Upsert by title to avoid duplicates
       const article = await storage.upsertArticleByTitle(body.title, articleData);
