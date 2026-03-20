@@ -62,7 +62,7 @@ const maskIp = (ip: string | undefined): string => {
 };
 
 const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY || 'sk-placeholder-not-used-in-dev',
+  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
 });
 
@@ -526,6 +526,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const body = req.body;
       console.log(`[RECEIVER] Incoming article: "${body.title}"`);
       logEvent('POST /api/v1/articles', 'success', ip, `Receiving article: "${body.title || '(no title)'}"`);
+
+      // Log raw body so we can see exactly what ContentualyzAI is sending
+      const rawBodyLog = `RAW_BODY | keys: [${Object.keys(body).join(', ')}] | ${JSON.stringify(body).substring(0, 500)}`;
+      console.log('[RECEIVER] ' + rawBodyLog);
+      logEvent('POST /api/v1/articles', 'success', ip, rawBodyLog);
 
 
       if (!body.title) {
