@@ -547,8 +547,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .replace(/^-|-$/g, '');
 
       // Map ContentualyzAI payload → our article schema
-      // ContentualyzAI sends Bocsit-style fields: content, featuredImage, metaKeywords, published
-      const articleContent = body.content || body.body || '';
+      const articleContent = body.bodyHtml || body.content || body.body || '';
 
       // Parse keywords: accept array, comma-separated string, or space-separated metaKeywords
       let keywords: string[] = [];
@@ -579,7 +578,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         excerpt: body.excerpt || body.metaDescription || '',
         body: sanitizedBody,
         category: body.category || 'Care Tips',
-        heroImageUrl: body.featuredImage || body.heroImageUrl || null,
+        heroImageUrl: body.featuredImage || body.heroImageUrl || (typeof body.heroImage === 'string' ? body.heroImage : body.heroImage?.url || body.heroImage?.src || null) || null,
         metaTitle: body.metaTitle || body.title,
         metaDescription: body.metaDescription || body.excerpt || '',
         keywords,
