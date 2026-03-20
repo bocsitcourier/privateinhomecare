@@ -519,6 +519,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Download an external image and save it locally under uploads/article-images/.
+  // Returns the local path (/uploads/article-images/filename) on success, or the original URL as fallback.
+  async function downloadArticleImage(externalUrl: string): Promise<string> {
+    try {
+      const ext = path.extname(new URL(externalUrl).pathname).split('?')[0] || '.jpg';
+      const filename = `article-img-${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
+      const dir = path.join('uploads', 'article-images');
+      await fs.mkdir(dir, { recursive: true });
+      const filePath = path.join(dir, filename);
+      const res = await fetch(externalUrl, { signal: AbortSignal.timeout(10000) });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const buffer = Buffer.from(await res.arrayBuffer());
+      await fs.writeFile(filePath, buffer);
+      console.log(`[RECEIVER] ✓ Image saved locally: ${filePath}`);
+      return `/uploads/article-images/${filename}`;
+    } catch (err: any) {
+      console.warn(`[RECEIVER] ⚠ Image download failed, using original URL. Reason: ${err.message}`);
+      return externalUrl;
+    }
+  }
+
   // Create/upsert an article from ContentualyzAI
   app.post('/api/v1/articles', requireApiKey, async (req: Request, res: Response) => {
     const ip = req.ip || req.socket.remoteAddress || 'unknown';
@@ -572,13 +593,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling'],
       });
 
+      // Download hero image locally; fall back to original URL if download fails
+      const rawHeroUrl = body.featuredImage || body.heroImageUrl || (typeof body.heroImage === 'string' ? body.heroImage : body.heroImage?.url || body.heroImage?.src || null) || null;
+      const heroImageUrl = rawHeroUrl ? await downloadArticleImage(rawHeroUrl) : null;
+
       const articleData = {
         title: body.title,
         slug,
         excerpt: body.excerpt || body.metaDescription || '',
         body: sanitizedBody,
         category: body.category || 'Care Tips',
-        heroImageUrl: body.featuredImage || body.heroImageUrl || (typeof body.heroImage === 'string' ? body.heroImage : body.heroImage?.url || body.heroImage?.src || null) || null,
+        heroImageUrl,
         metaTitle: body.metaTitle || body.title,
         metaDescription: body.metaDescription || body.excerpt || '',
         keywords,
