@@ -1,0 +1,12 @@
+node_modules
+.git
+.github
+.replit
+replit.nix
+dist
+.env
+.env.*
+*.log
+*.zip
+.DS_Store
+attached_assets/screenshots
