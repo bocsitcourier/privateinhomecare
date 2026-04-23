@@ -4,7 +4,14 @@ import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
 import PageSEO from "@/components/PageSEO";
 import { Link } from "wouter";
+import { CalendarDays } from "lucide-react";
 import type { Article } from "@shared/schema";
+
+function formatArticleDate(dateStr: string | Date | null | undefined): string {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+}
 
 export default function ArticlesPage() {
   const { data: articles, isLoading } = useQuery<Article[]>({
