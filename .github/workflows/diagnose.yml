@@ -16,30 +16,17 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: Look for any old backups or databases
+      - name: Inspect SQL dump
         run: |
           ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'bash -s' <<'REMOTE'
-          echo "=== Look for ANY .sql, .dump, .backup, .tar.gz files anywhere ==="
-          find / -type f \( -name "*.sql" -o -name "*.dump" -o -name "*.backup" -o -name "*backup*.tar*" -o -name "*-dump*" \) 2>/dev/null | grep -v "/proc/\|/sys/\|/snap/\|node_modules" | head -40
+          DUMP=/tmp/replit_db_full.sql
+          echo "=== File info ==="
+          ls -lah $DUMP
+          file $DUMP
           echo ""
-          echo "=== /srv contents ==="
-          ls -lah /srv/ 2>/dev/null
-          ls -lah /srv/privateinhomecare/ 2>/dev/null
-          ls -lah /srv/privateinhomecare/backups/ 2>/dev/null
+          echo "=== Tables present ==="
+          grep -E "^(CREATE TABLE|COPY public\.)" $DUMP | head -60
           echo ""
-          echo "=== /root contents ==="
-          ls -lah /root/ 2>/dev/null
-          echo ""
-          echo "=== Postgres databases ==="
-          sudo -u postgres psql -l 2>/dev/null
-          echo ""
-          echo "=== Article count in current DB ==="
-          sudo -u postgres psql -d privateinhomecare -c "SELECT COUNT(*), MIN(created_at), MAX(created_at) FROM articles;" 2>/dev/null
-          echo ""
-          echo "=== Postgres data dirs and any other DBs/files ==="
-          ls -lah /var/lib/postgresql/ 2>/dev/null
-          echo ""
-          echo "=== /var/www contents (other sites?) ==="
-          ls -lah /var/www/ 2>/dev/null
-          ls -lah /var/www/html/ 2>/dev/null
+          echo "=== Rough row counts (lines between COPY and \\.) per table ==="
+          awk '/^COPY public\.([a-z_]+)/{tbl=$2; gsub(/^public\./,"",tbl); inblock=1; cnt=0; next} /^\\\.$/{if(inblock){print cnt, tbl; inblock=0}} inblock{cnt++}' $DUMP | sort -rn | head -30
           REMOTE
