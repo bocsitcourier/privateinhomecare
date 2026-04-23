@@ -1464,6 +1464,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ── Article recovery helpers ────────────────────────────────────────────────
+  // GET  /api/admin/articles/export-all  → run on production to get a full dump
+  // POST /api/admin/articles/import-missing → run on dev to insert missing ones
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  app.get("/api/admin/articles/export-all", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const allArticles = await storage.listArticles(); // no filter = all statuses
+      res.setHeader("Content-Disposition", "attachment; filename=articles-export.json");
+      res.json({ exportedAt: new Date().toISOString(), count: allArticles.length, articles: allArticles });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/articles/import-missing", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { articles: incoming } = req.body as { articles: any[] };
+      if (!Array.isArray(incoming)) return res.status(400).json({ error: "articles array required" });
+
+      const existing = await storage.listArticles(); // all statuses
+      const existingSlugs = new Set(existing.map((a: any) => a.slug));
+
+      const missing = incoming.filter((a: any) => !existingSlugs.has(a.slug));
+
+      let imported = 0;
+      const errors: string[] = [];
+      for (const art of missing) {
+        try {
+          await storage.createArticle({
+            title: art.title,
+            slug: art.slug,
+            excerpt: art.excerpt ?? null,
+            body: art.body,
+            category: art.category ?? "Care Tips",
+            heroImageUrl: art.heroImageUrl ?? art.hero_image_url ?? null,
+            metaTitle: art.metaTitle ?? art.meta_title ?? null,
+            metaDescription: art.metaDescription ?? art.meta_description ?? null,
+            keywords: art.keywords ?? [],
+            status: art.status ?? "published",
+            publishedAt: art.publishedAt ? new Date(art.publishedAt) : art.published_at ? new Date(art.published_at) : null,
+          });
+          imported++;
+        } catch (err: any) {
+          errors.push(`${art.slug}: ${err.message}`);
+        }
+      }
+
+      res.json({ success: true, totalIncoming: incoming.length, alreadyExisted: existing.length, imported, skipped: missing.length - imported, errors });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post("/api/admin/articles/:id/publish", requireAuth, async (req, res) => {
     try {
       const article = await storage.publishArticle(req.params.id);

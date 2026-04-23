@@ -30,9 +30,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { format } from "date-fns";
-import { FileText, Edit, Eye, Search, CheckCircle, Clock, Trash2 } from "lucide-react";
+import { FileText, Edit, Eye, Search, CheckCircle, Clock, Trash2, Download, Upload, Database } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type Article = {
@@ -56,6 +56,9 @@ export default function ArticlesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [editForm, setEditForm] = useState<Partial<Article>>({});
+  const [importResult, setImportResult] = useState<any>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const importFileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const { data: articles, isLoading } = useQuery<Article[]>({
@@ -150,6 +153,32 @@ export default function ArticlesPage() {
     if (!body) return 0;
     const textContent = body.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     return textContent.split(' ').filter(w => w.length > 0).length;
+  };
+
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsImporting(true);
+    setImportResult(null);
+    try {
+      const text = await file.text();
+      const json = JSON.parse(text);
+      const articleList = Array.isArray(json) ? json : (json.articles ?? []);
+      const res = await apiRequest("POST", "/api/admin/articles/import-missing", { articles: articleList });
+      const data = await res.json();
+      setImportResult(data);
+      if (data.imported > 0) {
+        queryClient.invalidateQueries({ queryKey: ["/api/articles"] });
+        toast({ title: "Import complete", description: `Imported ${data.imported} missing articles.` });
+      } else {
+        toast({ title: "No new articles", description: "All articles in the file already exist here." });
+      }
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Import failed", description: err.message });
+    } finally {
+      setIsImporting(false);
+      if (importFileRef.current) importFileRef.current.value = "";
+    }
   };
 
   if (isLoading) {
@@ -497,6 +526,78 @@ export default function ArticlesPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Article Recovery Panel */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="h-5 w-5" />
+              Article Recovery — Production Backup
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Step 1: SSH into the production server and run the curl command below to download all articles.
+              Step 2: Upload that JSON file here to import any that are missing from this database.
+            </p>
+
+            <div className="rounded-md bg-muted p-3 text-xs font-mono break-all">
+              curl -s -b "connect.sid=YOUR_SESSION_COOKIE" \<br/>
+              &nbsp;&nbsp;https://privateinhomecaregiver.com/api/admin/articles/export-all \<br/>
+              &nbsp;&nbsp;-o articles-export.json
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              Alternatively, log in to the production admin panel and visit{" "}
+              <code className="bg-muted px-1 rounded">/api/admin/articles/export-all</code>{" "}
+              in your browser to download the file directly.
+            </p>
+
+            <div className="flex items-center gap-3 flex-wrap">
+              <input
+                ref={importFileRef}
+                type="file"
+                accept=".json"
+                className="hidden"
+                id="import-articles-file"
+                onChange={handleImportFile}
+                data-testid="input-import-articles"
+              />
+              <Button
+                variant="outline"
+                onClick={() => importFileRef.current?.click()}
+                disabled={isImporting}
+                data-testid="button-import-articles"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                {isImporting ? "Importing..." : "Upload articles-export.json"}
+              </Button>
+
+              <a href="/api/admin/articles/export-all" target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" data-testid="button-export-articles">
+                  <Download className="h-4 w-4 mr-2" />
+                  Export This DB (current)
+                </Button>
+              </a>
+            </div>
+
+            {importResult && (
+              <div className="rounded-md border p-3 text-sm space-y-1">
+                <div className="font-medium">Import Result</div>
+                <div>Total in file: <span className="font-semibold">{importResult.totalIncoming}</span></div>
+                <div>Already existed: <span className="font-semibold">{importResult.alreadyExisted}</span></div>
+                <div className="text-green-600 dark:text-green-400">
+                  Newly imported: <span className="font-semibold">{importResult.imported}</span>
+                </div>
+                {importResult.errors?.length > 0 && (
+                  <div className="text-destructive text-xs mt-2">
+                    Errors: {importResult.errors.join("; ")}
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   );
