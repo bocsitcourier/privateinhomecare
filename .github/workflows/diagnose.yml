@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  diagnose:
+  recover:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 30
     steps:
       - name: Setup SSH
         run: |
@@ -14,19 +14,45 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -H 165.227.188.129 >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: Inspect SQL dump
+      - name: Inspect recovery droplet
         run: |
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'bash -s' <<'REMOTE'
-          DUMP=/tmp/replit_db_full.sql
-          echo "=== File info ==="
-          ls -lah $DUMP
-          file $DUMP
+          set -euo pipefail
+          for try in 1 2 3 4 5; do
+            if ssh -i ~/.ssh/deploy_key -o ConnectTimeout=15 -o BatchMode=yes root@165.227.188.129 'echo OK' 2>/dev/null; then
+              echo "SSH ready"; break
+            fi
+            echo "SSH not ready, sleeping 20s (try $try)"
+            sleep 20
+          done
+          ssh -i ~/.ssh/deploy_key root@165.227.188.129 'bash -s' <<'REMOTE'
+          set -e
+          echo "Hostname: $(hostname)"
           echo ""
-          echo "=== Tables present ==="
-          grep -E "^(CREATE TABLE|COPY public\.)" $DUMP | head -60
+          echo "--- pg clusters ---"
+          pg_lsclusters || true
+          systemctl start postgresql 2>&1 || true
+          sleep 3
           echo ""
-          echo "=== Rough row counts (lines between COPY and \\.) per table ==="
-          awk '/^COPY public\.([a-z_]+)/{tbl=$2; gsub(/^public\./,"",tbl); inblock=1; cnt=0; next} /^\\\.$/{if(inblock){print cnt, tbl; inblock=0}} inblock{cnt++}' $DUMP | sort -rn | head -30
+          echo "--- databases ---"
+          sudo -u postgres psql -l 2>&1 | head -30
+          echo ""
+          echo "--- article counts ---"
+          for db in $(sudo -u postgres psql -At -c "SELECT datname FROM pg_database WHERE datname NOT IN ('template0','template1','postgres');" 2>/dev/null); do
+            COUNT=$(sudo -u postgres psql -At -d "$db" -c "SELECT count(*) FROM articles;" 2>/dev/null || echo "no_table")
+            FACILITIES=$(sudo -u postgres psql -At -d "$db" -c "SELECT count(*) FROM facilities;" 2>/dev/null || echo "no_table")
+            echo "DB=$db articles=$COUNT facilities=$FACILITIES"
+          done
+          echo ""
+          echo "--- /var/www ---"
+          ls /var/www/ 2>/dev/null || true
+          ls /var/www/html/ 2>/dev/null || true
+          echo ""
+          echo "--- look for .env files ---"
+          find /var/www /root /home -maxdepth 4 -name '.env*' 2>/dev/null | head -20
+          echo ""
+          echo "--- look for SQL backups ---"
+          find / -name '*.sql' -size +100k 2>/dev/null | grep -v /proc | head -20
           REMOTE
