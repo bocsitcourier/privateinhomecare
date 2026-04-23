@@ -8,6 +8,9 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { hipaaAuditMiddleware } from "./middleware/hipaa-audit";
 import { startAutoRefreshScheduler } from "./scheduler";
+import { promises as fsPromises } from "fs";
+import pathModule from "path";
+import { storage } from "./storage";
 
 const app = express();
 app.set('trust proxy', 1);
@@ -337,5 +340,36 @@ app.use((req, res, next) => {
   }, () => {
     log(`serving on port ${port}`);
     startAutoRefreshScheduler();
+    autoFixLocationPhotoUrls();
   });
 })();
+
+/**
+ * On startup: if a local file exists at public/location-photos/{slug}.jpg
+ * but the DB still points to an external URL, update the DB automatically.
+ * This lets the images committed to git auto-heal the production database.
+ */
+async function autoFixLocationPhotoUrls() {
+  try {
+    const dir = pathModule.join(process.cwd(), "public", "location-photos");
+    const locations = await storage.listMaLocations();
+    let fixed = 0;
+    for (const loc of locations) {
+      const slug = loc.slug || loc.id;
+      const localPath = `/location-photos/${slug}.jpg`;
+      if (loc.heroImageUrl === localPath) continue; // already correct
+      const filePath = pathModule.join(dir, `${slug}.jpg`);
+      try {
+        await fsPromises.access(filePath);
+        // File exists locally — update DB to use it
+        await storage.updateMaLocation(loc.id, { heroImageUrl: localPath });
+        fixed++;
+      } catch {
+        // No local file — leave DB as-is
+      }
+    }
+    if (fixed > 0) log(`[LocationPhotos] Auto-fixed ${fixed} location image URLs to local paths`);
+  } catch (err) {
+    console.error("[LocationPhotos] Auto-fix startup error:", err);
+  }
+}
