@@ -82,7 +82,7 @@ export function FacilitiesManagementContent() {
     queryKey: ["/api/admin/facilities"],
   });
 
-  // Photo download progress polling
+  // Photo download progress polling (Google Places)
   interface DownloadProgress { total: number; done: number; errors: number; running: boolean; startedAt?: string }
   const [isPolling, setIsPolling] = useState(false);
 
@@ -114,6 +114,49 @@ export function FacilitiesManagementContent() {
     },
     onError: () => {
       toast({ variant: "destructive", title: "Error", description: "Failed to start photo download." });
+    },
+  });
+
+  // Web-search photo download progress polling (DuckDuckGo – no API key needed)
+  interface WebSearchProgress { type: "facility" | "location" | null; total: number; done: number; errors: number; skipped: number; running: boolean; startedAt?: string }
+  const [isWebPolling, setIsWebPolling] = useState(false);
+
+  const { data: webSearchProgress } = useQuery<WebSearchProgress>({
+    queryKey: ["/api/admin/photos/web-search-progress"],
+    refetchInterval: isWebPolling ? 3000 : false,
+  });
+
+  useEffect(() => {
+    if (webSearchProgress && !webSearchProgress.running && isWebPolling) {
+      setIsWebPolling(false);
+      const label = webSearchProgress.type === "location" ? "location" : "facility";
+      toast({
+        title: `${label.charAt(0).toUpperCase() + label.slice(1)} Photos Downloaded`,
+        description: `${webSearchProgress.done} downloaded, ${webSearchProgress.skipped} already had local files, ${webSearchProgress.errors} errors.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/facilities"] });
+    }
+  }, [webSearchProgress?.running]);
+
+  const downloadFacilityWebMutation = useMutation({
+    mutationFn: (force: boolean) => apiRequest("POST", `/api/admin/facilities/download-photos-web${force ? "?force=true" : ""}`),
+    onSuccess: () => {
+      setIsWebPolling(true);
+      toast({ title: "Web Search Started", description: "Searching the web for facility photos in the background. This may take a while..." });
+    },
+    onError: () => {
+      toast({ variant: "destructive", title: "Error", description: "Failed to start web search download. Another job may be running." });
+    },
+  });
+
+  const downloadLocationWebMutation = useMutation({
+    mutationFn: (force: boolean) => apiRequest("POST", `/api/admin/locations/download-photos-web${force ? "?force=true" : ""}`),
+    onSuccess: () => {
+      setIsWebPolling(true);
+      toast({ title: "Web Search Started", description: "Searching the web for location photos in the background. This may take a while..." });
+    },
+    onError: () => {
+      toast({ variant: "destructive", title: "Error", description: "Failed to start web search download. Another job may be running." });
     },
   });
 
@@ -387,6 +430,137 @@ export function FacilitiesManagementContent() {
               )}
               {downloadProgress?.running ? "Downloading..." : "Download All Photos"}
             </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Web Search: Facility Photos */}
+      <Card>
+        <CardHeader className="py-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Globe className="h-5 w-5" />
+            Facility Photos — Web Search
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row md:items-start gap-4">
+            <div className="flex-1 space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Searches the web (DuckDuckGo) for a real photo of each facility by name and city, then stores it locally on this server.
+                No Google API key or billing required. Skips facilities that already have a local photo.
+              </p>
+              {webSearchProgress?.running && webSearchProgress.type === "facility" && (
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-sm">
+                    <RefreshCw className="h-4 w-4 animate-spin text-blue-500" />
+                    <span>Searching: {webSearchProgress.done + webSearchProgress.errors + webSearchProgress.skipped} / {webSearchProgress.total}</span>
+                    <span className="text-green-600">{webSearchProgress.done} saved</span>
+                    {webSearchProgress.skipped > 0 && <span className="text-muted-foreground">{webSearchProgress.skipped} skipped</span>}
+                    {webSearchProgress.errors > 0 && <span className="text-red-500">{webSearchProgress.errors} errors</span>}
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div
+                      className="bg-blue-500 h-2 rounded-full transition-all"
+                      style={{ width: `${Math.round(((webSearchProgress.done + webSearchProgress.errors + webSearchProgress.skipped) / Math.max(webSearchProgress.total, 1)) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+              {webSearchProgress && !webSearchProgress.running && webSearchProgress.type === "facility" && webSearchProgress.done > 0 && (
+                <p className="text-sm text-green-600 font-medium">
+                  Last run: {webSearchProgress.done} photos saved, {webSearchProgress.skipped} already existed, {webSearchProgress.errors} errors.
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col gap-2">
+              <Button
+                onClick={() => downloadFacilityWebMutation.mutate(false)}
+                disabled={downloadFacilityWebMutation.isPending || webSearchProgress?.running}
+                data-testid="button-download-facility-photos-web"
+              >
+                {webSearchProgress?.running && webSearchProgress.type === "facility" ? (
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4 mr-2" />
+                )}
+                {webSearchProgress?.running && webSearchProgress.type === "facility" ? "Searching..." : "Download Missing Photos"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => downloadFacilityWebMutation.mutate(true)}
+                disabled={downloadFacilityWebMutation.isPending || webSearchProgress?.running}
+                data-testid="button-download-facility-photos-web-force"
+              >
+                Re-download All
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Web Search: Location Photos */}
+      <Card>
+        <CardHeader className="py-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <MapPin className="h-5 w-5" />
+            Location (City) Photos — Web Search
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row md:items-start gap-4">
+            <div className="flex-1 space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Searches the web for a real photo for each Massachusetts city/town page, then stores it locally under
+                <code className="text-xs bg-muted px-1 rounded">/location-photos/</code>.
+                This replaces broken Google Places URLs. No API key needed.
+              </p>
+              {webSearchProgress?.running && webSearchProgress.type === "location" && (
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-sm">
+                    <RefreshCw className="h-4 w-4 animate-spin text-blue-500" />
+                    <span>Searching: {webSearchProgress.done + webSearchProgress.errors + webSearchProgress.skipped} / {webSearchProgress.total}</span>
+                    <span className="text-green-600">{webSearchProgress.done} saved</span>
+                    {webSearchProgress.skipped > 0 && <span className="text-muted-foreground">{webSearchProgress.skipped} skipped</span>}
+                    {webSearchProgress.errors > 0 && <span className="text-red-500">{webSearchProgress.errors} errors</span>}
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div
+                      className="bg-green-500 h-2 rounded-full transition-all"
+                      style={{ width: `${Math.round(((webSearchProgress.done + webSearchProgress.errors + webSearchProgress.skipped) / Math.max(webSearchProgress.total, 1)) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+              {webSearchProgress && !webSearchProgress.running && webSearchProgress.type === "location" && webSearchProgress.done > 0 && (
+                <p className="text-sm text-green-600 font-medium">
+                  Last run: {webSearchProgress.done} photos saved, {webSearchProgress.skipped} already existed, {webSearchProgress.errors} errors.
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col gap-2">
+              <Button
+                onClick={() => downloadLocationWebMutation.mutate(false)}
+                disabled={downloadLocationWebMutation.isPending || webSearchProgress?.running}
+                data-testid="button-download-location-photos-web"
+              >
+                {webSearchProgress?.running && webSearchProgress.type === "location" ? (
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4 mr-2" />
+                )}
+                {webSearchProgress?.running && webSearchProgress.type === "location" ? "Searching..." : "Download Location Photos"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => downloadLocationWebMutation.mutate(true)}
+                disabled={downloadLocationWebMutation.isPending || webSearchProgress?.running}
+                data-testid="button-download-location-photos-web-force"
+              >
+                Re-download All
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

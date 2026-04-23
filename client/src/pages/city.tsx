@@ -1,5 +1,5 @@
 import { useRoute } from "wouter";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import PageSEO from "@/components/PageSEO";
 import { MapPin, Phone, Mail, Heart, Users, Home as HomeIcon, Brain, Clock, Shield, Award, Star, CheckCircle2, Quote, ChevronDown, HelpCircle } from "lucide-react";
@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import Header from "@/components/Header";
+import { proxyImageUrl } from "@/lib/utils";
 
 interface LocationData {
   id: string;
@@ -145,7 +146,9 @@ export default function CityPage() {
     enabled: !!citySlug,
   });
 
-  const heroImageUrl = locationData?.heroImageUrl;
+  const heroImageUrl = proxyImageUrl(locationData?.heroImageUrl);
+  const [heroImgError, setHeroImgError] = useState(false);
+  useEffect(() => { setHeroImgError(false); }, [heroImageUrl]);
 
   const schemaJson = useMemo(() => {
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://privateinhomecaregiver.com";
@@ -317,7 +320,7 @@ export default function CityPage() {
       <main className="min-h-screen bg-background">
         {/* Hero Section with Location Image */}
         <section className="relative overflow-hidden">
-          {heroImageUrl ? (
+          {heroImageUrl && !heroImgError ? (
             <>
               <div className="absolute inset-0 z-0">
                 <img 
@@ -325,6 +328,7 @@ export default function CityPage() {
                   alt={`Private pay in-home senior care services in ${cityName}, Massachusetts - Trusted local caregivers`}
                   title={`Premium In-Home Care for Seniors - ${cityName}, MA`}
                   className="w-full h-full object-cover"
+                  onError={() => setHeroImgError(true)}
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/30 to-black/20" />
               </div>

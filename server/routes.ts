@@ -471,6 +471,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   });
   app.use('/thumbnails', express.static('public/thumbnails'));
+
+  // Serve locally downloaded location hero photos
+  app.use('/location-photos', (req, res, next) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+  });
+  app.use('/location-photos', express.static('public/location-photos'));
   
   app.post("/api/auth/login", authLimiter, async (req, res) => {
     try {
@@ -4760,6 +4767,65 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
     }
   });
 
+  // Location photo proxy — routes Google Places photo URLs through server to avoid API key/CORS restrictions
+  app.get("/api/proxy/location-photo", async (req: Request, res: Response) => {
+    try {
+      const { name, w } = req.query;
+      if (!name || typeof name !== "string") {
+        return res.status(400).send("Photo name required");
+      }
+      const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+      if (!apiKey) {
+        return res.status(500).send("Image service not configured");
+      }
+      const width = parseInt(w as string) || 1200;
+
+      let photoName = name;
+      let googleUrl = `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=${width}&key=${apiKey}`;
+      let response = await fetch(googleUrl);
+
+      // If reference expired, auto-refresh using the Place ID
+      if (response.status === 400 || response.status === 403) {
+        const placeIdMatch = photoName.match(/^places\/([^/]+)\/photos\//);
+        if (placeIdMatch) {
+          const placeId = placeIdMatch[1];
+          try {
+            const placeRes = await fetch(
+              `https://places.googleapis.com/v1/places/${placeId}`,
+              { headers: { "X-Goog-Api-Key": apiKey, "X-Goog-FieldMask": "photos" } }
+            );
+            if (placeRes.ok) {
+              const placeData = await placeRes.json();
+              if (placeData.photos && placeData.photos.length > 0) {
+                const newNames: string[] = placeData.photos.slice(0, 5).map((p: { name: string }) => p.name);
+                photoName = newNames[0];
+                googleUrl = `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=${width}&key=${apiKey}`;
+                response = await fetch(googleUrl);
+              }
+            }
+          } catch (refreshErr) {
+            console.error("Error refreshing expired location photo reference:", refreshErr);
+          }
+        }
+      }
+
+      if (!response.ok) {
+        return res.status(404).send("Image not available");
+      }
+
+      const contentType = response.headers.get("content-type") || "image/jpeg";
+      res.setHeader("Content-Type", contentType);
+      res.setHeader("Cache-Control", "public, max-age=604800");
+      res.setHeader("Vary", "Accept");
+
+      const buffer = await response.arrayBuffer();
+      res.send(Buffer.from(buffer));
+    } catch (error) {
+      console.error("Error proxying location photo:", error);
+      res.status(500).send("Failed to load image");
+    }
+  });
+
   // FACILITIES
   // ===========================================
   
@@ -5472,6 +5538,215 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
       }
       photoDownloadProgress.running = false;
       console.log(`[PhotoDownload] Complete: ${photoDownloadProgress.done} downloaded, ${photoDownloadProgress.errors} errors`);
+    })();
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // WEB-SEARCH PHOTO DOWNLOAD  (DuckDuckGo – no API key needed)
+  // ─────────────────────────────────────────────────────────────
+
+  let webSearchProgress: {
+    type: "facility" | "location" | null;
+    total: number;
+    done: number;
+    errors: number;
+    skipped: number;
+    running: boolean;
+    startedAt?: string;
+  } = { type: null, total: 0, done: 0, errors: 0, skipped: 0, running: false };
+
+  /** Search DuckDuckGo images and return up to 10 image URLs for the query */
+  async function searchImagesDDG(query: string): Promise<string[]> {
+    const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+    const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+    try {
+      const searchRes = await fetch(`https://duckduckgo.com/?q=${encodeURIComponent(query)}&ia=images`, {
+        headers: { "User-Agent": UA },
+        signal: AbortSignal.timeout(10000),
+      });
+      const html = await searchRes.text();
+      const vqdMatch = html.match(/vqd=['"]([^'"]+)['"]/);
+      if (!vqdMatch) return [];
+      await sleep(300);
+      const imgRes = await fetch(
+        `https://duckduckgo.com/i.js?q=${encodeURIComponent(query)}&vqd=${vqdMatch[1]}&o=json&s=0&u=bing&f=,,,&l=us-en`,
+        { headers: { "Referer": "https://duckduckgo.com/", "User-Agent": UA }, signal: AbortSignal.timeout(10000) }
+      );
+      const data = await imgRes.json();
+      return ((data.results || []) as Array<{ image: string }>)
+        .slice(0, 10)
+        .map(r => r.image)
+        .filter(Boolean);
+    } catch {
+      return [];
+    }
+  }
+
+  /** Try each URL in order; download the first valid image to savePath. Returns true on success. */
+  async function downloadFirstValidImage(urls: string[], savePath: string): Promise<boolean> {
+    for (const url of urls) {
+      try {
+        const r = await fetch(url, {
+          headers: { "User-Agent": "Mozilla/5.0" },
+          signal: AbortSignal.timeout(12000),
+        });
+        if (!r.ok) continue;
+        const ct = r.headers.get("content-type") || "";
+        if (!ct.startsWith("image/")) continue;
+        const buf = Buffer.from(await r.arrayBuffer());
+        if (buf.length < 8000) continue; // skip tiny / placeholder images
+        await fs.writeFile(savePath, buf);
+        return true;
+      } catch {
+        continue;
+      }
+    }
+    return false;
+  }
+
+  /** GET progress for web-search downloads */
+  app.get("/api/admin/photos/web-search-progress", requireAuth, (req: Request, res: Response) => {
+    res.json(webSearchProgress);
+  });
+
+  /**
+   * POST /api/admin/facilities/download-photos-web
+   * Searches DuckDuckGo for a real photo of each facility and saves it locally.
+   * Skips facilities that already have a local path (/photos/ or /uploads/).
+   * Query param: ?force=true  to re-download even if a local image already exists.
+   */
+  app.post("/api/admin/facilities/download-photos-web", requireAuth, async (req: Request, res: Response) => {
+    if (webSearchProgress.running) {
+      return res.status(409).json({ message: "A web-search download is already running", progress: webSearchProgress });
+    }
+
+    const force = req.query.force === "true";
+    const allFacilities = await storage.listFacilities({});
+    const toProcess = force
+      ? allFacilities
+      : allFacilities.filter(f => !f.heroImageUrl || f.heroImageUrl.startsWith("https://") || f.heroImageUrl.startsWith("/api/proxy"));
+
+    webSearchProgress = { type: "facility", total: toProcess.length, done: 0, errors: 0, skipped: 0, running: true, startedAt: new Date().toISOString() };
+    res.json({ message: `Started web-search download for ${toProcess.length} facilities`, total: toProcess.length });
+
+    const dir = path.join(process.cwd(), "public", "photos");
+    await fs.mkdir(dir, { recursive: true });
+
+    const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+    const CONCURRENCY = 2;
+    const queue = [...toProcess];
+
+    const processOne = async (facility: typeof toProcess[number]) => {
+      try {
+        const filePath = path.join(dir, `${facility.id}.jpg`);
+        // If local file already exists, skip unless forced
+        try {
+          await fs.access(filePath);
+          if (!force) {
+            await storage.updateFacility(facility.id, { heroImageUrl: `/photos/${facility.id}.jpg` });
+            webSearchProgress.skipped++;
+            return;
+          }
+        } catch { /* file doesn't exist, proceed */ }
+
+        const query = `${facility.name} ${facility.city} Massachusetts`;
+        await sleep(800); // be polite to DDG
+        const imageUrls = await searchImagesDDG(query);
+        if (!imageUrls.length) {
+          webSearchProgress.errors++;
+          return;
+        }
+        const ok = await downloadFirstValidImage(imageUrls, filePath);
+        if (ok) {
+          await storage.updateFacility(facility.id, { heroImageUrl: `/photos/${facility.id}.jpg` });
+          webSearchProgress.done++;
+        } else {
+          webSearchProgress.errors++;
+        }
+      } catch (err) {
+        console.error(`[WebSearch] Facility ${facility.id} (${facility.name}):`, err);
+        webSearchProgress.errors++;
+      }
+    };
+
+    (async () => {
+      while (queue.length > 0) {
+        const batch = queue.splice(0, CONCURRENCY);
+        await Promise.all(batch.map(processOne));
+      }
+      webSearchProgress.running = false;
+      console.log(`[WebSearch-Facilities] Done: ${webSearchProgress.done} downloaded, ${webSearchProgress.skipped} skipped, ${webSearchProgress.errors} errors`);
+    })();
+  });
+
+  /**
+   * POST /api/admin/locations/download-photos-web
+   * Searches DuckDuckGo for a real photo of each Massachusetts location and saves it locally.
+   * Skips locations that already have a local /location-photos/ path.
+   * Query param: ?force=true  to re-download everything.
+   */
+  app.post("/api/admin/locations/download-photos-web", requireAuth, async (req: Request, res: Response) => {
+    if (webSearchProgress.running) {
+      return res.status(409).json({ message: "A web-search download is already running", progress: webSearchProgress });
+    }
+
+    const force = req.query.force === "true";
+    const allLocations = await storage.listMaLocations();
+    const toProcess = force
+      ? allLocations
+      : allLocations.filter(l => !l.heroImageUrl || l.heroImageUrl.startsWith("https://") || l.heroImageUrl.startsWith("/api/proxy"));
+
+    webSearchProgress = { type: "location", total: toProcess.length, done: 0, errors: 0, skipped: 0, running: true, startedAt: new Date().toISOString() };
+    res.json({ message: `Started web-search download for ${toProcess.length} locations`, total: toProcess.length });
+
+    const dir = path.join(process.cwd(), "public", "location-photos");
+    await fs.mkdir(dir, { recursive: true });
+
+    const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+    const CONCURRENCY = 2;
+    const queue = [...toProcess];
+
+    const processOne = async (location: typeof toProcess[number]) => {
+      try {
+        const slug = location.slug || location.id;
+        const filePath = path.join(dir, `${slug}.jpg`);
+        // If local file already exists, skip unless forced
+        try {
+          await fs.access(filePath);
+          if (!force) {
+            await storage.updateMaLocation(location.id, { heroImageUrl: `/location-photos/${slug}.jpg` });
+            webSearchProgress.skipped++;
+            return;
+          }
+        } catch { /* file doesn't exist, proceed */ }
+
+        const query = `${location.name} Massachusetts in-home senior care`;
+        await sleep(800);
+        const imageUrls = await searchImagesDDG(query);
+        if (!imageUrls.length) {
+          webSearchProgress.errors++;
+          return;
+        }
+        const ok = await downloadFirstValidImage(imageUrls, filePath);
+        if (ok) {
+          await storage.updateMaLocation(location.id, { heroImageUrl: `/location-photos/${slug}.jpg` });
+          webSearchProgress.done++;
+        } else {
+          webSearchProgress.errors++;
+        }
+      } catch (err) {
+        console.error(`[WebSearch] Location ${location.id} (${location.name}):`, err);
+        webSearchProgress.errors++;
+      }
+    };
+
+    (async () => {
+      while (queue.length > 0) {
+        const batch = queue.splice(0, CONCURRENCY);
+        await Promise.all(batch.map(processOne));
+      }
+      webSearchProgress.running = false;
+      console.log(`[WebSearch-Locations] Done: ${webSearchProgress.done} downloaded, ${webSearchProgress.skipped} skipped, ${webSearchProgress.errors} errors`);
     })();
   });
 
