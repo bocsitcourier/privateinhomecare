@@ -1,0 +1,84 @@
+name: Setup Local PostgreSQL on Production Server
+
+on:
+  workflow_dispatch:
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          cat > ~/.ssh/config <<'CFG'
+          Host *
+            ServerAliveInterval 30
+            ServerAliveCountMax 60
+            TCPKeepAlive yes
+            ConnectTimeout 30
+          CFG
+
+      - name: Add swap space (1GB nano needs it)
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} '
+            if [ ! -f /swapfile ]; then
+              fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+              echo "/swapfile none swap sw 0 0" >> /etc/fstab
+              echo "Swap added"
+            else
+              echo "Swap exists"
+            fi
+            free -m
+          '
+
+      - name: Apt update
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} '
+            export DEBIAN_FRONTEND=noninteractive
+            apt-get update -qq 2>&1 | tail -3
+          '
+
+      - name: Install PostgreSQL (minimal)
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} '
+            export DEBIAN_FRONTEND=noninteractive
+            apt-get install -y --no-install-recommends postgresql postgresql-client 2>&1 | tail -5
+            systemctl enable postgresql
+            systemctl start postgresql
+            sleep 5
+            systemctl is-active postgresql
+            which psql
+          '
+
+      - name: Create DB and user
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} '
+            sudo -u postgres psql -c "DROP DATABASE IF EXISTS privateinhomecare;"
+            sudo -u postgres psql -c "CREATE DATABASE privateinhomecare;"
+            sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD '"'"'PrivateHomeDB2024'"'"';"
+            echo "DB ready"
+          '
+
+      - name: Restore dump
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} '
+            ls -lh /tmp/replit_db_full.sql
+            PGPASSWORD=PrivateHomeDB2024 psql -h 127.0.0.1 -U postgres -d privateinhomecare -f /tmp/replit_db_full.sql 2>&1 | tail -10
+            PGPASSWORD=PrivateHomeDB2024 psql -h 127.0.0.1 -U postgres -d privateinhomecare -c "\dt" | head -50
+          '
+
+      - name: Update .env and restart
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} '
+            cd /var/www/html/privateinhomecare
+            sed -i "/^DATABASE_URL=/d" .env
+            echo "DATABASE_URL=postgresql://postgres:PrivateHomeDB2024@127.0.0.1:5432/privateinhomecare" >> .env
+            cp .env /var/www/.env
+            pm2 restart privateinhomecare --update-env
+            sleep 5
+            pm2 logs privateinhomecare --lines 15 --nostream
+          '
