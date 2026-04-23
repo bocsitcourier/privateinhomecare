@@ -16,27 +16,30 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: Inspect bundled code
+      - name: Look for any old backups or databases
         run: |
           ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'bash -s' <<'REMOTE'
-          cd /var/www/html/privateinhomecare
-          echo "=== grep dist/index.js for static mounts ==="
-          grep -n -o 'express\.static[^)]*)' dist/index.js | head -20
+          echo "=== Look for ANY .sql, .dump, .backup, .tar.gz files anywhere ==="
+          find / -type f \( -name "*.sql" -o -name "*.dump" -o -name "*.backup" -o -name "*backup*.tar*" -o -name "*-dump*" \) 2>/dev/null | grep -v "/proc/\|/sys/\|/snap/\|node_modules" | head -40
           echo ""
-          echo "=== grep dist/index.js for these path strings ==="
-          for path in '/uploads' '/attached_assets' '/thumbnails' '/videos' 'public/thumbnails'; do
-            echo "--- searching: $path"
-            grep -c "\"$path\"\|'$path'" dist/index.js || true
-          done
+          echo "=== /srv contents ==="
+          ls -lah /srv/ 2>/dev/null
+          ls -lah /srv/privateinhomecare/ 2>/dev/null
+          ls -lah /srv/privateinhomecare/backups/ 2>/dev/null
           echo ""
-          echo "=== git log of routes.ts on server ==="
-          git log --oneline -3 server/routes.ts || true
+          echo "=== /root contents ==="
+          ls -lah /root/ 2>/dev/null
           echo ""
-          echo "=== sed extract static-related lines from routes.ts on server ==="
-          grep -n "express\.static\|/attached_assets\|/thumbnails\|/uploads" server/routes.ts | head -20
+          echo "=== Postgres databases ==="
+          sudo -u postgres psql -l 2>/dev/null
           echo ""
-          echo "=== Test trailing slash variant ==="
-          curl -s -o /dev/null -w "trailing slash: %{http_code} %{content_type}\n" "http://localhost:5000/attached_assets/stock_images/"
-          curl -s -o /dev/null -w "no slash: %{http_code} %{content_type}\n" "http://localhost:5000/attached_assets"
-          curl -s -o /dev/null -w "with slash: %{http_code} %{content_type}\n" "http://localhost:5000/attached_assets/"
+          echo "=== Article count in current DB ==="
+          sudo -u postgres psql -d privateinhomecare -c "SELECT COUNT(*), MIN(created_at), MAX(created_at) FROM articles;" 2>/dev/null
+          echo ""
+          echo "=== Postgres data dirs and any other DBs/files ==="
+          ls -lah /var/lib/postgresql/ 2>/dev/null
+          echo ""
+          echo "=== /var/www contents (other sites?) ==="
+          ls -lah /var/www/ 2>/dev/null
+          ls -lah /var/www/html/ 2>/dev/null
           REMOTE
