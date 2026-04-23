@@ -7,27 +7,31 @@ jobs:
   recover:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      DO_ROOT_PASSWORD: ${{ secrets.DO_ROOT_PASSWORD }}
     steps:
-      - name: Setup SSH
+      - name: Setup
         run: |
           set -euo pipefail
+          sudo apt-get update -qq && sudo apt-get install -y -qq sshpass
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H 165.227.188.129 >> ~/.ssh/known_hosts 2>/dev/null
-          ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -T 10 -H 165.227.188.129 >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -T 10 -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Install our key into recovery droplet via password
+        run: |
+          set -euo pipefail
+          PUB=$(ssh-keygen -y -f ~/.ssh/deploy_key)
+          echo "Pub: ${PUB:0:50}..."
+          sshpass -p "$DO_ROOT_PASSWORD" ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=password -o PubkeyAuthentication=no root@165.227.188.129 \
+            "mkdir -p /root/.ssh && chmod 700 /root/.ssh && echo '$PUB' >> /root/.ssh/authorized_keys && chmod 600 /root/.ssh/authorized_keys && echo INSTALLED"
 
       - name: Inspect recovery droplet
         run: |
           set -euo pipefail
-          for try in 1 2 3 4 5; do
-            if ssh -i ~/.ssh/deploy_key -o ConnectTimeout=15 -o BatchMode=yes root@165.227.188.129 'echo OK' 2>/dev/null; then
-              echo "SSH ready"; break
-            fi
-            echo "SSH not ready, sleeping 20s (try $try)"
-            sleep 20
-          done
-          ssh -i ~/.ssh/deploy_key root@165.227.188.129 'bash -s' <<'REMOTE'
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@165.227.188.129 'bash -s' <<'REMOTE'
           set -e
           echo "Hostname: $(hostname)"
           echo ""
@@ -39,20 +43,27 @@ jobs:
           echo "--- databases ---"
           sudo -u postgres psql -l 2>&1 | head -30
           echo ""
-          echo "--- article counts ---"
+          echo "--- table counts per db ---"
           for db in $(sudo -u postgres psql -At -c "SELECT datname FROM pg_database WHERE datname NOT IN ('template0','template1','postgres');" 2>/dev/null); do
-            COUNT=$(sudo -u postgres psql -At -d "$db" -c "SELECT count(*) FROM articles;" 2>/dev/null || echo "no_table")
-            FACILITIES=$(sudo -u postgres psql -At -d "$db" -c "SELECT count(*) FROM facilities;" 2>/dev/null || echo "no_table")
-            echo "DB=$db articles=$COUNT facilities=$FACILITIES"
+            ART=$(sudo -u postgres psql -At -d "$db" -c "SELECT count(*) FROM articles;" 2>/dev/null || echo "no_table")
+            FAQ=$(sudo -u postgres psql -At -d "$db" -c "SELECT count(*) FROM article_faqs;" 2>/dev/null || echo "no_table")
+            FAC=$(sudo -u postgres psql -At -d "$db" -c "SELECT count(*) FROM facilities;" 2>/dev/null || echo "no_table")
+            FFAQ=$(sudo -u postgres psql -At -d "$db" -c "SELECT count(*) FROM facility_faqs;" 2>/dev/null || echo "no_table")
+            echo "DB=$db articles=$ART article_faqs=$FAQ facilities=$FAC facility_faqs=$FFAQ"
           done
           echo ""
-          echo "--- /var/www ---"
-          ls /var/www/ 2>/dev/null || true
-          ls /var/www/html/ 2>/dev/null || true
+          echo "--- /var/www tree ---"
+          ls -la /var/www/ 2>/dev/null || true
+          ls -la /var/www/html/ 2>/dev/null | head -30 || true
           echo ""
-          echo "--- look for .env files ---"
-          find /var/www /root /home -maxdepth 4 -name '.env*' 2>/dev/null | head -20
+          echo "--- env files ---"
+          find /var/www /root /opt -maxdepth 4 -name '.env*' 2>/dev/null | head -20
           echo ""
-          echo "--- look for SQL backups ---"
-          find / -name '*.sql' -size +100k 2>/dev/null | grep -v /proc | head -20
+          echo "--- sql backups ---"
+          find / -name '*.sql*' -size +50k 2>/dev/null | grep -v /proc | head -20
+          echo ""
+          echo "--- media folders sizes ---"
+          du -sh /srv/* 2>/dev/null || true
+          du -sh /var/www/html/*/uploads 2>/dev/null || true
+          du -sh /var/www/html/*/attached_assets 2>/dev/null || true
           REMOTE
