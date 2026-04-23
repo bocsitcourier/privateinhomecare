@@ -1,0 +1,92 @@
+name: Reinstall All Dependencies
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Setup SSH
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Full clean install of dependencies
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'bash -s' <<'REMOTE'
+          set -euo pipefail
+          cd /var/www/html/privateinhomecare
+
+          echo "=== Disk before ==="
+          df -h /
+          free -m
+
+          echo "=== Removing corrupted node_modules ==="
+          rm -rf node_modules
+          rm -f package-lock.json.bak
+          [ -f package-lock.json ] && cp package-lock.json package-lock.json.bak
+
+          echo "=== Running npm ci (incl. dev deps - bundle needs them) ==="
+          npm ci --no-audit --no-fund 2>&1 | tail -10 || npm install --no-audit --no-fund 2>&1 | tail -10
+
+          echo "=== Verify critical packages ==="
+          for pkg in dotenv googleapis @vitejs/plugin-react vite express drizzle-orm pg; do
+            if [ -f "node_modules/$pkg/package.json" ]; then
+              VER=$(node -e "console.log(require('$pkg/package.json').version)" 2>/dev/null || echo "?")
+              echo "  ✓ $pkg@$VER"
+            else
+              echo "  ✗ $pkg MISSING"
+            fi
+          done
+
+          echo "=== Disk after ==="
+          df -h /
+
+          echo "=== Hard restart PM2 ==="
+          pm2 kill || true
+          sleep 2
+          pm2 start ecosystem.config.cjs
+          sleep 8
+          pm2 save
+          pm2 list
+
+          echo "=== Listening on 5000? ==="
+          ss -lntp | grep :5000 || echo "Not listening"
+
+          echo "=== Health checks ==="
+          for i in 1 2 3 4 5 6 7 8; do
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/api/articles)
+            echo "  attempt $i: /api/articles -> $CODE"
+            if [ "$CODE" = "200" ]; then break; fi
+            sleep 3
+          done
+
+          echo "=== Image smoke tests ==="
+          FIRST_IMG=$(ls /srv/privateinhomecare/media/attached_assets/stock_images/ 2>/dev/null | head -1 || true)
+          if [ -n "$FIRST_IMG" ]; then
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:5000/attached_assets/stock_images/$FIRST_IMG")
+            echo "  /attached_assets/stock_images/$FIRST_IMG -> $CODE"
+          fi
+          FIRST_FAC=$(ls /srv/privateinhomecare/media/uploads/facility-photos/ 2>/dev/null | head -1 || true)
+          if [ -n "$FIRST_FAC" ]; then
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:5000/uploads/facility-photos/$FIRST_FAC")
+            echo "  /uploads/facility-photos/$FIRST_FAC -> $CODE"
+          fi
+          FIRST_THUMB=$(ls /srv/privateinhomecare/media/thumbnails/ 2>/dev/null | head -1 || true)
+          if [ -n "$FIRST_THUMB" ]; then
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:5000/thumbnails/$FIRST_THUMB")
+            echo "  /thumbnails/$FIRST_THUMB -> $CODE"
+          fi
+
+          echo "=== Last 10 error log lines (since this restart) ==="
+          tail -10 /root/.pm2/logs/privateinhomecare-error-0.log || true
+          REMOTE
+
+      - name: Update deploy.yml note
+        if: success()
+        run: echo "Note: deploy.yml should use 'npm ci' (not --omit=dev) since bundle imports dev deps." >> $GITHUB_STEP_SUMMARY

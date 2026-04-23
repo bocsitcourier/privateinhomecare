@@ -1,0 +1,155 @@
+name: Transfer Media to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      bundle_url:
+        description: "Public URL of media tar.gz bundle"
+        required: true
+        type: string
+
+jobs:
+  transfer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Setup SSH
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          cat > ~/.ssh/config <<'CFG'
+          Host *
+            ServerAliveInterval 30
+            ServerAliveCountMax 60
+            TCPKeepAlive yes
+            ConnectTimeout 30
+          CFG
+
+      - name: Set up persistent media root and download bundle
+        env:
+          BUNDLE_URL: ${{ inputs.bundle_url }}
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+              "BUNDLE_URL='${BUNDLE_URL}' bash -s" <<'REMOTE'
+          set -euo pipefail
+          MEDIA_ROOT=/srv/privateinhomecare/media
+          APP_DIR=/var/www/html/privateinhomecare
+          STAGING=/tmp/media_staging
+
+          echo "=== Disk before ==="
+          df -h /
+
+          mkdir -p "$MEDIA_ROOT" "$STAGING"
+          rm -f "$STAGING/bundle.tar.gz"
+
+          echo "=== Downloading bundle ==="
+          curl -L --fail --retry 3 --retry-delay 5 \
+               -o "$STAGING/bundle.tar.gz" "$BUNDLE_URL"
+          ls -lh "$STAGING/bundle.tar.gz"
+
+          echo "=== Extracting to staging ==="
+          rm -rf "$STAGING/extracted"
+          mkdir -p "$STAGING/extracted"
+          tar -xzf "$STAGING/bundle.tar.gz" -C "$STAGING/extracted"
+          ls "$STAGING/extracted"
+
+          echo "=== Merging into persistent media root ==="
+          # Use cp -rn (no-clobber) so future admin uploads on server are preserved
+          for sub in uploads attached_assets; do
+            if [ -d "$STAGING/extracted/$sub" ]; then
+              mkdir -p "$MEDIA_ROOT/$sub"
+              cp -rn "$STAGING/extracted/$sub/." "$MEDIA_ROOT/$sub/"
+            fi
+          done
+          # Videos and thumbnails come from public/
+          for sub in videos thumbnails; do
+            if [ -d "$STAGING/extracted/public/$sub" ]; then
+              mkdir -p "$MEDIA_ROOT/$sub"
+              cp -rn "$STAGING/extracted/public/$sub/." "$MEDIA_ROOT/$sub/"
+            fi
+          done
+
+          echo "=== Counts in media root ==="
+          for sub in uploads attached_assets videos thumbnails; do
+            CNT=$(find "$MEDIA_ROOT/$sub" -type f 2>/dev/null | wc -l)
+            SIZE=$(du -sh "$MEDIA_ROOT/$sub" 2>/dev/null | cut -f1)
+            echo "  $sub: $CNT files ($SIZE)"
+          done
+
+          echo "=== Setting up symlinks in app dir ==="
+          cd "$APP_DIR"
+          mkdir -p public
+
+          # uploads/
+          if [ -d uploads ] && [ ! -L uploads ]; then
+            BACKUP="uploads.bak.$(date +%s)"
+            mv uploads "$BACKUP"
+            # Migrate any pre-existing files into media root, then remove backup
+            cp -rn "$BACKUP/." "$MEDIA_ROOT/uploads/" || true
+            rm -rf "$BACKUP"
+          fi
+          ln -sfn "$MEDIA_ROOT/uploads" uploads
+
+          # attached_assets/
+          if [ -d attached_assets ] && [ ! -L attached_assets ]; then
+            BACKUP="attached_assets.bak.$(date +%s)"
+            mv attached_assets "$BACKUP"
+            cp -rn "$BACKUP/." "$MEDIA_ROOT/attached_assets/" || true
+            rm -rf "$BACKUP"
+          fi
+          ln -sfn "$MEDIA_ROOT/attached_assets" attached_assets
+
+          # public/videos
+          if [ -d public/videos ] && [ ! -L public/videos ]; then
+            BACKUP="public/videos.bak.$(date +%s)"
+            mv public/videos "$BACKUP"
+            cp -rn "$BACKUP/." "$MEDIA_ROOT/videos/" || true
+            rm -rf "$BACKUP"
+          fi
+          ln -sfn "$MEDIA_ROOT/videos" public/videos
+
+          # public/thumbnails
+          if [ -d public/thumbnails ] && [ ! -L public/thumbnails ]; then
+            BACKUP="public/thumbnails.bak.$(date +%s)"
+            mv public/thumbnails "$BACKUP"
+            cp -rn "$BACKUP/." "$MEDIA_ROOT/thumbnails/" || true
+            rm -rf "$BACKUP"
+          fi
+          ln -sfn "$MEDIA_ROOT/thumbnails" public/thumbnails
+
+          echo "=== Symlinks ==="
+          ls -la uploads attached_assets public/videos public/thumbnails
+
+          echo "=== Cleaning staging ==="
+          rm -rf "$STAGING"
+
+          echo "=== Disk after ==="
+          df -h /
+
+          echo "=== Restarting PM2 ==="
+          pm2 restart privateinhomecare --update-env
+          sleep 4
+          pm2 status
+
+          echo "=== Smoke tests ==="
+          # Pick first file in each dir and curl it
+          for sub in uploads attached_assets/stock_images videos thumbnails; do
+            FIRST=$(find "$MEDIA_ROOT/${sub%%/*}" -type f 2>/dev/null | head -1)
+            if [ -n "$FIRST" ]; then
+              REL="${FIRST#$MEDIA_ROOT/}"
+              # Map media-root subdir back to URL path
+              case "$REL" in
+                uploads/*) URL="/uploads/${REL#uploads/}" ;;
+                attached_assets/*) URL="/attached_assets/${REL#attached_assets/}" ;;
+                videos/*) URL="/videos/${REL#videos/}" ;;
+                thumbnails/*) URL="/thumbnails/${REL#thumbnails/}" ;;
+              esac
+              CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:5000$URL")
+              echo "  $URL -> $CODE"
+            fi
+          done
+          REMOTE

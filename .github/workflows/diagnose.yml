@@ -1,0 +1,42 @@
+name: Diagnose Production
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Setup SSH
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Inspect bundled code
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'bash -s' <<'REMOTE'
+          cd /var/www/html/privateinhomecare
+          echo "=== grep dist/index.js for static mounts ==="
+          grep -n -o 'express\.static[^)]*)' dist/index.js | head -20
+          echo ""
+          echo "=== grep dist/index.js for these path strings ==="
+          for path in '/uploads' '/attached_assets' '/thumbnails' '/videos' 'public/thumbnails'; do
+            echo "--- searching: $path"
+            grep -c "\"$path\"\|'$path'" dist/index.js || true
+          done
+          echo ""
+          echo "=== git log of routes.ts on server ==="
+          git log --oneline -3 server/routes.ts || true
+          echo ""
+          echo "=== sed extract static-related lines from routes.ts on server ==="
+          grep -n "express\.static\|/attached_assets\|/thumbnails\|/uploads" server/routes.ts | head -20
+          echo ""
+          echo "=== Test trailing slash variant ==="
+          curl -s -o /dev/null -w "trailing slash: %{http_code} %{content_type}\n" "http://localhost:5000/attached_assets/stock_images/"
+          curl -s -o /dev/null -w "no slash: %{http_code} %{content_type}\n" "http://localhost:5000/attached_assets"
+          curl -s -o /dev/null -w "with slash: %{http_code} %{content_type}\n" "http://localhost:5000/attached_assets/"
+          REMOTE

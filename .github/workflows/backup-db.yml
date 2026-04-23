@@ -1,0 +1,70 @@
+name: Daily Postgres Backup
+
+on:
+  schedule:
+    # 06:00 UTC daily (~02:00 US Eastern)
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Setup SSH
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Run pg_dump on droplet (retain 14 days)
+        env:
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+              "DB_PASSWORD='${DB_PASSWORD}' bash -s" <<'REMOTE'
+          set -euo pipefail
+          BACKUP_DIR=/var/backups/postgres
+          mkdir -p "$BACKUP_DIR"
+          STAMP=$(date -u +%Y%m%d_%H%M%S)
+          OUT="$BACKUP_DIR/privateinhomecare_${STAMP}.sql.gz"
+
+          PGPASSWORD="$DB_PASSWORD" pg_dump -h 127.0.0.1 -U postgres \
+            --no-owner --no-privileges --clean --if-exists \
+            -d privateinhomecare | gzip -9 > "$OUT"
+
+          # Validate backup is non-trivial in size (>100KB)
+          SIZE=$(stat -c%s "$OUT")
+          if [ "$SIZE" -lt 102400 ]; then
+            echo "ERROR: Backup file too small ($SIZE bytes)"
+            rm -f "$OUT"
+            exit 1
+          fi
+
+          # Retain only last 14 daily backups
+          ls -1t "$BACKUP_DIR"/privateinhomecare_*.sql.gz 2>/dev/null | tail -n +15 | xargs -r rm -f
+
+          ls -lh "$BACKUP_DIR" | tail -20
+          echo "Backup: $OUT ($SIZE bytes)"
+          REMOTE
+
+      - name: Download latest backup as artifact
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            'ls -1t /var/backups/postgres/privateinhomecare_*.sql.gz | head -1' > /tmp/latest_path.txt
+          LATEST=$(cat /tmp/latest_path.txt)
+          mkdir -p backup_artifact
+          scp -i ~/.ssh/deploy_key \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:$LATEST" \
+            backup_artifact/
+
+      - name: Upload backup artifact (30-day retention)
+        uses: actions/upload-artifact@v4
+        with:
+          name: postgres-backup-${{ github.run_id }}
+          path: backup_artifact/*.sql.gz
+          retention-days: 30
