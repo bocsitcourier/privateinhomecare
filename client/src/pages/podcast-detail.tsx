@@ -185,9 +185,9 @@ export default function PodcastDetailPage() {
     );
   }
 
-  // Has audio if there's an uploaded file, an embed, OR a transcript (on-demand TTS)
+  // Has audio if there's an uploaded file or embed URL; transcript is shown separately as text
   const hasAudio = podcast.audioUrl || podcast.embedUrl || podcast.transcript;
-  const audioSrc = podcast.audioUrl || (podcast.transcript ? `/api/podcasts/${podcast.slug}/audio` : null);
+  const audioSrc = podcast.audioUrl || null; // TTS not available — transcript shown as readable text instead
 
   return (
     <>
@@ -418,6 +418,15 @@ export default function PodcastDetailPage() {
               </Card>
             )}
 
+            {!audioSrc && !podcast.embedUrl && podcast.transcript && (
+              <Card className="mb-8">
+                <CardContent className="p-8 text-center">
+                  <Headphones className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-foreground font-medium mb-1">Audio coming soon</p>
+                  <p className="text-muted-foreground text-sm">Read the full transcript below while audio is being prepared.</p>
+                </CardContent>
+              </Card>
+            )}
             {!hasAudio && (
               <Card className="mb-8">
                 <CardContent className="p-8 text-center">
