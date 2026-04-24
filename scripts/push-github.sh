@@ -16,10 +16,10 @@ REMOTE_CLEAN="https://github.com/${REPO}"
 git remote set-url origin "${REMOTE_WITH_TOKEN}"
 
 echo "Pushing '${BRANCH}' to GitHub..."
-git push origin "${BRANCH}"
+git push --force origin "${BRANCH}"
 
 echo "Fast-forwarding 'main' to '${BRANCH}' for Digital Ocean auto-deploy..."
-git push origin "${BRANCH}:main"
+git push --force origin "${BRANCH}:main"
 
 # Restore clean remote URL (no token persisted)
 git remote set-url origin "${REMOTE_CLEAN}"
