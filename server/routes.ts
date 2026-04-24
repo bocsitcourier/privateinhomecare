@@ -61,10 +61,16 @@ const maskIp = (ip: string | undefined): string => {
   return crypto.createHash('md5').update(ip).digest('hex').substring(0, 10);
 };
 
-const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-});
+let _openaiInstance: OpenAI | null = null;
+function getOpenAI(): OpenAI {
+  if (!_openaiInstance) {
+    _openaiInstance = new OpenAI({
+      apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+      baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+    });
+  }
+  return _openaiInstance;
+}
 
 declare module 'express-session' {
   interface SessionData {
@@ -4330,7 +4336,7 @@ Generate the following fields in JSON format:
 
 Focus on Massachusetts senior care, in-home care, caregiving, and healthcare topics.`;
 
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAI().chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
           { role: "system", content: "You are an SEO/GEO expert. Output valid JSON only." },
@@ -4390,7 +4396,7 @@ Generate the following fields in JSON format:
 
 Focus on Massachusetts senior care, in-home care, caregiving, and healthcare topics.`;
 
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAI().chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
           { role: "system", content: "You are an SEO/GEO expert. Output valid JSON only." },
@@ -4421,7 +4427,7 @@ Theme: Massachusetts in-home senior care, caregiving, family support.
 Category: ${video.category}.
 Requirements: No text, photorealistic, welcoming, trustworthy, 16:9 aspect ratio.`;
 
-      const response = await openai.images.generate({
+      const response = await getOpenAI().images.generate({
         model: "gpt-image-1",
         prompt,
         n: 1,
@@ -4622,7 +4628,7 @@ Theme: Massachusetts in-home senior care, caregiving, family support.
 Category: ${podcast.category}.
 Requirements: No text, podcast cover style, square format, professional, welcoming.`;
 
-      const response = await openai.images.generate({
+      const response = await getOpenAI().images.generate({
         model: "gpt-image-1",
         prompt,
         n: 1,
@@ -8596,7 +8602,7 @@ STRICT REQUIREMENTS:
       const results = [];
       for (const art of batch) {
         try {
-          const response = await openai.chat.completions.create({
+          const response = await getOpenAI().chat.completions.create({
             model: 'gpt-5-nano',
             max_completion_tokens: 6000,
             response_format: { type: 'json_object' },
