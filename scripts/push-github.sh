@@ -8,17 +8,21 @@ if [ -z "$GITHUB_PERSONAL_ACCESS_TOKEN" ]; then
 fi
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
+REPO="bocsitcourier/privateinhomecare"
+REMOTE_WITH_TOKEN="https://x-token:${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/${REPO}"
+REMOTE_CLEAN="https://github.com/${REPO}"
 
-# Credentials are passed via transient -c flag (not written to .git/config)
-GIT_PUSH="git -c credential.helper='!f(){ echo username=x-token; echo password=$GITHUB_PERSONAL_ACCESS_TOKEN; }; f'"
-ORIGIN="https://github.com/bocsitcourier/privateinhomecare"
-git remote set-url origin "$ORIGIN"
+# Set token URL only for the duration of the push, then restore clean URL
+git remote set-url origin "${REMOTE_WITH_TOKEN}"
 
 echo "Pushing '${BRANCH}' to GitHub..."
-eval "$GIT_PUSH push origin ${BRANCH}"
+git push origin "${BRANCH}"
 
 echo "Fast-forwarding 'main' to '${BRANCH}' for Digital Ocean auto-deploy..."
-eval "$GIT_PUSH push origin ${BRANCH}:main"
+git push origin "${BRANCH}:main"
+
+# Restore clean remote URL (no token persisted)
+git remote set-url origin "${REMOTE_CLEAN}"
 
 LOCAL_SHA=$(git rev-parse HEAD)
 echo "Verified: HEAD = ${LOCAL_SHA}"

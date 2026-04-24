@@ -149,6 +149,17 @@ function GeminiAudioPlayer({ slug }: { slug: string }) {
       });
   };
 
+  if (state === "idle") {
+    return (
+      <Card className="mb-8" data-testid="card-audio-loading">
+        <CardContent className="p-6 flex items-center gap-3 text-muted-foreground">
+          <Loader2 className="w-5 h-5 animate-spin text-primary flex-shrink-0" />
+          <span className="text-sm">Loading audio…</span>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (state === "generating") {
     return (
       <Card className="mb-8" data-testid="card-audio-generating">
