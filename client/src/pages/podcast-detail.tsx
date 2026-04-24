@@ -134,7 +134,9 @@ export default function PodcastDetailPage() {
     );
   }
 
-  const hasAudio = podcast.audioUrl || podcast.embedUrl;
+  // Has audio if there's an uploaded file, an embed, OR a transcript (on-demand TTS)
+  const hasAudio = podcast.audioUrl || podcast.embedUrl || podcast.transcript;
+  const audioSrc = podcast.audioUrl || (podcast.transcript ? `/api/podcasts/${podcast.slug}/audio` : null);
 
   return (
     <>
@@ -160,9 +162,9 @@ export default function PodcastDetailPage() {
             url: `https://privateinhomecaregiver.com/podcasts/${podcast.slug}`,
             datePublished: podcast.publishedAt ? new Date(podcast.publishedAt).toISOString() : new Date().toISOString(),
             duration: podcast.duration ? `PT${podcast.duration}S` : undefined,
-            audio: podcast.audioUrl ? {
+            audio: audioSrc ? {
               "@type": "AudioObject",
-              contentUrl: podcast.audioUrl,
+              contentUrl: `https://privateinhomecaregiver.com${audioSrc.startsWith('/') ? audioSrc : `/${audioSrc}`}`,
               duration: podcast.duration ? `PT${podcast.duration}S` : undefined,
               encodingFormat: "audio/mpeg"
             } : undefined,
@@ -265,10 +267,10 @@ export default function PodcastDetailPage() {
               </div>
             </div>
 
-            {podcast.audioUrl && (
+            {audioSrc && (
               <Card className="mb-8" data-testid="card-audio-player">
                 <CardContent className="p-6">
-                  <audio ref={audioRef} src={podcast.audioUrl} preload="metadata" />
+                  <audio ref={audioRef} src={audioSrc} preload="metadata" />
                   
                   <div className="flex items-center gap-4">
                     <Button

@@ -4655,6 +4655,27 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
     }
   });
 
+  // On-demand TTS audio generation for a podcast episode
+  // Generates audio the first time it's requested; caches to disk after that
+  app.get("/api/podcasts/:slug/audio", async (req: Request, res: Response) => {
+    try {
+      const { generatePodcastAudio } = await import("./generate-podcasts");
+      const audioBuffer = await generatePodcastAudio(req.params.slug);
+      if (!audioBuffer) {
+        return res.status(404).json({ message: "Audio unavailable — transcript not found or generation failed" });
+      }
+      res.set({
+        "Content-Type": "audio/mpeg",
+        "Content-Length": audioBuffer.length,
+        "Cache-Control": "public, max-age=86400",
+        "Accept-Ranges": "bytes",
+      });
+      res.send(audioBuffer);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to generate audio", error: error.message });
+    }
+  });
+
   // Admin: List all podcasts
   app.get("/api/admin/podcasts", requireAuth, async (req: Request, res: Response) => {
     try {
