@@ -81,8 +81,20 @@ function GeminiAudioPlayer({ slug }: { slug: string }) {
     }
   };
 
-  // On mount, check if audio is already cached — skip the "Generate" button if so
+  // On mount: if audio is cached → load it; if generating → resume polling; otherwise auto-start
   useEffect(() => {
+    const startPolling = () => {
+      timerRef.current = setInterval(() => setElapsedSec((s) => s + 1), 1000);
+      pollingRef.current = setInterval(async () => {
+        try {
+          const sr = await fetch(`/api/podcasts/${slug}/audio/status`);
+          const sd = await sr.json();
+          if (sd.status === "ready") { stopPolling(); loadAudio(); }
+          else if (sd.status === "error") { stopPolling(); setState("error"); setErrorMsg(sd.error || "Generation failed"); }
+        } catch { /* ignore transient errors */ }
+      }, 3000);
+    };
+
     fetch(`/api/podcasts/${slug}/audio/status`)
       .then((r) => r.json())
       .then((data) => {
@@ -90,18 +102,20 @@ function GeminiAudioPlayer({ slug }: { slug: string }) {
           loadAudio();
         } else if (data.status === "generating") {
           setState("generating");
-          timerRef.current = setInterval(() => setElapsedSec((s) => s + 1), 1000);
-          pollingRef.current = setInterval(async () => {
-            try {
-              const sr = await fetch(`/api/podcasts/${slug}/audio/status`);
-              const sd = await sr.json();
-              if (sd.status === "ready") { stopPolling(); loadAudio(); }
-              else if (sd.status === "error") { stopPolling(); setState("error"); setErrorMsg(sd.error || "Generation failed"); }
-            } catch { /* ignore */ }
-          }, 3000);
+          startPolling();
+        } else {
+          // Not cached yet — auto-start generation immediately
+          setState("generating");
+          fetch(`/api/podcasts/${slug}/audio/generate`, { method: "POST", headers: { "Content-Type": "application/json" } })
+            .then((r) => r.json())
+            .then((d) => {
+              if (d.status === "ready") { loadAudio(); }
+              else { startPolling(); }
+            })
+            .catch(() => { setState("idle"); });
         }
       })
-      .catch(() => { /* ignore — stay idle */ });
+      .catch(() => { /* stay idle on network error */ });
     return () => stopPolling();
   }, [slug]);
 
