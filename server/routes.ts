@@ -8471,6 +8471,110 @@ ${faqJsonLd}
     }
   });
 
+  // ===== TEMPORARY: Article Generation Endpoint =====
+  app.post("/api/admin/generate-restore-articles", async (req: Request, res: Response) => {
+    try {
+      const { readFileSync } = await import('fs');
+      const manifestPath = path.join(process.cwd(), 'scripts/restore_manifest.json');
+      const manifest: Array<{title:string;slug:string;imageFile:string;category:string;city:string;topic:string}> = JSON.parse(readFileSync(manifestPath, 'utf8'));
+      
+      const { startIndex = 0, count = 1 } = req.body;
+      const batch = manifest.slice(startIndex, startIndex + count);
+      
+      const SYSTEM = `You are a professional SEO content writer for PrivateInHomeCareGiver, a Massachusetts in-home care agency.
+      
+STRICT REQUIREMENTS:
+- Write MINIMUM 2500 words of body HTML
+- Start body with a strong H2 (not H1)
+- Include 6-8 H2 sections, each with 3-4 paragraphs and H3 subsections
+- Embed 8-12 hyperlinked long-phrase keywords naturally in text:
+  <a href="/personal-care/massachusetts">personal care services in Massachusetts</a>
+  <a href="/non-medical-caregiver/massachusetts">non-medical caregiver services in Greater Boston</a>
+  <a href="/live-in-care/massachusetts">live-in caregiver support in Massachusetts</a>
+  <a href="/dementia-care/massachusetts">specialized dementia care in Massachusetts</a>
+  <a href="/respite-care/massachusetts">respite care for family caregivers in Massachusetts</a>
+  <a href="/companion-care/massachusetts">companion care services for Massachusetts seniors</a>
+  <a href="/services">comprehensive in-home care services</a>
+  <a href="/find-caregivers">find a trusted private caregiver near you</a>
+  <a href="/contact">schedule a free in-home consultation</a>
+  <a href="/errand-running/massachusetts">errand running and shopping assistance</a>
+  <a href="/homemaking/massachusetts">homemaking and light housekeeping services</a>
+- Include CTA paragraph before FAQ referencing (617) 686-0595
+- End with <h2>Frequently Asked Questions</h2> with 7 Q&As using <h3> for questions, <p> for answers
+- Final element must be: <div class="article-hashtags"><p>10 hashtag links</p></div>
+  Example: <a href="/services">#InHomeCareMassachusetts</a> <a href="/personal-care/massachusetts">#SeniorCareBoston</a> <a href="/dementia-care/massachusetts">#DementiaCare</a>
+- Always mention Massachusetts cities, phone (617) 686-0595, website privateinhomecaregiverma.com`;
+
+      const results = [];
+      for (const art of batch) {
+        try {
+          const response = await openai.chat.completions.create({
+            model: 'gpt-5-nano',
+            max_completion_tokens: 6000,
+            response_format: { type: 'json_object' },
+            messages: [
+              { role: 'system', content: SYSTEM },
+              {
+                role: 'user',
+                content: `Generate complete article for:
+Title: "${art.title}"
+Slug: ${art.slug}
+City focus: ${art.city}
+Key topics: ${art.topic}
+Category: ${art.category}
+
+Return JSON with exactly these keys:
+- slug: "${art.slug}"
+- excerpt: string 155-200 chars
+- metaTitle: string max 60 chars
+- metaDescription: string 150-160 chars
+- keywords: array of 10 MA-focused keyword strings
+- bodyHtml: string with FULL 2500+ word article HTML`
+              }
+            ]
+          });
+
+          const gen = JSON.parse(response.choices[0].message.content);
+          const wordCount = (gen.bodyHtml || '').replace(/<[^>]+>/g, ' ').split(/\s+/).filter((w: string) => w.length > 0).length;
+
+          // Insert into database
+          const articleData = {
+            title: art.title,
+            slug: art.slug,
+            excerpt: gen.excerpt || '',
+            body: gen.bodyHtml || '',
+            heroImageUrl: `/attached_assets/${art.imageFile}`,
+            metaTitle: gen.metaTitle || art.title.substring(0, 60),
+            metaDescription: gen.metaDescription || gen.excerpt || '',
+            keywords: gen.keywords || [],
+            category: art.category,
+            status: 'published' as const,
+            publishedAt: new Date(),
+          };
+
+          // Check if slug already exists
+          const existing = await storage.getArticleBySlug(art.slug);
+          let savedArticle;
+          if (existing) {
+            savedArticle = await storage.updateArticle(existing.id, articleData);
+          } else {
+            savedArticle = await storage.createArticle(articleData);
+          }
+
+          results.push({ slug: art.slug, id: savedArticle?.id, wordCount, status: 'success' });
+        } catch (err) {
+          results.push({ slug: art.slug, status: 'error', error: String(err) });
+        }
+      }
+
+      res.json({ results, total: manifest.length, generated: results.length });
+    } catch (error) {
+      console.error('Article generation error:', error);
+      res.status(500).json({ message: 'Generation failed', error: String(error) });
+    }
+  });
+  // ===== END TEMPORARY =====
+
   const httpServer = createServer(app);
   return httpServer;
 }

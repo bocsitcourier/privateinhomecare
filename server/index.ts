@@ -8,6 +8,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { hipaaAuditMiddleware } from "./middleware/hipaa-audit";
 import { startAutoRefreshScheduler } from "./scheduler";
+import { generateMissingArticles } from "./generate-missing-articles";
 import { promises as fsPromises } from "fs";
 import pathModule from "path";
 import { storage } from "./storage";
@@ -341,6 +342,8 @@ app.use((req, res, next) => {
     log(`serving on port ${port}`);
     startAutoRefreshScheduler();
     autoFixLocationPhotoUrls();
+    // Generate any missing articles from the restore manifest (runs in background)
+    generateMissingArticles().catch(err => console.error('[ArticleGen] Fatal error:', err));
   });
 })();
 
