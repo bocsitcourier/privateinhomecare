@@ -11,7 +11,7 @@ export default function ApplicationThankYouPage() {
     <div className="min-h-screen bg-background">
       <PageSEO 
         pageSlug="application-thank-you"
-        fallbackTitle="Application Received — PrivateInHomeCareGiver"
+        fallbackTitle="Application Received — Private InHome CareGiver"
         fallbackDescription="Thank you for your job application. We will review your submission and contact you soon."
         noindex={true}
       />

@@ -6,7 +6,7 @@ export default function TermsAndConditionsPage() {
     <>
       <PageSEO
         pageSlug="terms-and-conditions"
-        fallbackTitle="Terms and Conditions - Service Agreement | PrivateInHomeCareGiver"
+        fallbackTitle="Terms and Conditions - Service Agreement | Private InHome CareGiver"
         fallbackDescription="Review our comprehensive service agreement and terms of service for private in-home care services in Massachusetts."
         canonicalPath="/terms-and-conditions"
       />

@@ -84,7 +84,7 @@ const TESTIMONIALS = [
     name: "Sarah M.",
     location: "Massachusetts",
     rating: 5,
-    text: "The caregiver we found through PrivateInHomeCareGiver has been an absolute blessing for our family. My mother looks forward to her visits and the quality of care is outstanding."
+    text: "The caregiver we found through Private InHome CareGiver has been an absolute blessing for our family. My mother looks forward to her visits and the quality of care is outstanding."
   },
   {
     name: "James T.",
@@ -159,7 +159,7 @@ export default function CityPage() {
       "@context": "https://schema.org",
       "@type": ["HomeHealthCareService", "LocalBusiness", "MedicalBusiness", "ProfessionalService"],
       "@id": `${baseUrl}/locations/${citySlug}`,
-      name: `PrivateInHomeCareGiver - ${cityName} Senior Care`,
+      name: `Private InHome CareGiver - ${cityName} Senior Care`,
       alternateName: `Private Pay Home Care ${cityName} MA`,
       url: `${baseUrl}/locations/${citySlug}`,
       logo: `${baseUrl}/logo.png`,
@@ -302,7 +302,7 @@ export default function CityPage() {
     <>
       <PageSEO 
         pageSlug={`city-${citySlug}`}
-        fallbackTitle={`${cityName} In-Home Care Services | Private Pay Senior Care | PrivateInHomeCareGiver`}
+        fallbackTitle={`${cityName} In-Home Care Services | Private Pay Senior Care | Private InHome CareGiver`}
         fallbackDescription={`Premium private pay in-home care for seniors in ${cityName}, Massachusetts. Personal care, companionship, homemaking, and dementia care. 24/7 availability, background-checked caregivers.`}
         canonicalPath={`/locations/${citySlug}`}
         includeMaGeoTargeting={true}

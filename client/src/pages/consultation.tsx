@@ -102,7 +102,7 @@ export default function ConsultationPage() {
     <>
       <PageSEO 
         pageSlug="consultation"
-        fallbackTitle="Request Free Consultation | PrivateInHomeCareGiver"
+        fallbackTitle="Request Free Consultation | Private InHome CareGiver"
         fallbackDescription="Request a free, no-obligation consultation to discuss your home care needs. Our team will work with you to create a personalized care plan for your loved one."
       />
       <Header />

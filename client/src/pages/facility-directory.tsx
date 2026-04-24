@@ -373,7 +373,7 @@ export default function FacilityDirectoryPage() {
         <meta property="og:description" content={pageDescription} />
         <meta property="og:url" content={`https://privateinhomecaregiver.com/facilities${selectedType !== "all" ? `/${selectedType}` : ""}`} />
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="PrivateInHomeCareGiver" />
+        <meta property="og:site_name" content="Private InHome CareGiver" />
         <meta property="og:locale" content="en_US" />
         
         <meta name="twitter:card" content="summary_large_image" />

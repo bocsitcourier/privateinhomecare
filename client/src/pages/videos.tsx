@@ -44,7 +44,7 @@ export default function VideosPage() {
     <>
       <PageSEO
         pageSlug="videos"
-        fallbackTitle="Care Videos | PrivateInHomeCareGiver"
+        fallbackTitle="Care Videos | Private InHome CareGiver"
         fallbackDescription="Watch educational videos about in-home care, caregiver training, health conditions, and family support resources in Massachusetts."
         canonicalPath="/videos"
         includeMaGeoTargeting={true}
@@ -62,7 +62,7 @@ export default function VideosPage() {
             url: "https://privateinhomecaregiver.com/videos",
             publisher: {
               "@type": "Organization",
-              name: "PrivateInHomeCareGiver",
+              name: "Private InHome CareGiver",
               url: "https://privateinhomecaregiver.com"
             },
             about: {

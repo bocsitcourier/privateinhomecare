@@ -132,7 +132,7 @@ export default function ReferAFriendPage() {
     <>
       <PageSEO 
         pageSlug="refer-a-friend"
-        fallbackTitle="Share Peace of Mind: Refer a Family | PrivateInHomeCareGiver"
+        fallbackTitle="Share Peace of Mind: Refer a Family | Private InHome CareGiver"
         fallbackDescription="Refer a family in need of compassionate home care and receive a $300 service credit. Help another family find the peace of mind you discovered."
       />
       <Header />

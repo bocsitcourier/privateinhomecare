@@ -178,7 +178,7 @@ export function generateApplicationNotificationEmail(application: {
           <a href="${baseUrl}/admin" class="button">View in Admin Dashboard</a>
         </div>
         <div class="footer">
-          <p>This is an automated notification from your PrivateInHomeCareGiver job application system.</p>
+          <p>This is an automated notification from your Private InHome CareGiver job application system.</p>
         </div>
       </div>
     </body>
@@ -254,7 +254,7 @@ export function generateInquiryNotificationEmail(inquiry: {
           <a href="${baseUrl}/admin/inquiries" class="button">View in Admin Dashboard</a>
         </div>
         <div class="footer">
-          <p>This is an automated notification from your PrivateInHomeCareGiver consultation system.</p>
+          <p>This is an automated notification from your Private InHome CareGiver consultation system.</p>
         </div>
       </div>
     </body>
@@ -371,7 +371,7 @@ export function generateReferralNotificationEmail(referral: {
           <a href="${baseUrl}/admin/referrals" class="button">View in Admin Dashboard</a>
         </div>
         <div class="footer">
-          <p>This is an automated notification from your PrivateInHomeCareGiver referral system.</p>
+          <p>This is an automated notification from your Private InHome CareGiver referral system.</p>
           <p>Remember to track this referral for potential incentive rewards!</p>
         </div>
       </div>

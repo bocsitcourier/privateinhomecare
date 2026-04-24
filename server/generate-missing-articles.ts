@@ -15,7 +15,7 @@ interface ManifestItem {
   topic: string;
 }
 
-const BODY_SYSTEM = `You are a professional SEO content writer for PrivateInHomeCareGiver, a Massachusetts in-home care agency.
+const BODY_SYSTEM = `You are a professional SEO content writer for Private InHome CareGiver, a Massachusetts in-home care agency.
 
 Output ONLY raw HTML body content. NO JSON. NO markdown backticks. Just the HTML.
 
@@ -41,7 +41,7 @@ HYPERLINKS (embed EXACTLY these 9 hyperlinks naturally within the text - at leas
 <a href="/contact">schedule a free in-home consultation</a>
 
 CTA PARAGRAPH (write exactly this before the FAQ section):
-<p>If you or a loved one needs professional support, <strong>PrivateInHomeCareGiver</strong> is here to help. Call us today at <strong>(617) 686-0595</strong> or visit <a href="/contact">privateinhomecaregiverma.com</a> to <a href="/contact">schedule a free in-home consultation</a>. Our caring team serves families across Massachusetts including Boston, Worcester, Springfield, Cambridge, Lowell, and beyond.</p>
+<p>If you or a loved one needs professional support, <strong>Private InHome CareGiver</strong> is here to help. Call us today at <strong>(617) 686-0595</strong> or visit <a href="/contact">privateinhomecaregiverma.com</a> to <a href="/contact">schedule a free in-home consultation</a>. Our caring team serves families across Massachusetts including Boston, Worcester, Springfield, Cambridge, Lowell, and beyond.</p>
 
 FAQ SECTION FORMAT:
 <h2>Frequently Asked Questions</h2>

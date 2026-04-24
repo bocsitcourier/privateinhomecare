@@ -216,8 +216,8 @@ export const SERVICE_FAQS: Record<string, ServiceFAQ[]> = {
 
 export const HOMEPAGE_FAQS: ServiceFAQ[] = [
   {
-    question: "What is PrivateInHomeCareGiver?",
-    answer: "PrivateInHomeCareGiver is a Massachusetts-based private home care agency that connects families with professional, compassionate Personal Care Assistants (PCAs). We provide personalized in-home care services including personal care, companionship, homemaking, dementia care, respite care, and 24/7 live-in support to help seniors age safely and comfortably at home."
+    question: "What is Private InHome CareGiver?",
+    answer: "Private InHome CareGiver is a Massachusetts-based private home care agency that connects families with professional, compassionate Personal Care Assistants (PCAs). We provide personalized in-home care services including personal care, companionship, homemaking, dementia care, respite care, and 24/7 live-in support to help seniors age safely and comfortably at home."
   },
   {
     question: "What areas in Massachusetts do you serve?",
@@ -236,7 +236,7 @@ export const HOMEPAGE_FAQS: ServiceFAQ[] = [
     answer: "Yes, absolutely. Every caregiver undergoes comprehensive CORI background checks, reference verification, and skills assessments before joining our team. We are fully licensed, bonded, and insured with liability and workers' compensation coverage for your complete peace of mind."
   },
   {
-    question: "What makes PrivateInHomeCareGiver different from other agencies?",
+    question: "What makes Private InHome CareGiver different from other agencies?",
     answer: "Our Platinum Standard approach means personalized matching based on personality and care needs, continuous quality monitoring, 24/7 support availability, and caregivers who become like extended family. As a private pay agency, we offer flexible scheduling and personalized care, ensuring your loved one receives exactly the care they need."
   },
   {

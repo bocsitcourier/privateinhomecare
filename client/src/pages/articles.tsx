@@ -26,7 +26,7 @@ export default function ArticlesPage() {
     <>
       <PageSEO 
         pageSlug="articles"
-        fallbackTitle="Articles & Resources | PrivateInHomeCareGiver"
+        fallbackTitle="Articles & Resources | Private InHome CareGiver"
         fallbackDescription="Read our latest articles about in-home care, caregiver tips, and resources for Massachusetts senior families."
         canonicalPath="/articles"
         includeMaGeoTargeting={true}
@@ -38,18 +38,18 @@ export default function ArticlesPage() {
           {
             "@context": "https://schema.org",
             "@type": "Blog",
-            name: "PrivateInHomeCareGiver Articles & Resources",
+            name: "Private InHome CareGiver Articles & Resources",
             description: "Expert articles about Massachusetts private pay in-home senior care, caregiver tips, health conditions, and family guidance.",
             url: "https://privateinhomecaregiver.com/articles",
             publisher: {
               "@type": "Organization",
-              name: "PrivateInHomeCareGiver",
+              name: "Private InHome CareGiver",
               url: "https://privateinhomecaregiver.com",
               logo: "https://privateinhomecaregiver.com/logo.png"
             },
             author: {
               "@type": "Organization",
-              name: "PrivateInHomeCareGiver"
+              name: "Private InHome CareGiver"
             },
             about: {
               "@type": "Thing",

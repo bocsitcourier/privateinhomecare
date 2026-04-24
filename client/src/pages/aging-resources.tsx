@@ -519,7 +519,7 @@ export default function AgingResourcesPage() {
     <>
       <PageSEO
         pageSlug="aging-resources"
-        fallbackTitle="Massachusetts Aging Resources | Complete Senior Services Guide | PrivateInHomeCareGiver"
+        fallbackTitle="Massachusetts Aging Resources | Complete Senior Services Guide | Private InHome CareGiver"
         fallbackDescription="Comprehensive guide to Massachusetts aging resources including all 24 ASAPs, home care, meals on wheels, housing options, and emergency services for older adults."
         canonicalPath="/aging-resources"
         includeMaGeoTargeting={true}

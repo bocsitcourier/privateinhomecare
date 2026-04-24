@@ -60,7 +60,7 @@ export default function MemoryCarePage() {
     <>
       <PageSEO
         pageSlug="memory-care-massachusetts"
-        fallbackTitle="Memory Care in Massachusetts | Alzheimer's & Dementia Care | PrivateInHomeCareGiver"
+        fallbackTitle="Memory Care in Massachusetts | Alzheimer's & Dementia Care | Private InHome CareGiver"
         fallbackDescription="Explore memory care options for Alzheimer's and dementia in Massachusetts. Learn about costs, when to consider memory care, and private pay in-home dementia care alternatives."
         canonicalPath="/memory-care/massachusetts"
         includeMaGeoTargeting={true}

@@ -59,7 +59,7 @@ export default function AssistedLivingPage() {
     <>
       <PageSEO
         pageSlug="assisted-living-massachusetts"
-        fallbackTitle="Assisted Living in Massachusetts | PrivateInHomeCareGiver"
+        fallbackTitle="Assisted Living in Massachusetts | Private InHome CareGiver"
         fallbackDescription="Explore assisted living options in Massachusetts. Learn about costs, services, and how private pay in-home care compares as a personalized alternative."
         canonicalPath="/assisted-living/massachusetts"
         includeMaGeoTargeting={true}

@@ -206,7 +206,7 @@ function generateStructuredData(schema: StructuredDataSchema): object {
         } : undefined,
         "publisher": {
           "@type": "Organization",
-          "name": schema.publisher || "PrivateInHomeCareGiver",
+          "name": schema.publisher || "Private InHome CareGiver",
           "logo": {
             "@type": "ImageObject",
             "url": `${baseUrl}/logo.png`
@@ -346,7 +346,7 @@ export default function SEOHead({
       <meta property="og:description" content={ogDescription || description} />
       <meta property="og:url" content={fullCanonicalUrl} />
       <meta property="og:type" content={ogType} />
-      <meta property="og:site_name" content="PrivateInHomeCareGiver" />
+      <meta property="og:site_name" content="Private InHome CareGiver" />
       <meta property="og:locale" content="en_US" />
       {ogImage && <meta property="og:image" content={ogImage.startsWith('http') ? ogImage : `${baseUrl}${ogImage}`} />}
       

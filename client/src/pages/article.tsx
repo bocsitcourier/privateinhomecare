@@ -214,12 +214,12 @@ export default function ArticlePage() {
     "headline": article.title,
     "author": {
       "@type": "Organization",
-      "name": "PrivateInHomeCareGiver",
+      "name": "Private InHome CareGiver",
       "url": window.location.origin
     },
     "publisher": {
       "@type": "Organization",
-      "name": "PrivateInHomeCareGiver",
+      "name": "Private InHome CareGiver",
       "url": window.location.origin
     },
     "mainEntityOfPage": {
@@ -320,7 +320,7 @@ export default function ArticlePage() {
         <meta property="og:url" content={canonicalUrl} />
         {article.heroImageUrl && <meta property="og:image" content={article.heroImageUrl} />}
         <meta property="og:type" content="article" />
-        <meta property="og:site_name" content="PrivateInHomeCareGiver" />
+        <meta property="og:site_name" content="Private InHome CareGiver" />
         <meta property="og:locale" content="en_US" />
         
         {/* Twitter Card Tags */}

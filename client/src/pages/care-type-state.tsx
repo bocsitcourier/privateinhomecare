@@ -114,7 +114,7 @@ export default function CareTypeStatePage() {
         description: careTypeInfo.description,
         provider: {
           "@type": "HomeHealthCareService",
-          name: "PrivateInHomeCareGiver",
+          name: "Private InHome CareGiver",
           url: baseUrl
         },
         areaServed: {
@@ -134,7 +134,7 @@ export default function CareTypeStatePage() {
     ]);
   }, [careTypeSlug, careTypeDisplay, careTypeInfo]);
 
-  const metaTitle = `${careTypeDisplay} in Massachusetts | PrivateInHomeCareGiver`;
+  const metaTitle = `${careTypeDisplay} in Massachusetts | Private InHome CareGiver`;
   const metaDescription = `Find trusted ${careTypeDisplay?.toLowerCase()} services across Massachusetts. Professional caregivers serving Boston, Worcester, Springfield, and 60+ communities.`;
 
   return (

@@ -474,7 +474,7 @@ export default function DirectoryPage() {
                       What areas of Massachusetts do you serve?
                     </AccordionTrigger>
                     <AccordionContent className="text-muted-foreground">
-                      PrivateInHomeCareGiver provides comprehensive in-home care services throughout Massachusetts. We serve all 14 counties including Middlesex, Essex, Suffolk, Worcester, Norfolk, Bristol, Plymouth, Hampden, Hampshire, Berkshire, Franklin, Barnstable, Dukes, and Nantucket. Whether you're in Boston, Worcester, Springfield, or any community in between, we have local caregivers ready to help.
+                      Private InHome CareGiver provides comprehensive in-home care services throughout Massachusetts. We serve all 14 counties including Middlesex, Essex, Suffolk, Worcester, Norfolk, Bristol, Plymouth, Hampden, Hampshire, Berkshire, Franklin, Barnstable, Dukes, and Nantucket. Whether you're in Boston, Worcester, Springfield, or any community in between, we have local caregivers ready to help.
                     </AccordionContent>
                   </AccordionItem>
                   
@@ -483,7 +483,7 @@ export default function DirectoryPage() {
                       What payment options do you accept?
                     </AccordionTrigger>
                     <AccordionContent className="text-muted-foreground">
-                      PrivateInHomeCareGiver is exclusively a private pay home care agency. We accept private payment, long-term care insurance, and veterans benefits (VA Aid & Attendance). This allows us to offer more personalized, flexible care without the restrictions of government programs. Contact us for a free consultation to discuss payment options.
+                      Private InHome CareGiver is exclusively a private pay home care agency. We accept private payment, long-term care insurance, and veterans benefits (VA Aid & Attendance). This allows us to offer more personalized, flexible care without the restrictions of government programs. Contact us for a free consultation to discuss payment options.
                     </AccordionContent>
                   </AccordionItem>
                   
@@ -501,7 +501,7 @@ export default function DirectoryPage() {
                       How are your caregivers screened and trained?
                     </AccordionTrigger>
                     <AccordionContent className="text-muted-foreground">
-                      All PrivateInHomeCareGiver caregivers undergo comprehensive background checks including criminal history, sex offender registry, and reference verification. They receive ongoing training in dementia care, safety protocols, and compassionate communication. Our caregivers are insured and bonded, giving families complete peace of mind.
+                      All Private InHome CareGiver caregivers undergo comprehensive background checks including criminal history, sex offender registry, and reference verification. They receive ongoing training in dementia care, safety protocols, and compassionate communication. Our caregivers are insured and bonded, giving families complete peace of mind.
                     </AccordionContent>
                   </AccordionItem>
                   

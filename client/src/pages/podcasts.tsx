@@ -45,7 +45,7 @@ export default function PodcastsPage() {
     <>
       <PageSEO
         pageSlug="podcasts"
-        fallbackTitle="Care Podcasts | PrivateInHomeCareGiver"
+        fallbackTitle="Care Podcasts | Private InHome CareGiver"
         fallbackDescription="Listen to our podcast series featuring caregiver stories, expert interviews, health topics, and caregiving tips for Massachusetts families."
         canonicalPath="/podcasts"
         includeMaGeoTargeting={true}
@@ -58,17 +58,17 @@ export default function PodcastsPage() {
           {
             "@context": "https://schema.org",
             "@type": "PodcastSeries",
-            name: "PrivateInHomeCareGiver Care Podcast",
+            name: "Private InHome CareGiver Care Podcast",
             description: "Podcast series featuring caregiver stories, expert interviews, health topics, and caregiving tips for Massachusetts senior care families.",
             url: "https://privateinhomecaregiver.com/podcasts",
             author: {
               "@type": "Organization",
-              name: "PrivateInHomeCareGiver",
+              name: "Private InHome CareGiver",
               url: "https://privateinhomecaregiver.com"
             },
             publisher: {
               "@type": "Organization",
-              name: "PrivateInHomeCareGiver",
+              name: "Private InHome CareGiver",
               url: "https://privateinhomecaregiver.com",
               logo: "https://privateinhomecaregiver.com/logo.png"
             },

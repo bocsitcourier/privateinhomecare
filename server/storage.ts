@@ -430,9 +430,9 @@ export class MemStorage implements IStorage {
     const defaultPages = [
       {
         pageSlug: 'home',
-        title: 'PrivateInHomeCareGiver — Compassionate In-Home Care Services in Massachusetts',
+        title: 'Private InHome CareGiver — Compassionate In-Home Care Services in Massachusetts',
         description: 'Compassionate private in-home care services and PCA jobs across Massachusetts.',
-        ogTitle: 'PrivateInHomeCareGiver — In-Home Care Services in Massachusetts',
+        ogTitle: 'Private InHome CareGiver — In-Home Care Services in Massachusetts',
         ogDescription: 'Compassionate private in-home care services across Massachusetts.',
         ogImageUrl: '',
         keywords: ['in-home care', 'Massachusetts', 'PCA', 'elderly care'],

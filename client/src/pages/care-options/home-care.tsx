@@ -69,7 +69,7 @@ export default function HomeCareOverviewPage() {
     <>
       <PageSEO
         pageSlug="home-care-massachusetts"
-        fallbackTitle="Home Care in Massachusetts | In-Home Care Services | PrivateInHomeCareGiver"
+        fallbackTitle="Home Care in Massachusetts | In-Home Care Services | Private InHome CareGiver"
         fallbackDescription="Find quality private pay in-home care services in Massachusetts. Personal care, companionship, dementia care, and more. Get a free consultation today."
         canonicalPath="/home-care/massachusetts"
         includeMaGeoTargeting={true}
@@ -97,7 +97,7 @@ export default function HomeCareOverviewPage() {
                   Home Care Services in Massachusetts
                 </h1>
                 <p className="text-lg text-muted-foreground mb-6">
-                  Keep your loved one safe, comfortable, and cared for at home. PrivateInHomeCareGiver connects Massachusetts families with compassionate Personal Care Assistants who provide personalized in-home support.
+                  Keep your loved one safe, comfortable, and cared for at home. Private InHome CareGiver connects Massachusetts families with compassionate Personal Care Assistants who provide personalized in-home support.
                 </p>
                 <div className="flex flex-wrap gap-4">
                   <Button asChild size="lg" data-testid="button-cta-consultation">

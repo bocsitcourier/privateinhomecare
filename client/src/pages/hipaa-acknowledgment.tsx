@@ -103,7 +103,7 @@ export default function HipaaAcknowledgment() {
       <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white dark:from-gray-900 dark:to-gray-950 py-12 px-4">
         <PageSEO
           pageSlug="hipaa-acknowledgment"
-          fallbackTitle="HIPAA Privacy Acknowledgment Submitted | PrivateInHomeCareGiver"
+          fallbackTitle="HIPAA Privacy Acknowledgment Submitted | Private InHome CareGiver"
           fallbackDescription="Your HIPAA Privacy Information Acknowledgment has been successfully submitted."
           noindex={true}
         />
@@ -140,8 +140,8 @@ export default function HipaaAcknowledgment() {
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white dark:from-gray-900 dark:to-gray-950 py-12 px-4">
       <PageSEO
         pageSlug="hipaa-acknowledgment"
-        fallbackTitle="HIPAA Privacy Information Acknowledgment | PrivateInHomeCareGiver"
-        fallbackDescription="Complete your HIPAA Privacy Information Acknowledgment of Receipt form for PrivateInHomeCareGiver."
+        fallbackTitle="HIPAA Privacy Information Acknowledgment | Private InHome CareGiver"
+        fallbackDescription="Complete your HIPAA Privacy Information Acknowledgment of Receipt form for Private InHome CareGiver."
         noindex={true}
       />
       

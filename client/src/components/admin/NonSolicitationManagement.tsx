@@ -540,7 +540,7 @@ export default function NonSolicitationManagement() {
                       })}
                     />
                     <label htmlFor="noPrivateEmployment" className="text-sm leading-relaxed">
-                      <strong>No Private Employment:</strong> I will not directly or indirectly hire, employ, or engage any caregiver introduced by PrivateInHomeCareGiver LLC for private employment.
+                      <strong>No Private Employment:</strong> I will not directly or indirectly hire, employ, or engage any caregiver introduced by Private InHome CareGiver LLC for private employment.
                     </label>
                   </div>
                   <div className="flex items-start space-x-3 p-3 bg-muted/50 rounded-lg">
@@ -677,7 +677,7 @@ export default function NonSolicitationManagement() {
                       })}
                     />
                     <label htmlFor="legalFees" className="text-sm leading-relaxed">
-                      <strong>Legal & Collection Fees:</strong> I agree to pay all reasonable attorney fees, court costs, and collection expenses incurred by PrivateInHomeCareGiver LLC to enforce this agreement.
+                      <strong>Legal & Collection Fees:</strong> I agree to pay all reasonable attorney fees, court costs, and collection expenses incurred by Private InHome CareGiver LLC to enforce this agreement.
                     </label>
                   </div>
                 </div>

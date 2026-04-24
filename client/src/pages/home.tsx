@@ -32,7 +32,7 @@ const DEMO_REVIEWS = [
     name: "Susan R.",
     city: "Newton, MA",
     rating: 5,
-    text: "PrivateInHomeCareGiver matched us with a caring PCA quickly. Mom is happier and safer at home — thank you!",
+    text: "Private InHome CareGiver matched us with a caring PCA quickly. Mom is happier and safer at home — thank you!",
     image: susanImage,
   },
   {
@@ -278,7 +278,7 @@ export default function Home() {
         // Be more specific: HomeHealthCare extends LocalBusiness
         "@type": ["LocalBusiness", "HomeHealthCare"],
         "@id": `${baseUrl}#business`,
-        name: "PrivateInHomeCareGiver",
+        name: "Private InHome CareGiver",
         url: baseUrl,
         logo: `${baseUrl}/logo.png`,
         description:
@@ -345,7 +345,7 @@ export default function Home() {
         "@context": "https://schema.org",
         "@type": "WebSite",
         "@id": `${baseUrl}#website`,
-        name: "PrivateInHomeCareGiver",
+        name: "Private InHome CareGiver",
         url: baseUrl,
         potentialAction: {
           "@type": "SearchAction",
@@ -443,7 +443,7 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       <PageSEO 
         pageSlug="home"
-        fallbackTitle="Massachusetts Private Pay In-Home Senior Care | PrivateInHomeCareGiver"
+        fallbackTitle="Massachusetts Private Pay In-Home Senior Care | Private InHome CareGiver"
         fallbackDescription="Premium private pay in-home care for seniors across Massachusetts. Personal care, companionship, homemaking and dementia care from trusted caregivers. 24/7 availability, background-checked staff."
         canonicalPath="/"
         includeMaGeoTargeting={true}

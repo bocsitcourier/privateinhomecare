@@ -126,7 +126,7 @@ export default function FindHospitalPage() {
     <>
       <PageSEO
         pageSlug="find-hospital"
-        fallbackTitle="Find a Hospital Near Me in Massachusetts | PrivateInHomeCareGiver"
+        fallbackTitle="Find a Hospital Near Me in Massachusetts | Private InHome CareGiver"
         fallbackDescription="Complete directory of Massachusetts hospitals with addresses, phone numbers, and emergency room information. Find the nearest hospital in your area."
         canonicalPath="/find-hospital"
       />

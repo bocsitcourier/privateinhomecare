@@ -60,7 +60,7 @@ export default function IndependentLivingPage() {
     <>
       <PageSEO
         pageSlug="independent-living-massachusetts"
-        fallbackTitle="Independent Living in Massachusetts | Senior Communities | PrivateInHomeCareGiver"
+        fallbackTitle="Independent Living in Massachusetts | Senior Communities | Private InHome CareGiver"
         fallbackDescription="Explore independent living communities in Massachusetts for active seniors. Compare costs, amenities, and learn about private pay in-home care alternatives."
         canonicalPath="/independent-living/massachusetts"
         includeMaGeoTargeting={true}

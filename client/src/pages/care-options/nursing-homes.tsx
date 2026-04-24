@@ -60,7 +60,7 @@ export default function NursingHomesPage() {
     <>
       <PageSEO
         pageSlug="nursing-homes-massachusetts"
-        fallbackTitle="Nursing Homes in Massachusetts | PrivateInHomeCareGiver"
+        fallbackTitle="Nursing Homes in Massachusetts | Private InHome CareGiver"
         fallbackDescription="Explore nursing home options in Massachusetts. Learn about costs, coverage, and how private pay in-home care compares as an alternative for your loved one."
         canonicalPath="/nursing-homes/massachusetts"
         includeMaGeoTargeting={true}

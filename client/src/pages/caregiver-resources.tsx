@@ -136,7 +136,7 @@ export default function CaregiverResourcesPage() {
     <>
       <PageSEO
         pageSlug="caregiver-resources"
-        fallbackTitle="Caregiver Resources | In-Home Care Guide | PrivateInHomeCareGiver"
+        fallbackTitle="Caregiver Resources | In-Home Care Guide | Private InHome CareGiver"
         fallbackDescription="Comprehensive caregiver resources for Massachusetts families. Find guides on choosing care, costs, health conditions, and self-care for family caregivers."
         canonicalPath="/caregiver-resources"
         includeMaGeoTargeting={true}
@@ -153,7 +153,7 @@ export default function CaregiverResourcesPage() {
             url: "https://privateinhomecaregiver.com/caregiver-resources",
             publisher: {
               "@type": "Organization",
-              name: "PrivateInHomeCareGiver",
+              name: "Private InHome CareGiver",
               url: "https://privateinhomecaregiver.com"
             },
             about: {

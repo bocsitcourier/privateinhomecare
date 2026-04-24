@@ -39,7 +39,7 @@ interface PageSEOProps {
 }
 
 const COMPANY_INFO = {
-  name: "PrivateInHomeCareGiver",
+  name: "Private InHome CareGiver",
   legalName: "Private InHome CareGiver LLC",
   phone: "+1-617-686-0595",
   email: "info@privateinhomecaregiver.com",
@@ -80,7 +80,7 @@ export default function PageSEO({
 }: PageSEOProps) {
   const pageMeta = usePageMeta(pageSlug);
 
-  const title = pageMeta?.title || fallbackTitle || "PrivateInHomeCareGiver";
+  const title = pageMeta?.title || fallbackTitle || "Private InHome CareGiver";
   const description = pageMeta?.description || fallbackDescription || "";
   const ogTitle = pageMeta?.ogTitle || title;
   const ogDescription = pageMeta?.ogDescription || description;

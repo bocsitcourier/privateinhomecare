@@ -84,7 +84,7 @@ const SERVICES_BY_CARE_TYPE: Record<string, { title: string; description: string
 const DEFAULT_REVIEWS = [
   { reviewerName: "Maria S.", reviewerLocation: "Family Member", rating: 5, reviewText: "The caregivers are professional, compassionate, and truly care about their clients. My mother loves her caregiver!" },
   { reviewerName: "Robert T.", reviewerLocation: "Son of Client", rating: 5, reviewText: "We couldn't be happier with the care our father receives. The team is responsive and accommodating." },
-  { reviewerName: "Jennifer L.", reviewerLocation: "Daughter of Client", rating: 5, reviewText: "Finding quality in-home care was stressful until we found PrivateInHomeCareGiver. They made everything easy." },
+  { reviewerName: "Jennifer L.", reviewerLocation: "Daughter of Client", rating: 5, reviewText: "Finding quality in-home care was stressful until we found Private InHome CareGiver. They made everything easy." },
 ];
 
 export default function CareTypeLocationPage() {
@@ -131,7 +131,7 @@ export default function CareTypeLocationPage() {
       "@context": "https://schema.org",
       "@type": "HomeHealthCareService",
       "@id": `${baseUrl}/${careTypeSlug}/massachusetts/${citySlug}-ma`,
-      name: `${careTypeDisplay} in ${cityName}, MA | PrivateInHomeCareGiver`,
+      name: `${careTypeDisplay} in ${cityName}, MA | Private InHome CareGiver`,
       url: `${baseUrl}/${careTypeSlug}/massachusetts/${citySlug}-ma`,
       logo: `${baseUrl}/logo.png`,
       description: `Professional ${careTypeDisplay?.toLowerCase()} services in ${cityName}, Massachusetts. Trusted caregivers providing personalized in-home care.`,
@@ -167,7 +167,7 @@ export default function CareTypeLocationPage() {
       description: `Professional ${careTypeDisplay?.toLowerCase()} services for seniors in ${cityName}, MA`,
       provider: {
         "@type": "HomeHealthCareService",
-        name: "PrivateInHomeCareGiver"
+        name: "Private InHome CareGiver"
       },
       areaServed: {
         "@type": "City",
@@ -221,7 +221,7 @@ export default function CareTypeLocationPage() {
   }
 
   const page = data?.page;
-  const metaTitle = page?.metaTitle || `${careTypeDisplay} in ${cityName}, MA | PrivateInHomeCareGiver`;
+  const metaTitle = page?.metaTitle || `${careTypeDisplay} in ${cityName}, MA | Private InHome CareGiver`;
   const metaDescription = page?.metaDescription || `Find trusted ${careTypeDisplay?.toLowerCase()} services in ${cityName}, Massachusetts. Professional caregivers providing personalized in-home care for seniors.`;
 
   return (
@@ -308,7 +308,7 @@ export default function CareTypeLocationPage() {
               ) : (
                 <>
                   <p>
-                    PrivateInHomeCareGiver provides professional {careTypeDisplay?.toLowerCase()} services 
+                    Private InHome CareGiver provides professional {careTypeDisplay?.toLowerCase()} services 
                     throughout {cityName} and the surrounding {county} County area. Our experienced, 
                     compassionate caregivers are dedicated to helping seniors maintain their independence 
                     and quality of life in the comfort of their own homes.

@@ -229,7 +229,7 @@ export default function CaregiverLogPage() {
     <div className="min-h-screen bg-background">
       <PageSEO 
         pageSlug="caregiver-log"
-        fallbackTitle="Caregiver Daily Log - PrivateInHomeCareGiver"
+        fallbackTitle="Caregiver Daily Log - Private InHome CareGiver"
         fallbackDescription="Submit your daily activity log to document client care and activities. Secure and confidential."
         noindex={true}
       />

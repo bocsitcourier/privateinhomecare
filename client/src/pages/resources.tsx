@@ -24,7 +24,7 @@ export default function ResourcesPage() {
     <>
       <PageSEO
         pageSlug="resources"
-        fallbackTitle="Resources & Guides - Getting Started with Home Care | PrivateInHomeCareGiver"
+        fallbackTitle="Resources & Guides - Getting Started with Home Care | Private InHome CareGiver"
         fallbackDescription="Download our comprehensive home care guides and learn everything you need to know about choosing the right care for your loved one in Massachusetts."
         canonicalPath="/resources"
       />

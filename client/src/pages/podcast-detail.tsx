@@ -140,8 +140,8 @@ export default function PodcastDetailPage() {
     <>
       <PageSEO
         pageSlug={`podcasts-${podcast.slug}`}
-        fallbackTitle={`${podcast.title} | Care Podcasts | PrivateInHomeCareGiver`}
-        fallbackDescription={podcast.description || `Listen to ${podcast.title} - a care podcast episode from PrivateInHomeCareGiver.`}
+        fallbackTitle={`${podcast.title} | Care Podcasts | Private InHome CareGiver`}
+        fallbackDescription={podcast.description || `Listen to ${podcast.title} - a care podcast episode from Private InHome CareGiver.`}
         canonicalPath={`/podcasts/${podcast.slug}`}
         includeMaGeoTargeting={true}
         pageType="article"
@@ -168,18 +168,18 @@ export default function PodcastDetailPage() {
             } : undefined,
             author: {
               "@type": "Organization",
-              name: "PrivateInHomeCareGiver",
+              name: "Private InHome CareGiver",
               url: "https://privateinhomecaregiver.com"
             },
             publisher: {
               "@type": "Organization",
-              name: "PrivateInHomeCareGiver",
+              name: "Private InHome CareGiver",
               url: "https://privateinhomecaregiver.com",
               logo: "https://privateinhomecaregiver.com/logo.png"
             },
             partOfSeries: {
               "@type": "PodcastSeries",
-              name: "PrivateInHomeCareGiver Care Podcast",
+              name: "Private InHome CareGiver Care Podcast",
               url: "https://privateinhomecaregiver.com/podcasts"
             },
             inLanguage: "en-US"

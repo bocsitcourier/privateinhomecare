@@ -285,7 +285,7 @@ export default function AdminPage() {
     return (
       <>
         <Helmet>
-          <title>Admin Login | PrivateInHomeCareGiver</title>
+          <title>Admin Login | Private InHome CareGiver</title>
           <meta name="robots" content="noindex, nofollow" />
         </Helmet>
         <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex items-center justify-center p-4">
@@ -361,7 +361,7 @@ export default function AdminPage() {
   return (
     <>
     <Helmet>
-      <title>Admin Dashboard | PrivateInHomeCareGiver</title>
+      <title>Admin Dashboard | Private InHome CareGiver</title>
       <meta name="robots" content="noindex, nofollow" />
     </Helmet>
     <div className="min-h-screen bg-background flex">

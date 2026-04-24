@@ -8,8 +8,8 @@ export default function PrivacyPolicy() {
     <div className="min-h-screen bg-background">
       <PageSEO 
         pageSlug="privacy-policy"
-        fallbackTitle="Privacy Policy - PrivateInHomeCareGiver"
-        fallbackDescription="Comprehensive privacy policy and data protection practices for PrivateInHomeCareGiver, including HIPAA compliance, consumer privacy rights, data security measures, and breach management procedures."
+        fallbackTitle="Privacy Policy - Private InHome CareGiver"
+        fallbackDescription="Comprehensive privacy policy and data protection practices for Private InHome CareGiver, including HIPAA compliance, consumer privacy rights, data security measures, and breach management procedures."
       />
 
       <main className="max-w-4xl mx-auto px-6 py-12">

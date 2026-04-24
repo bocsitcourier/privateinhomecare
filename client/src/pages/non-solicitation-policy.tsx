@@ -9,8 +9,8 @@ export default function NonSolicitationPolicy() {
     <div className="min-h-screen bg-background">
       <PageSEO 
         pageSlug="non-solicitation-policy"
-        fallbackTitle="Non-Solicitation & Placement Agreement Policy - PrivateInHomeCareGiver"
-        fallbackDescription="Comprehensive non-solicitation and placement agreement policy for PrivateInHomeCareGiver, outlining caregiver placement options, buyout fees, and Massachusetts law-compliant terms."
+        fallbackTitle="Non-Solicitation & Placement Agreement Policy - Private InHome CareGiver"
+        fallbackDescription="Comprehensive non-solicitation and placement agreement policy for Private InHome CareGiver, outlining caregiver placement options, buyout fees, and Massachusetts law-compliant terms."
       />
 
       <main className="max-w-4xl mx-auto px-6 py-12">

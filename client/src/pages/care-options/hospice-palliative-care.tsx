@@ -88,7 +88,7 @@ export default function HospicePalliativeCarePage() {
     <>
       <PageSEO
         pageSlug="hospice-palliative-care-massachusetts"
-        fallbackTitle="Hospice & Palliative Care in Massachusetts | PrivateInHomeCareGiver"
+        fallbackTitle="Hospice & Palliative Care in Massachusetts | Private InHome CareGiver"
         fallbackDescription="Find hospice and palliative care providers in Massachusetts. Learn about end-of-life care options and private pay in-home support for families."
         canonicalPath="/hospice-palliative-care/massachusetts"
         includeMaGeoTargeting={true}

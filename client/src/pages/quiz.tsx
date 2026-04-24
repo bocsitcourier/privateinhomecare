@@ -47,7 +47,7 @@ export default function QuizPage() {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>{quiz.metaTitle || `${quiz.title} | PrivateInHomeCareGiver`}</title>
+        <title>{quiz.metaTitle || `${quiz.title} | Private InHome CareGiver`}</title>
         <meta 
           name="description" 
           content={quiz.metaDescription || `Take our ${quiz.title} to find the right care solution for your loved one.`} 

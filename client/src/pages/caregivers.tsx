@@ -31,7 +31,7 @@ export default function CaregiversPage() {
     <div className="min-h-screen bg-background">
       <PageSEO 
         pageSlug="caregivers"
-        fallbackTitle="Find Caregivers in Massachusetts | PrivateInHomeCareGiver"
+        fallbackTitle="Find Caregivers in Massachusetts | Private InHome CareGiver"
         fallbackDescription="Browse our network of experienced, certified caregivers across Massachusetts. Find the perfect match for your family's needs."
       />
       <Header />

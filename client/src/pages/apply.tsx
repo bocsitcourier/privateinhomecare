@@ -132,7 +132,7 @@ export default function ApplyPage() {
     <div className="min-h-screen bg-background">
       <PageSEO 
         pageSlug="apply"
-        fallbackTitle="Job Application - PrivateInHomeCareGiver"
+        fallbackTitle="Job Application - Private InHome CareGiver"
         fallbackDescription="Apply to join our compassionate caregiving team. Submit your application to become a Personal Care Assistant or Home Health Aide."
       />
       <Header />

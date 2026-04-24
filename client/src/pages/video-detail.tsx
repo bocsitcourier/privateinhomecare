@@ -87,8 +87,8 @@ export default function VideoDetailPage() {
     <>
       <PageSEO
         pageSlug={`video-${slug}`}
-        fallbackTitle={video.metaTitle || `${video.title} | PrivateInHomeCareGiver`}
-        fallbackDescription={video.metaDescription || video.description || "Watch this educational video from PrivateInHomeCareGiver."}
+        fallbackTitle={video.metaTitle || `${video.title} | Private InHome CareGiver`}
+        fallbackDescription={video.metaDescription || video.description || "Watch this educational video from Private InHome CareGiver."}
         canonicalPath={`/videos/${slug}`}
         includeMaGeoTargeting={true}
         pageType="article"
@@ -112,13 +112,13 @@ export default function VideoDetailPage() {
             url: `https://privateinhomecaregiver.com/videos/${slug}`,
             publisher: {
               "@type": "Organization",
-              name: "PrivateInHomeCareGiver",
+              name: "Private InHome CareGiver",
               url: "https://privateinhomecaregiver.com",
               logo: "https://privateinhomecaregiver.com/logo.png"
             },
             author: {
               "@type": "Organization",
-              name: "PrivateInHomeCareGiver"
+              name: "Private InHome CareGiver"
             },
             inLanguage: "en-US",
             keywords: ["Massachusetts senior care", "in-home care", "caregiver resources", categoryLabels[video.category] || video.category]

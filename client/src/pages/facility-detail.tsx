@@ -557,7 +557,7 @@ export default function FacilityDetailPage() {
         <meta property="og:description" content={pageDescription} />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:type" content="place" />
-        <meta property="og:site_name" content="PrivateInHomeCareGiver" />
+        <meta property="og:site_name" content="Private InHome CareGiver" />
         <meta property="og:locale" content="en_US" />
         {ogImage && <meta property="og:image" content={ogImage.startsWith('http') ? ogImage : `${baseUrl}${ogImage}`} />}
         <meta property="place:location:latitude" content={facility.latitude || ""} />
