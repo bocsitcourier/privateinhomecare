@@ -1024,7 +1024,7 @@ export const podcasts = pgTable("podcasts", {
   // SEO
   metaTitle: text("meta_title"),
   metaDescription: text("meta_description"),
-  keywords: jsonb("keywords").$type<string[]>().default([]),
+  keywords: text("keywords").array().default([]),
   canonicalUrl: text("canonical_url"), // For SEO
   schemaMarkup: jsonb("schema_markup"), // Custom JSON-LD structured data
   

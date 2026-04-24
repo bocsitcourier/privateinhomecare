@@ -35,6 +35,57 @@ function formatDate(dateStr: string | Date | null): string {
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
+function ConversationTranscript({ transcript }: { transcript: string }) {
+  const lines = transcript
+    .split('\n')
+    .map(l => l.trim())
+    .filter(Boolean);
+
+  const parsed: Array<{ speaker: 'SARAH' | 'MICHAEL' | null; text: string }> = lines.map(line => {
+    const sarah = line.match(/^\[SARAH\]:\s*(.+)/);
+    const michael = line.match(/^\[MICHAEL\]:\s*(.+)/);
+    if (sarah) return { speaker: 'SARAH' as const, text: sarah[1].replace(/\[PAUSE\]/g, '...').replace(/\*(.*?)\*/g, '$1') };
+    if (michael) return { speaker: 'MICHAEL' as const, text: michael[1].replace(/\[PAUSE\]/g, '...').replace(/\*(.*?)\*/g, '$1') };
+    return { speaker: null, text: line };
+  });
+
+  return (
+    <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+      {parsed.map((line, i) => {
+        if (line.speaker === 'SARAH') {
+          return (
+            <div key={i} className="flex gap-3 items-start">
+              <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-primary-foreground text-xs font-bold">S</span>
+              </div>
+              <div className="flex-1">
+                <span className="text-xs font-semibold text-primary uppercase tracking-wide block mb-1">Sarah</span>
+                <p className="text-sm text-foreground leading-relaxed">{line.text}</p>
+              </div>
+            </div>
+          );
+        }
+        if (line.speaker === 'MICHAEL') {
+          return (
+            <div key={i} className="flex gap-3 items-start">
+              <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-white text-xs font-bold">M</span>
+              </div>
+              <div className="flex-1">
+                <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide block mb-1">Michael</span>
+                <p className="text-sm text-foreground leading-relaxed">{line.text}</p>
+              </div>
+            </div>
+          );
+        }
+        return line.text ? (
+          <p key={i} className="text-xs text-muted-foreground italic pl-10">{line.text}</p>
+        ) : null;
+      })}
+    </div>
+  );
+}
+
 export default function PodcastDetailPage() {
   const params = useParams<{ slug: string }>();
   const [isPlaying, setIsPlaying] = useState(false);
@@ -412,10 +463,20 @@ export default function PodcastDetailPage() {
             {podcast.transcript && (
               <Card className="mb-8">
                 <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold text-foreground mb-3">Transcript</h2>
-                  <div className="prose prose-sm max-w-none text-muted-foreground whitespace-pre-wrap">
-                    {podcast.transcript}
+                  <h2 className="text-lg font-semibold text-foreground mb-4">Episode Transcript</h2>
+                  <div className="flex gap-4 mb-5 flex-wrap">
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="w-3 h-3 rounded-full bg-primary inline-block" />
+                      <span className="font-medium text-foreground">Sarah</span>
+                      <span className="text-muted-foreground">— Host</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="w-3 h-3 rounded-full bg-blue-500 inline-block" />
+                      <span className="font-medium text-foreground">Michael</span>
+                      <span className="text-muted-foreground">— Co-Host</span>
+                    </div>
                   </div>
+                  <ConversationTranscript transcript={podcast.transcript} />
                 </CardContent>
               </Card>
             )}

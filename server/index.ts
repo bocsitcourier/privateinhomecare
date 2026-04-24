@@ -353,7 +353,7 @@ app.use((req, res, next) => {
     // Generate podcast episodes for all published articles (5 parallel workers)
     // Starts 3 min after boot, then re-checks every 30 min to pick up newly written articles
     async function podcastGenerationLoop() {
-      await new Promise(r => setTimeout(r, 180000)); // wait 3 min first
+      await new Promise(r => setTimeout(r, 30000)); // wait 30s for DB to be ready
       while (true) {
         try { await generatePodcasts(); } catch (err) { console.error('[PodcastGen] Error:', err); }
         await new Promise(r => setTimeout(r, 1800000)); // repeat every 30 min
