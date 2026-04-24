@@ -54,9 +54,13 @@ Content management supports draft/published states and uses TipTap. The platform
 -   **Supabase Integration**: `DbStorage` implemented for Supabase PostgreSQL, with Row Level Security (RLS) planned.
 -   **Facility Photo Storage**: 707 facility hero photos stored locally and served via `express.static`. A proxy endpoint handles fallback for expired Google Places references.
 
+## Podcast Audio (Gemini TTS)
+
+Each podcast episode can have audio generated on demand via Google Gemini TTS (`gemini-2.5-flash-preview-tts`). The system uses multi-speaker voices: Sarah = Kore (warm female), Michael = Charon (clear male). Generation is async — triggered by `POST /api/podcasts/:slug/audio/generate`, polled via `GET /api/podcasts/:slug/audio/status`, and served via `GET /api/podcasts/:slug/audio`. WAV files are cached to `attached_assets/podcasts/`. Full episodes (~51 lines) take roughly 60–90 seconds to generate in 3 chunked API calls. The frontend in `podcast-detail.tsx` handles the full lifecycle with an elapsed timer and polling.
+
 ## External Dependencies
 
--   **Third-Party Services**: Google reCAPTCHA v2, Supabase (PostgreSQL), Resend (email delivery), Google Fonts CDN.
+-   **Third-Party Services**: Google reCAPTCHA v2, Supabase (PostgreSQL), Resend (email delivery), Google Fonts CDN, Google Gemini TTS API (podcast audio).
 -   **UI Libraries**: Radix UI, shadcn/ui, Lucide React.
 -   **Development Tools**: Drizzle Kit, esbuild.
 -   **Session Management**: `express-session`.

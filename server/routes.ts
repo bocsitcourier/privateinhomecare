@@ -4655,24 +4655,60 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
     }
   });
 
-  // On-demand TTS audio generation for a podcast episode
-  // Generates audio the first time it's requested; caches to disk after that
+  // Start background Gemini TTS audio generation for a podcast
+  app.post("/api/podcasts/:slug/audio/generate", async (req: Request, res: Response) => {
+    try {
+      const podcast = await storage.getPodcastBySlug(req.params.slug);
+      if (!podcast || !podcast.transcript) {
+        return res.status(404).json({ message: "Podcast not found or has no transcript" });
+      }
+      const { startAudioGeneration, isAudioCached, getJobStatus } = await import("./tts-gemini");
+      if (isAudioCached(podcast.slug)) {
+        return res.json({ status: "ready" });
+      }
+      const existing = getJobStatus(podcast.slug);
+      if (existing && (existing.status === "pending" || existing.status === "generating")) {
+        return res.json({ status: existing.status });
+      }
+      startAudioGeneration(podcast.slug, podcast.transcript);
+      res.json({ status: "generating" });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to start audio generation", error: error.message });
+    }
+  });
+
+  // Poll generation status for a podcast episode
+  app.get("/api/podcasts/:slug/audio/status", async (req: Request, res: Response) => {
+    try {
+      const { isAudioCached, getJobStatus } = await import("./tts-gemini");
+      const slug = req.params.slug;
+      if (isAudioCached(slug)) return res.json({ status: "ready" });
+      const job = getJobStatus(slug);
+      if (!job) return res.json({ status: "idle" });
+      res.json({ status: job.status, error: job.error });
+    } catch (error: any) {
+      res.status(500).json({ message: "Status check failed", error: error.message });
+    }
+  });
+
+  // Serve cached WAV audio for a podcast (only if already generated)
   app.get("/api/podcasts/:slug/audio", async (req: Request, res: Response) => {
     try {
-      const { generatePodcastAudio } = await import("./generate-podcasts");
-      const audioBuffer = await generatePodcastAudio(req.params.slug);
+      const { getCachedAudio } = await import("./tts-gemini");
+      const audioBuffer = getCachedAudio(req.params.slug);
       if (!audioBuffer) {
-        return res.status(404).json({ message: "Audio unavailable — transcript not found or generation failed" });
+        return res.status(202).json({ message: "Audio not yet generated — start generation first" });
       }
       res.set({
-        "Content-Type": "audio/mpeg",
+        "Content-Type": "audio/wav",
         "Content-Length": audioBuffer.length,
-        "Cache-Control": "public, max-age=86400",
+        "Cache-Control": "public, max-age=604800",
         "Accept-Ranges": "bytes",
       });
       res.send(audioBuffer);
     } catch (error: any) {
-      res.status(500).json({ message: "Failed to generate audio", error: error.message });
+      console.error("[GeminiTTS] Serve error:", error.message);
+      res.status(500).json({ message: "Failed to serve audio", error: error.message });
     }
   });
 
