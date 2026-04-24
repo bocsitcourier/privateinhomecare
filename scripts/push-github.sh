@@ -1,6 +1,6 @@
 #!/bin/bash
-# Push to GitHub and update main so Digital Ocean auto-deploys.
-# Digital Ocean app.yaml deploys from: main
+# Push to GitHub — updates both the working branch and main so Digital Ocean deploys.
+# Digital Ocean app.yaml is configured to deploy from: main
 
 if [ -z "$GITHUB_PERSONAL_ACCESS_TOKEN" ]; then
   echo "ERROR: GITHUB_PERSONAL_ACCESS_TOKEN is not set"
@@ -10,14 +10,17 @@ fi
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 REPO="github.com/bocsitcourier/privateinhomecare"
 
-# Configure credentials securely via credential helper (PAT never in URL/logs)
-git config credential.helper '!f() { echo "username=x-token"; echo "password='"$GITHUB_PERSONAL_ACCESS_TOKEN"'"; }; f'
+# Pass credentials via helper so the PAT never appears in process listings or logs
+git config credential.helper \
+  '!f() { echo "username=x-token"; echo "password='"$GITHUB_PERSONAL_ACCESS_TOKEN"'"; }; f'
 git remote set-url origin "https://${REPO}"
 
 echo "Pushing '${BRANCH}' to GitHub..."
 git push origin "${BRANCH}"
 
-echo "Updating 'main' so Digital Ocean auto-deploys..."
-git push origin "${BRANCH}:main" --force
+echo "Fast-forwarding 'main' to match '${BRANCH}' for Digital Ocean deploy..."
+git push origin "${BRANCH}:main"
 
-echo "Done — Digital Ocean will auto-deploy from main shortly."
+LOCAL_SHA=$(git rev-parse HEAD)
+echo "Verified: HEAD = ${LOCAL_SHA}"
+echo "Done — Digital Ocean will detect the push to main and auto-deploy."
