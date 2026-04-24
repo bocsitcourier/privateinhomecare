@@ -182,6 +182,20 @@ export function startAudioGeneration(slug: string, transcript: string): boolean 
 }
 
 /**
+ * Awaitable audio generation — resolves when the WAV file is written (or throws on error).
+ * Returns false if already cached, true if newly generated.
+ */
+export async function generateAndCacheAudio(slug: string, transcript: string): Promise<boolean> {
+  if (isAudioCached(slug)) return false;
+  const existing = jobs.get(slug);
+  if (existing && (existing.status === "pending" || existing.status === "generating")) return false;
+  await runGeneration(slug, transcript);
+  const job = jobs.get(slug);
+  if (job?.status === "error") throw new Error(job.error || "Unknown TTS error");
+  return true;
+}
+
+/**
  * Get cached audio buffer (only if already generated).
  */
 export function getCachedAudio(slug: string): Buffer | null {

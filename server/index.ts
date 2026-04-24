@@ -11,6 +11,7 @@ import { startAutoRefreshScheduler } from "./scheduler";
 import { generateMissingArticles } from "./generate-missing-articles";
 import { generateNewArticles } from "./generate-new-articles";
 import { generatePodcasts } from "./generate-podcasts";
+import { preGenerateAllPodcastAudio } from "./generate-audio";
 import { promises as fsPromises } from "fs";
 import pathModule from "path";
 import { storage } from "./storage";
@@ -376,6 +377,14 @@ app.use((req, res, next) => {
       }
     }
     podcastGenerationLoop();
+
+    // Pre-generate WAV audio for all existing podcast episodes (3 concurrent workers)
+    // Starts 60s after boot to let the podcast script generation settle first
+    setTimeout(() => {
+      preGenerateAllPodcastAudio().catch(err =>
+        console.error("[AudioGen] Fatal error:", err)
+      );
+    }, 60000);
   });
 })();
 
