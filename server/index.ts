@@ -235,7 +235,12 @@ app.use(async (req, res, next) => {
     return next();
   }
 
-  if (req.path.startsWith('/uploads/')) {
+  // Always allow health checks and internal infrastructure paths
+  if (
+    req.path === '/api/health' ||
+    req.path === '/healthz' ||
+    req.path.startsWith('/uploads/')
+  ) {
     return next();
   }
 
