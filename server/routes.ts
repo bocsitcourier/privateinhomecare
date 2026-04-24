@@ -2843,9 +2843,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/robots.txt", (req, res) => {
-    const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-      ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-      : req.protocol + '://' + req.get('host');
+    const baseUrl = process.env.APP_URL || req.protocol + '://' + req.get('host');
     
     const robotsTxt = `# robots.txt for Private InHome CareGiver
 # Massachusetts Private Pay In-Home Senior Care
@@ -2979,9 +2977,7 @@ Allow: /api/podcasts
   // XML Sitemap Generation
   app.get("/sitemap.xml", async (req, res) => {
     try {
-      const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-        : req.protocol + '://' + req.get('host');
+      const baseUrl = process.env.APP_URL || req.protocol + '://' + req.get('host');
 
       // Get all locations from database
       const allLocations = await storage.listMaLocations();
@@ -3169,6 +3165,40 @@ Allow: /api/podcasts
         xml += '  </url>\n';
       });
 
+      // Non-Medical Transportation pages
+      xml += '  <url>\n';
+      xml += `    <loc>${baseUrl}/non-medical-transportation/massachusetts</loc>\n`;
+      xml += '    <changefreq>monthly</changefreq>\n';
+      xml += '    <priority>0.8</priority>\n';
+      xml += '  </url>\n';
+
+      // Senior Concierge Services pages
+      xml += '  <url>\n';
+      xml += `    <loc>${baseUrl}/concierge-services/massachusetts</loc>\n`;
+      xml += '    <changefreq>monthly</changefreq>\n';
+      xml += '    <priority>0.8</priority>\n';
+      xml += '  </url>\n';
+
+      // Transportation city sub-pages
+      const transportCities = ['boston', 'worcester', 'springfield', 'cambridge', 'lowell', 'brockton', 'new-bedford', 'quincy', 'lynn', 'fall-river', 'newton', 'somerville', 'lawrence', 'framingham', 'haverhill', 'waltham', 'malden', 'brookline', 'plymouth', 'medford'];
+      transportCities.forEach(city => {
+        xml += '  <url>\n';
+        xml += `    <loc>${baseUrl}/non-medical-transportation/massachusetts/${city}</loc>\n`;
+        xml += '    <changefreq>monthly</changefreq>\n';
+        xml += '    <priority>0.7</priority>\n';
+        xml += '  </url>\n';
+      });
+
+      // Concierge city sub-pages
+      const conciergeCities = ['boston', 'worcester', 'springfield', 'cambridge', 'lowell', 'brockton', 'new-bedford', 'quincy', 'lynn', 'fall-river', 'newton', 'somerville', 'lawrence', 'framingham', 'haverhill', 'waltham', 'malden', 'brookline', 'plymouth', 'medford'];
+      conciergeCities.forEach(city => {
+        xml += '  <url>\n';
+        xml += `    <loc>${baseUrl}/concierge-services/massachusetts/${city}</loc>\n`;
+        xml += '    <changefreq>monthly</changefreq>\n';
+        xml += '    <priority>0.7</priority>\n';
+        xml += '  </url>\n';
+      });
+
       xml += '</urlset>';
 
       res.header('Content-Type', 'application/xml');
@@ -3185,9 +3215,7 @@ Allow: /api/podcasts
   // ==========================================
 
   app.get("/llms.txt", (req, res) => {
-    const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-      ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-      : req.protocol + '://' + req.get('host');
+    const baseUrl = process.env.APP_URL || req.protocol + '://' + req.get('host');
 
     const llmsTxt = `# Private InHome CareGiver - Massachusetts Senior Care Authority
 

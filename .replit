@@ -61,3 +61,6 @@ integrations = ["javascript_openai_ai_integrations:2.0.0"]
 
 [userenv.development]
 VITE_DISABLE_RECAPTCHA = "true"
+
+[userenv.shared]
+APP_URL = "https://privateinhomecaregiver.com"

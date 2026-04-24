@@ -115,8 +115,15 @@ app.use(helmet({
   noSniff: true,
   referrerPolicy: {
     policy: 'strict-origin-when-cross-origin'
-  }
+  },
+  permittedCrossDomainPolicies: false,
 }));
+
+app.use((_req, res, next) => {
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()');
+  res.setHeader('X-DNS-Prefetch-Control', 'on');
+  next();
+});
 
 const ipLocationCache = new Map<string, { country: string; allowed: boolean; timestamp: number }>();
 const IP_CACHE_TTL = 60 * 60 * 1000; // 1 hour

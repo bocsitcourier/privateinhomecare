@@ -186,6 +186,22 @@ export default function PageSEO({
       ratingValue: "4.9",
       reviewCount: "127",
       bestRating: "5"
+    },
+    knowsAbout: [
+      "In-Home Senior Care",
+      "Personal Care Assistance",
+      "Dementia Care",
+      "Companionship Care",
+      "Homemaking Services",
+      "Private Pay Senior Care",
+      "Massachusetts Elder Care",
+      "Personal Care Assistant (PCA)",
+      "Senior Transportation",
+      "Senior Concierge Services"
+    ],
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", "h2", ".speakable"]
     }
   };
 
@@ -241,6 +257,30 @@ export default function PageSEO({
       }
     }))
   } : null;
+
+  // Generate WebSite Schema with SearchAction (enables Google Sitelinks Search Box)
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${COMPANY_INFO.url}/#website`,
+    name: COMPANY_INFO.name,
+    url: COMPANY_INFO.url,
+    description: COMPANY_INFO.description,
+    inLanguage: "en-US",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${COMPANY_INFO.url}/facilities?search={search_term_string}`
+      },
+      "query-input": "required name=search_term_string"
+    },
+    publisher: {
+      "@type": "Organization",
+      "@id": `${COMPANY_INFO.url}/#organization`,
+      name: COMPANY_INFO.name
+    }
+  };
 
   // Generate Service Schema
   const serviceSchema = serviceData ? {
@@ -312,6 +352,7 @@ export default function PageSEO({
       <meta name="twitter:site" content="@PrivateInHomeCare" />
       <meta name="twitter:creator" content="@PrivateInHomeCare" />
       <script type="application/ld+json">{JSON.stringify(organizationSchema)}</script>
+      <script type="application/ld+json">{JSON.stringify(websiteSchema)}</script>
       {breadcrumbSchema && <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>}
       {articleSchema && <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>}
       {faqSchema && <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>}

@@ -325,9 +325,14 @@ export default function ArticlePage() {
         
         {/* Twitter Card Tags */}
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@PrivateInHomeCare" />
+        <meta name="twitter:creator" content="@PrivateInHomeCare" />
         <meta name="twitter:title" content={article.metaTitle || article.title} />
         <meta name="twitter:description" content={article.metaDescription || article.excerpt || ''} />
         {article.heroImageUrl && <meta name="twitter:image" content={article.heroImageUrl} />}
+        {article.heroImageUrl && <meta name="twitter:image:alt" content={article.title} />}
+        {article.heroImageUrl && <meta property="og:image:width" content="1200" />}
+        {article.heroImageUrl && <meta property="og:image:height" content="630" />}
         
         {article.createdAt && <meta property="article:published_time" content={new Date(article.createdAt).toISOString()} />}
         {article.category && <meta property="article:section" content={article.category} />}

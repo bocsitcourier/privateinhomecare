@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import Header from "@/components/Header";
 import type { Caregiver } from "@shared/schema";
+import PageSEO from "@/components/PageSEO";
 
 export default function CaregiverProfilePage() {
   const [, params] = useRoute("/caregivers/:id");
@@ -95,6 +96,20 @@ export default function CaregiverProfilePage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PageSEO
+        pageSlug={`caregiver-profile-${caregiverId}`}
+        fallbackTitle={`${caregiver.name} — Private In-Home Caregiver in ${caregiver.location || 'Massachusetts'} | Private InHome CareGiver`}
+        fallbackDescription={`Meet ${caregiver.name}, an experienced private pay in-home caregiver serving ${caregiver.location || 'Massachusetts'} seniors. ${caregiver.bio ? caregiver.bio.substring(0, 100) + '...' : 'Contact us to request this caregiver.'}`}
+        canonicalPath={`/caregivers/${caregiverId}`}
+        includeMaGeoTargeting={true}
+        geoPlacename={caregiver.location || 'Massachusetts'}
+        pageType="profile"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Caregivers", url: "/caregivers" },
+          { name: caregiver.name, url: `/caregivers/${caregiverId}` },
+        ]}
+      />
       <Header />
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
