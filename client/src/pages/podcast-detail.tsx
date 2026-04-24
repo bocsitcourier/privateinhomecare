@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Headphones, Clock, Play, ArrowLeft, User, Calendar, Loader2, Volume2 } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "wouter";
 import type { Podcast } from "@shared/schema";
 
@@ -80,6 +80,30 @@ function GeminiAudioPlayer({ slug }: { slug: string }) {
       setErrorMsg(e.message || "Failed to load audio");
     }
   };
+
+  // On mount, check if audio is already cached — skip the "Generate" button if so
+  useEffect(() => {
+    fetch(`/api/podcasts/${slug}/audio/status`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.status === "ready") {
+          loadAudio();
+        } else if (data.status === "generating") {
+          setState("generating");
+          timerRef.current = setInterval(() => setElapsedSec((s) => s + 1), 1000);
+          pollingRef.current = setInterval(async () => {
+            try {
+              const sr = await fetch(`/api/podcasts/${slug}/audio/status`);
+              const sd = await sr.json();
+              if (sd.status === "ready") { stopPolling(); loadAudio(); }
+              else if (sd.status === "error") { stopPolling(); setState("error"); setErrorMsg(sd.error || "Generation failed"); }
+            } catch { /* ignore */ }
+          }, 3000);
+        }
+      })
+      .catch(() => { /* ignore — stay idle */ });
+    return () => stopPolling();
+  }, [slug]);
 
   const startGeneration = async () => {
     setState("generating");

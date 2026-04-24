@@ -90,6 +90,10 @@ app.use(helmet({
         "https://www.googletagmanager.com",
         "https://analytics.google.com"
       ],
+      mediaSrc: [
+        "'self'",
+        "blob:"
+      ],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
       formAction: ["'self'"],
