@@ -9,6 +9,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { hipaaAuditMiddleware } from "./middleware/hipaa-audit";
 import { startAutoRefreshScheduler } from "./scheduler";
 import { generateMissingArticles } from "./generate-missing-articles";
+import { generateNewArticles } from "./generate-new-articles";
 import { promises as fsPromises } from "fs";
 import pathModule from "path";
 import { storage } from "./storage";
@@ -344,6 +345,10 @@ app.use((req, res, next) => {
     autoFixLocationPhotoUrls();
     // Generate any missing articles from the restore manifest (runs in background)
     generateMissingArticles().catch(err => console.error('[ArticleGen] Fatal error:', err));
+    // Generate new SEO/GEO articles from the new manifest (runs after a short delay)
+    setTimeout(() => {
+      generateNewArticles().catch(err => console.error('[NewArticleGen] Fatal error:', err));
+    }, 10000);
   });
 })();
 
