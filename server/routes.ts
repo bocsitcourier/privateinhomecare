@@ -4672,8 +4672,9 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
       }
       startAudioGeneration(podcast.slug, podcast.transcript);
       res.json({ status: "generating" });
-    } catch (error: any) {
-      res.status(500).json({ message: "Failed to start audio generation", error: error.message });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ message: "Failed to start audio generation", error: msg });
     }
   });
 
@@ -4686,8 +4687,9 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
       const job = getJobStatus(slug);
       if (!job) return res.json({ status: "idle" });
       res.json({ status: job.status, error: job.error });
-    } catch (error: any) {
-      res.status(500).json({ message: "Status check failed", error: error.message });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ message: "Status check failed", error: msg });
     }
   });
 
@@ -4706,9 +4708,10 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
         "Accept-Ranges": "bytes",
       });
       res.send(audioBuffer);
-    } catch (error: any) {
-      console.error("[GeminiTTS] Serve error:", error.message);
-      res.status(500).json({ message: "Failed to serve audio", error: error.message });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      console.error("[GeminiTTS] Serve error:", msg);
+      res.status(500).json({ message: "Failed to serve audio", error: msg });
     }
   });
 

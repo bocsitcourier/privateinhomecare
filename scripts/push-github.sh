@@ -8,18 +8,17 @@ if [ -z "$GITHUB_PERSONAL_ACCESS_TOKEN" ]; then
 fi
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
-REPO="github.com/bocsitcourier/privateinhomecare"
 
-# Pass credentials via helper so the PAT never appears in process listings or logs
-git config credential.helper \
-  '!f() { echo "username=x-token"; echo "password='"$GITHUB_PERSONAL_ACCESS_TOKEN"'"; }; f'
-git remote set-url origin "https://${REPO}"
+# Credentials are passed via transient -c flag (not written to .git/config)
+GIT_PUSH="git -c credential.helper='!f(){ echo username=x-token; echo password=$GITHUB_PERSONAL_ACCESS_TOKEN; }; f'"
+ORIGIN="https://github.com/bocsitcourier/privateinhomecare"
+git remote set-url origin "$ORIGIN"
 
 echo "Pushing '${BRANCH}' to GitHub..."
-git push origin "${BRANCH}"
+eval "$GIT_PUSH push origin ${BRANCH}"
 
-echo "Fast-forwarding 'main' to match '${BRANCH}' for Digital Ocean deploy..."
-git push origin "${BRANCH}:main"
+echo "Fast-forwarding 'main' to '${BRANCH}' for Digital Ocean auto-deploy..."
+eval "$GIT_PUSH push origin ${BRANCH}:main"
 
 LOCAL_SHA=$(git rev-parse HEAD)
 echo "Verified: HEAD = ${LOCAL_SHA}"

@@ -5,7 +5,7 @@ import PageSEO from "@/components/PageSEO";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Headphones, Clock, Play, ArrowLeft, User, Calendar, Loader2, Volume2 } from "lucide-react";
+import { Headphones, Clock, ArrowLeft, User, Calendar, Loader2, Volume2 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Link } from "wouter";
 import type { Podcast } from "@shared/schema";
@@ -75,9 +75,9 @@ function GeminiAudioPlayer({ slug }: { slug: string }) {
       const blob = await resp.blob();
       setAudioUrl(URL.createObjectURL(blob));
       setState("ready");
-    } catch (e: any) {
+    } catch (e: unknown) {
       setState("error");
-      setErrorMsg(e.message || "Failed to load audio");
+      setErrorMsg(e instanceof Error ? e.message : "Failed to load audio");
     }
   };
 
@@ -108,81 +108,46 @@ function GeminiAudioPlayer({ slug }: { slug: string }) {
           setState("generating");
           fetch(`/api/podcasts/${slug}/audio/generate`, { method: "POST", headers: { "Content-Type": "application/json" } })
             .then((r) => r.json())
-            .then((d) => {
+            .then((d: { status?: string }) => {
               if (d.status === "ready") { loadAudio(); }
               else { startPolling(); }
             })
-            .catch(() => { setState("idle"); });
+            .catch(() => {
+              setState("error");
+              setErrorMsg("Could not start audio generation. Please try again.");
+            });
         }
       })
       .catch(() => { /* stay idle on network error */ });
     return () => stopPolling();
   }, [slug]);
 
-  const startGeneration = async () => {
+  const retryGeneration = () => {
     setState("generating");
     setElapsedSec(0);
     setErrorMsg("");
-
-    try {
-      const resp = await fetch(`/api/podcasts/${slug}/audio/generate`, { method: "POST" });
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.message || "Failed to start generation");
-
-      if (data.status === "ready") {
-        await loadAudio();
-        return;
-      }
-
-      // Start elapsed counter
+    const startPolling = () => {
       timerRef.current = setInterval(() => setElapsedSec((s) => s + 1), 1000);
-
-      // Poll status every 3 seconds
       pollingRef.current = setInterval(async () => {
         try {
-          const statusResp = await fetch(`/api/podcasts/${slug}/audio/status`);
-          const statusData = await statusResp.json();
-
-          if (statusData.status === "ready") {
-            stopPolling();
-            await loadAudio();
-          } else if (statusData.status === "error") {
-            stopPolling();
-            setState("error");
-            setErrorMsg(statusData.error || "Audio generation failed");
-          }
-        } catch {
-          // ignore transient poll errors
-        }
+          const sr = await fetch(`/api/podcasts/${slug}/audio/status`);
+          const sd: { status?: string; error?: string } = await sr.json();
+          if (sd.status === "ready") { stopPolling(); loadAudio(); }
+          else if (sd.status === "error") { stopPolling(); setState("error"); setErrorMsg(sd.error ?? "Generation failed"); }
+        } catch { /* ignore transient errors */ }
       }, 3000);
-    } catch (e: any) {
-      stopPolling();
-      setState("error");
-      setErrorMsg(e.message || "Failed to start audio generation");
-    }
+    };
+    fetch(`/api/podcasts/${slug}/audio/generate`, { method: "POST" })
+      .then((r) => r.json())
+      .then((d: { status?: string }) => {
+        if (d.status === "ready") { loadAudio(); }
+        else { startPolling(); }
+      })
+      .catch((e: unknown) => {
+        setState("error");
+        setErrorMsg(e instanceof Error ? e.message : "Failed to start audio generation");
+      });
   };
-
-  if (state === "idle") {
-    return (
-      <Card className="mb-8" data-testid="card-audio-generate">
-        <CardContent className="p-6 flex flex-col items-center gap-4 text-center">
-          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-            <Volume2 className="w-7 h-7 text-primary" />
-          </div>
-          <div>
-            <p className="font-semibold text-foreground mb-1">Listen to this episode</p>
-            <p className="text-sm text-muted-foreground">
-              AI-generated voices — Sarah &amp; Michael — powered by Google Gemini
-            </p>
-          </div>
-          <Button onClick={startGeneration} size="lg" data-testid="button-generate-audio">
-            <Play className="w-4 h-4 mr-2" />
-            Generate Audio
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
 
   if (state === "generating") {
     return (
@@ -208,7 +173,7 @@ function GeminiAudioPlayer({ slug }: { slug: string }) {
       <Card className="mb-8" data-testid="card-audio-error">
         <CardContent className="p-6 flex flex-col items-center gap-4 text-center">
           <p className="text-sm text-destructive">{errorMsg}</p>
-          <Button variant="outline" onClick={startGeneration} data-testid="button-retry-audio">
+          <Button variant="outline" onClick={retryGeneration} data-testid="button-retry-audio">
             Retry
           </Button>
         </CardContent>

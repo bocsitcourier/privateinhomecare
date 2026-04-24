@@ -117,7 +117,16 @@ async function callGeminiChunk(lines: SpeakerLine[]): Promise<Buffer> {
     throw new Error(`Gemini TTS ${resp.status}: ${errText.substring(0, 300)}`);
   }
 
-  const json: any = await resp.json();
+  interface GeminiTTSResponse {
+    candidates?: Array<{
+      content?: {
+        parts?: Array<{
+          inlineData?: { data?: string };
+        }>;
+      };
+    }>;
+  }
+  const json: GeminiTTSResponse = await resp.json();
   const b64 = json?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
   if (!b64) throw new Error("No audio data returned from Gemini TTS");
 
@@ -152,9 +161,10 @@ async function runGeneration(slug: string, transcript: string): Promise<void> {
 
     jobs.set(slug, { status: "ready", startedAt: jobs.get(slug)!.startedAt });
     console.log(`[GeminiTTS] ${slug} — done, ${wavBuffer.length} bytes`);
-  } catch (err: any) {
-    console.error(`[GeminiTTS] ${slug} — error:`, err.message);
-    jobs.set(slug, { status: "error", error: err.message, startedAt: jobs.get(slug)!.startedAt });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`[GeminiTTS] ${slug} — error:`, msg);
+    jobs.set(slug, { status: "error", error: msg, startedAt: jobs.get(slug)!.startedAt });
   }
 }
 
