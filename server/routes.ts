@@ -4697,14 +4697,14 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
         return res.status(404).json({ message: "Podcast not found or has no transcript" });
       }
       const { startAudioGeneration, isAudioCached, getJobStatus } = await import("./tts-gemini");
-      if (isAudioCached(podcast.slug)) {
+      if (await isAudioCached(podcast.slug)) {
         return res.json({ status: "ready" });
       }
       const existing = getJobStatus(podcast.slug);
       if (existing && (existing.status === "pending" || existing.status === "generating")) {
         return res.json({ status: existing.status });
       }
-      startAudioGeneration(podcast.slug, podcast.transcript);
+      await startAudioGeneration(podcast.slug, podcast.transcript);
       res.json({ status: "generating" });
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : String(error);
@@ -4717,7 +4717,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
     try {
       const { isAudioCached, getJobStatus } = await import("./tts-gemini");
       const slug = req.params.slug;
-      if (isAudioCached(slug)) return res.json({ status: "ready" });
+      if (await isAudioCached(slug)) return res.json({ status: "ready" });
       const job = getJobStatus(slug);
       if (!job) return res.json({ status: "idle" });
       res.json({ status: job.status, error: job.error });
@@ -4731,7 +4731,7 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
   app.get("/api/podcasts/:slug/audio", async (req: Request, res: Response) => {
     try {
       const { getCachedAudio } = await import("./tts-gemini");
-      const audioBuffer = getCachedAudio(req.params.slug);
+      const audioBuffer = await getCachedAudio(req.params.slug);
       if (!audioBuffer) {
         return res.status(202).json({ message: "Audio not yet generated — start generation first" });
       }

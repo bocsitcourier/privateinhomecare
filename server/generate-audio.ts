@@ -18,17 +18,16 @@ export async function preGenerateAllPodcastAudio(): Promise<void> {
   const total = podcasts.length;
 
   // Podcasts with no transcript at all — nothing to synthesise
+  const withTranscript = podcasts.filter((p) => p.transcript && p.transcript.trim());
   const noTranscript = podcasts.filter((p) => !p.transcript || !p.transcript.trim());
 
-  // Podcasts that already have a cached .wav file
-  const alreadyCached = podcasts.filter(
-    (p) => p.transcript && p.transcript.trim() && isAudioCached(p.slug)
+  // Check cache status for each podcast (async, including Spaces lookup)
+  const cacheChecks = await Promise.all(
+    withTranscript.map((p) => isAudioCached(p.slug))
   );
 
-  // Episodes that need to be generated
-  const needsAudio = podcasts.filter(
-    (p) => p.transcript && p.transcript.trim() && !isAudioCached(p.slug)
-  );
+  const alreadyCached = withTranscript.filter((_, i) => cacheChecks[i]);
+  const needsAudio = withTranscript.filter((_, i) => !cacheChecks[i]);
 
   log(
     `[AudioGen] Total:${total} | Cached:${alreadyCached.length} | No-transcript:${noTranscript.length} | To generate:${needsAudio.length}`
