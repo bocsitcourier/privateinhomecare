@@ -64,6 +64,7 @@ module.exports = {
         AI_INTEGRATIONS_OPENAI_API_KEY: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
         AI_INTEGRATIONS_OPENAI_BASE_URL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
         YOUTUBE_API_KEY: process.env.YOUTUBE_API_KEY,
+        GEMINI_API_KEY: process.env.GEMINI_API_KEY,
 
       },
     },
