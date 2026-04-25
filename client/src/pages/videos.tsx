@@ -152,6 +152,8 @@ export default function VideosPage() {
                                     alt={`${video.title} - Senior Care Video Massachusetts`}
                                     title={`${video.title} - Private InHome CareGiver`}
                                     className="w-full h-full object-cover"
+                                    loading="lazy"
+                                    decoding="async"
                                   />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20">
@@ -208,6 +210,8 @@ export default function VideosPage() {
                                     alt={`${video.title} - Senior Care Video Massachusetts`}
                                     title={`${video.title} - Private InHome CareGiver`}
                                     className="w-full h-full object-cover"
+                                    loading="lazy"
+                                    decoding="async"
                                   />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">

@@ -169,6 +169,8 @@ export default function PodcastsPage() {
                                         alt={`${podcast.title} - Senior Care Podcast Massachusetts`}
                                         title={`${podcast.title} - Private InHome CareGiver`}
                                         className="w-full h-full object-cover"
+                                        loading="lazy"
+                                        decoding="async"
                                       />
                                     ) : (
                                       <Headphones className="w-12 h-12 text-white" />
@@ -231,6 +233,8 @@ export default function PodcastsPage() {
                                         alt={`${podcast.title} - Senior Care Podcast Massachusetts`}
                                         title={`${podcast.title} - Private InHome CareGiver`}
                                         className="w-full h-full object-cover"
+                                        loading="lazy"
+                                        decoding="async"
                                       />
                                     ) : (
                                       <Headphones className="w-8 h-8 text-primary" />

@@ -378,13 +378,14 @@ app.use((req, res, next) => {
     }
     podcastGenerationLoop();
 
-    // Pre-generate WAV audio for all existing podcast episodes (3 concurrent workers)
-    // Starts 60s after boot to let the podcast script generation settle first
-    setTimeout(() => {
-      preGenerateAllPodcastAudio().catch(err =>
-        console.error("[AudioGen] Fatal error:", err)
-      );
-    }, 60000);
+    // Pre-generate WAV audio — only if GEMINI_API_KEY is present (skips on production where key may be absent)
+    if (process.env.GEMINI_API_KEY) {
+      setTimeout(() => {
+        preGenerateAllPodcastAudio().catch(err =>
+          console.error("[AudioGen] Fatal error:", err)
+        );
+      }, 60000);
+    }
   });
 })();
 

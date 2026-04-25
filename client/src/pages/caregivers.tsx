@@ -126,6 +126,8 @@ export default function CaregiversPage() {
                           alt={`${caregiver.name} - Private caregiver in ${caregiver.location}, Massachusetts`}
                           title={`${caregiver.name} - Massachusetts Private Caregiver`}
                           className="w-20 h-20 rounded-lg object-cover"
+                          loading="lazy"
+                          decoding="async"
                         />
                       ) : (
                         <div className="w-20 h-20 rounded-lg bg-muted flex items-center justify-center">
