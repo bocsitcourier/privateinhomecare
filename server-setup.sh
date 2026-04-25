@@ -53,27 +53,37 @@ pm2 delete privateinhomecare 2>/dev/null || true
 pm2 start ecosystem.config.cjs --env production
 pm2 save
 
-echo "=== Step 9: Install nginx and configure reverse proxy ==="
+echo "=== Step 9: Install nginx ==="
 apt-get install -y -q nginx certbot python3-certbot-nginx
 
-# Copy canonical nginx config from repo
-cp /var/www/html/privateinhomecare/nginx/privateinhomecaregiver.conf \
+# Phase 1: HTTP-only config (works before SSL certs exist)
+cp /var/www/html/privateinhomecare/nginx/privateinhomecaregiver-http.conf \
    /etc/nginx/sites-available/privateinhomecaregiver.conf
-
-# Enable site, disable default
 ln -sf /etc/nginx/sites-available/privateinhomecaregiver.conf \
         /etc/nginx/sites-enabled/privateinhomecaregiver.conf
 rm -f /etc/nginx/sites-enabled/default
-
 nginx -t && systemctl reload nginx
-echo "nginx configured."
+echo "nginx (HTTP-only) configured and running."
 
-echo "=== Step 10: Health check ==="
+echo "=== Step 10: Obtain SSL certificate ==="
+certbot --nginx \
+  -d privateinhomecaregiver.com \
+  -d www.privateinhomecaregiver.com \
+  --non-interactive --agree-tos -m admin@privateinhomecaregiver.com
+echo "SSL certificate issued."
+
+# Phase 2: Replace with full SSL + HTTP/2 config
+cp /var/www/html/privateinhomecare/nginx/privateinhomecaregiver.conf \
+   /etc/nginx/sites-available/privateinhomecaregiver.conf
+nginx -t && systemctl reload nginx
+echo "nginx (SSL + HTTP/2) configured."
+
+echo "=== Step 11: Health check ==="
 sleep 6
-HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/api/health || echo "000")
+HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5000/api/health || echo "000")
 echo "Health check (Node.js direct): $HTTP"
 pm2 list
 
 echo ""
 echo "=== DONE ==="
-echo "Next: run certbot --nginx -d privateinhomecaregiver.com -d www.privateinhomecaregiver.com"
+echo "Site is live at https://privateinhomecaregiver.com"

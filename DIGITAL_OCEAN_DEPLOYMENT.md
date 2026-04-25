@@ -75,24 +75,31 @@ The canonical nginx config is stored at `nginx/privateinhomecaregiver.conf` in t
 | HTTP/2 | Enabled via `listen 443 ssl http2`. Multiplexes asset requests for faster page loads. |
 | Gzip | `text/css`, `application/javascript`, `application/json`, and SVGs are compressed. Images are already compressed and excluded. |
 
+### Two-Phase Setup (handled automatically by server-setup.sh)
+
+SSL certificates must exist before nginx can validate an HTTPS config. `server-setup.sh` handles this automatically in two phases:
+
+**Phase 1 — HTTP-only** (nginx starts immediately, no certs needed):
+```bash
+cp nginx/privateinhomecaregiver-http.conf /etc/nginx/sites-available/privateinhomecaregiver.conf
+ln -sf /etc/nginx/sites-available/privateinhomecaregiver.conf /etc/nginx/sites-enabled/
+rm -f /etc/nginx/sites-enabled/default
+nginx -t && systemctl reload nginx
+```
+
+**Phase 2 — Issue SSL cert, then switch to HTTPS config**:
+```bash
+certbot --nginx -d privateinhomecaregiver.com -d www.privateinhomecaregiver.com \
+  --non-interactive --agree-tos -m admin@privateinhomecaregiver.com
+
+cp nginx/privateinhomecaregiver.conf /etc/nginx/sites-available/privateinhomecaregiver.conf
+nginx -t && systemctl reload nginx
+```
+
 ### Manual Install (if not using server-setup.sh)
 
-```bash
-# Copy config from repo to nginx sites-available
-cp /var/www/html/privateinhomecare/nginx/privateinhomecaregiver.conf \
-   /etc/nginx/sites-available/privateinhomecaregiver.conf
+Follow the two phases above in order. Never run `nginx -t` against the SSL config (`privateinhomecaregiver.conf`) until certbot has issued the certificate.
 
-# Enable and remove default
-ln -sf /etc/nginx/sites-available/privateinhomecaregiver.conf \
-        /etc/nginx/sites-enabled/privateinhomecaregiver.conf
-rm -f /etc/nginx/sites-enabled/default
-
-# Validate and reload
-nginx -t && systemctl reload nginx
-
-# Get SSL certificate (first time only)
-certbot --nginx -d privateinhomecaregiver.com -d www.privateinhomecaregiver.com
-```
 
 ### Updating the Config
 
