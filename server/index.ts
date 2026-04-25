@@ -378,8 +378,8 @@ app.use((req, res, next) => {
     }
     podcastGenerationLoop();
 
-    // Pre-generate WAV audio — only if GEMINI_API_KEY is present (skips on production where key may be absent)
-    if (process.env.GEMINI_API_KEY) {
+    // Pre-generate WAV audio — only if explicitly enabled via ENABLE_AUDIO_PREGENERATION=true
+    if (process.env.ENABLE_AUDIO_PREGENERATION === 'true' && process.env.GEMINI_API_KEY) {
       setTimeout(() => {
         preGenerateAllPodcastAudio().catch(err =>
           console.error("[AudioGen] Fatal error:", err)
