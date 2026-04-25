@@ -60,6 +60,47 @@ Complete guide to deploying Private InHome CareGiver platform to Digital Ocean A
 
 ---
 
+## 🌐 Nginx Reverse Proxy Configuration
+
+The canonical nginx config is stored at `nginx/privateinhomecaregiver.conf` in the repo and is installed automatically by `server-setup.sh`.
+
+### Key Design Decisions
+
+| Decision | Reason |
+|---|---|
+| `proxy_pass http://127.0.0.1:5000` | **Must use `127.0.0.1`, NOT `localhost`**. On Ubuntu 22.04+ `localhost` resolves to IPv6 `[::1]`, but Node.js listens on IPv4 only — causing 502 errors. |
+| Static files served by nginx | `/assets/`, `/attached_assets/`, `/uploads/`, `/videos/`, `/thumbnails/` are served directly from disk for performance. Node.js never sees these requests. |
+| `/assets/` — 1-year cache | Vite builds hashed filenames (e.g. `main-abc123.js`). These never change, so `Cache-Control: immutable` is safe. |
+| `/attached_assets/` — 30-day cache | AI-generated article images. Long-lived but may be refreshed occasionally. |
+| HTTP/2 | Enabled via `listen 443 ssl http2`. Multiplexes asset requests for faster page loads. |
+| Gzip | `text/css`, `application/javascript`, `application/json`, and SVGs are compressed. Images are already compressed and excluded. |
+
+### Manual Install (if not using server-setup.sh)
+
+```bash
+# Copy config from repo to nginx sites-available
+cp /var/www/html/privateinhomecare/nginx/privateinhomecaregiver.conf \
+   /etc/nginx/sites-available/privateinhomecaregiver.conf
+
+# Enable and remove default
+ln -sf /etc/nginx/sites-available/privateinhomecaregiver.conf \
+        /etc/nginx/sites-enabled/privateinhomecaregiver.conf
+rm -f /etc/nginx/sites-enabled/default
+
+# Validate and reload
+nginx -t && systemctl reload nginx
+
+# Get SSL certificate (first time only)
+certbot --nginx -d privateinhomecaregiver.com -d www.privateinhomecaregiver.com
+```
+
+### Updating the Config
+
+1. Edit `nginx/privateinhomecaregiver.conf` in the repo and push.
+2. On the server: `git pull && cp nginx/privateinhomecaregiver.conf /etc/nginx/sites-available/privateinhomecaregiver.conf && nginx -t && systemctl reload nginx`
+
+---
+
 ## 🚀 Step-by-Step Deployment
 
 ### Step 1: Prepare Your Repository

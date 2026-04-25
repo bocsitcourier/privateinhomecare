@@ -53,11 +53,27 @@ pm2 delete privateinhomecare 2>/dev/null || true
 pm2 start ecosystem.config.cjs --env production
 pm2 save
 
-echo "=== Step 9: Health check ==="
+echo "=== Step 9: Install nginx and configure reverse proxy ==="
+apt-get install -y -q nginx certbot python3-certbot-nginx
+
+# Copy canonical nginx config from repo
+cp /var/www/html/privateinhomecare/nginx/privateinhomecaregiver.conf \
+   /etc/nginx/sites-available/privateinhomecaregiver.conf
+
+# Enable site, disable default
+ln -sf /etc/nginx/sites-available/privateinhomecaregiver.conf \
+        /etc/nginx/sites-enabled/privateinhomecaregiver.conf
+rm -f /etc/nginx/sites-enabled/default
+
+nginx -t && systemctl reload nginx
+echo "nginx configured."
+
+echo "=== Step 10: Health check ==="
 sleep 6
 HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/api/health || echo "000")
-echo "Health check: $HTTP"
+echo "Health check (Node.js direct): $HTTP"
 pm2 list
 
 echo ""
 echo "=== DONE ==="
+echo "Next: run certbot --nginx -d privateinhomecaregiver.com -d www.privateinhomecaregiver.com"
