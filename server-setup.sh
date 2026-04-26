@@ -66,24 +66,55 @@ nginx -t && systemctl reload nginx
 echo "nginx (HTTP-only) configured and running."
 
 echo "=== Step 10: Obtain SSL certificate ==="
+CERT_OK=0
 certbot --nginx \
   -d privateinhomecaregiver.com \
   -d www.privateinhomecaregiver.com \
-  --non-interactive --agree-tos -m admin@privateinhomecaregiver.com
-echo "SSL certificate issued."
+  --non-interactive --agree-tos -m admin@privateinhomecaregiver.com \
+  && CERT_OK=1 \
+  || echo "WARNING: certbot failed (DNS not propagated yet, rate limit, or ACME issue). Site will run HTTP-only. Re-run: certbot --nginx -d privateinhomecaregiver.com -d www.privateinhomecaregiver.com --non-interactive --agree-tos -m admin@privateinhomecaregiver.com"
 
-# Phase 2: Replace with full SSL + HTTP/2 config
-cp /var/www/html/privateinhomecare/nginx/privateinhomecaregiver.conf \
-   /etc/nginx/sites-available/privateinhomecaregiver.conf
-nginx -t && systemctl reload nginx
-echo "nginx (SSL + HTTP/2) configured."
+if [ "$CERT_OK" -eq 1 ]; then
+  echo "SSL certificate issued successfully."
+  # Phase 2: Replace with full SSL + HTTP/2 config
+  cp /var/www/html/privateinhomecare/nginx/privateinhomecaregiver.conf \
+     /etc/nginx/sites-available/privateinhomecaregiver.conf
+  nginx -t && systemctl reload nginx
+  echo "nginx (SSL + HTTP/2) configured."
+else
+  echo "Skipping SSL nginx config — HTTP-only config remains active."
+fi
 
-echo "=== Step 11: Health check ==="
+echo "=== Step 11: Post-provision smoke tests ==="
 sleep 6
+
+echo "--- nginx config test ---"
+nginx -t
+
+echo "--- Node.js health check (direct) ---"
 HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5000/api/health || echo "000")
-echo "Health check (Node.js direct): $HTTP"
+echo "Node.js /api/health: $HTTP"
+if [ "$HTTP" != "200" ]; then
+  echo "WARNING: Node.js health check returned $HTTP — check pm2 logs"
+fi
+
+echo "--- nginx HTTP check ---"
+NGINX_HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/ || echo "000")
+echo "nginx HTTP /: $NGINX_HTTP"
+
+if [ "$CERT_OK" -eq 1 ]; then
+  echo "--- HTTPS external check ---"
+  HTTPS_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://privateinhomecaregiver.com/api/health || echo "000")
+  echo "HTTPS /api/health: $HTTPS_CODE"
+fi
+
 pm2 list
 
 echo ""
 echo "=== DONE ==="
-echo "Site is live at https://privateinhomecaregiver.com"
+if [ "$CERT_OK" -eq 1 ]; then
+  echo "Site is live at https://privateinhomecaregiver.com"
+else
+  echo "Site is running HTTP-only at http://privateinhomecaregiver.com"
+  echo "To complete SSL setup, run: certbot --nginx -d privateinhomecaregiver.com -d www.privateinhomecaregiver.com --non-interactive --agree-tos -m admin@privateinhomecaregiver.com"
+fi
