@@ -50,7 +50,7 @@ import {
 } from "./api-hardening";
 import { comprehensiveFacilities } from "./seed-facilities-data";
 import { hospitalSeedData } from "./seed-hospitals-data";
-import { enrichFacility, enrichFacilitiesBatch, createDataHash, type EnrichmentResult } from "./googlePlaces";
+import { enrichFacility, enrichFacilityByPlaceId, enrichFacilitiesBatch, createDataHash, type EnrichmentResult } from "./googlePlaces";
 import { fetchYouTubeVideoDetails, formatDuration, fetchChannelVideos } from "./youtube";
 import OpenAI from "openai";
 import crypto from "crypto";
@@ -5170,6 +5170,94 @@ Requirements: No text, podcast cover style, square format, professional, welcomi
     }
   });
 
+  // Admin: Enrich facilities missing phone/website/image using direct Place ID lookup
+  app.post("/api/admin/enrich-missing-data", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const batchSize = parseInt(req.query.batchSize as string) || 5;
+      const allFacilities = await storage.listFacilities();
+      const toEnrich = allFacilities.filter(f =>
+        f.googlePlaceId && (
+          !f.heroImageUrl ||
+          !f.phone || f.phone === "N/A" ||
+          !f.website
+        )
+      );
+
+      console.log(`[EnrichMissing] Enriching ${toEnrich.length} facilities with direct Place ID lookup`);
+
+      let enrichedCount = 0;
+      let failedCount = 0;
+      const results: any[] = [];
+
+      for (let i = 0; i < toEnrich.length; i += batchSize) {
+        const batch = toEnrich.slice(i, i + batchSize);
+        const batchResults = await Promise.all(
+          batch.map(async (facility) => {
+            try {
+              const result = await enrichFacilityByPlaceId({
+                id: facility.id,
+                name: facility.name,
+                googlePlaceId: facility.googlePlaceId!,
+              });
+              if (result.success && result.data) {
+                const updates: any = { lastEnrichedAt: new Date() };
+                if (result.data.phone && (!facility.phone || facility.phone === "N/A")) {
+                  updates.phone = result.data.phone;
+                }
+                if (result.data.website && !facility.website) {
+                  updates.website = result.data.website;
+                }
+                if (result.data.heroImageUrl && !facility.heroImageUrl) {
+                  updates.heroImageUrl = result.data.heroImageUrl;
+                }
+                if (result.data.galleryImages?.length && !facility.heroImageUrl) {
+                  updates.galleryImages = result.data.galleryImages;
+                }
+                if (result.data.rating) updates.overallRating = result.data.rating;
+                if (result.data.reviewCount) updates.reviewCount = result.data.reviewCount;
+                if (result.data.businessStatus) updates.businessStatus = result.data.businessStatus;
+                if (result.data.latitude) updates.latitude = result.data.latitude;
+                if (result.data.longitude) updates.longitude = result.data.longitude;
+                if (result.data.openingHours) updates.openingHours = result.data.openingHours;
+                if (result.data.googleReviews?.length) updates.googleReviews = result.data.googleReviews;
+
+                await storage.updateFacility(facility.id, updates);
+                enrichedCount++;
+                return {
+                  id: facility.id,
+                  name: facility.name,
+                  success: true,
+                  gotPhone: !!updates.phone,
+                  gotWebsite: !!updates.website,
+                  gotImage: !!updates.heroImageUrl,
+                };
+              }
+              failedCount++;
+              return { id: facility.id, name: facility.name, success: false, error: result.error };
+            } catch (err) {
+              failedCount++;
+              return { id: facility.id, name: facility.name, success: false, error: String(err) };
+            }
+          })
+        );
+        results.push(...batchResults);
+        if (i + batchSize < toEnrich.length) {
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+      }
+
+      res.json({
+        total: toEnrich.length,
+        enriched: enrichedCount,
+        failed: failedCount,
+        results,
+      });
+    } catch (error) {
+      console.error("Error in enrich-missing-data:", error);
+      res.status(500).json({ message: "Failed to enrich facilities" });
+    }
+  });
+
   // Public: Get facility reviews (approved only)
   app.get("/api/facilities/:slug/reviews", async (req: Request, res: Response) => {
     try {
@@ -8668,6 +8756,97 @@ Return JSON with exactly these keys:
     }
   });
   // ===== END TEMPORARY =====
+
+  // ============================================================
+  // SEO: LEGACY REDIRECTS — Fix Google Soft 404s
+  // These URLs were indexed when this domain was used for a courier/
+  // trucking/logistics company. They now return HTTP 200 with the
+  // React 404 page (soft 404). 301 redirects tell Google to remove them.
+  // ============================================================
+
+  // Old quiz slug redirects — old slugs → nearest current quiz or homepage
+  const QUIZ_SLUG_MAP: Record<string, string> = {
+    'daily-living':       '/quiz/personal-care-assessment',
+    'medication':         '/quiz/personal-care-assessment',
+    'financial':          '/',
+    'planning':           '/quiz/live-in-care-assessment',
+    'caregiver-stress':   '/quiz/respite-care-assessment',
+    'home-safety':        '/quiz/post-hospital-care-assessment',
+    'social':             '/quiz/companionship-needs-quiz',
+    'care-needs':         '/quiz/personal-care-assessment',
+    'caregiver-readiness':'/quiz/live-in-care-assessment',
+    'fall-risk':          '/quiz/post-hospital-care-assessment',
+    'nutrition':          '/quiz/homemaking-care-assessment',
+    'memory':             '/quiz/dementia-care-assessment',
+  };
+  const VALID_QUIZ_SLUGS = new Set([
+    'assisted-living-quiz','companionship-needs-quiz','continuing-care-quiz',
+    'dementia-care-assessment','homemaking-care-assessment','hospice-palliative-care-assessment',
+    'independent-living-quiz','live-in-care-assessment','memory-care-facility-quiz',
+    'nursing-home-readiness','personal-care-assessment','post-hospital-care-assessment',
+    'respite-care-assessment',
+  ]);
+
+  app.get('/quiz/:slug', (req: Request, res: Response, next: NextFunction) => {
+    const { slug } = req.params;
+    if (!VALID_QUIZ_SLUGS.has(slug)) {
+      const target = QUIZ_SLUG_MAP[slug] ?? '/';
+      return res.redirect(301, target);
+    }
+    next();
+  });
+
+  // Article soft-404 fix — if the article doesn't exist in the DB,
+  // serve the SPA with a proper 404 HTTP status so Google stops indexing it
+  app.get('/articles/:slug', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const article = await storage.getArticleBySlug(req.params.slug);
+      if (!article || article.status !== 'published') {
+        res.status(404);
+      }
+    } catch {
+      // DB error — let the request fall through normally
+    }
+    next();
+  });
+
+  // Legacy case-variation URL fixes (Capital-letter paths from old site CMS)
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const p = req.path;
+
+    // Normalise exact case aliases → canonical lowercase equivalents
+    if (p === '/Contact') return res.redirect(301, '/contact');
+    if (p === '/Companies') return res.redirect(301, '/');
+    if (p === '/Applicationform') return res.redirect(301, '/careers');
+    if (p === '/Track/Package') return res.redirect(301, '/');
+
+    // URL alias shortcuts that differ from our canonical routes
+    if (p === '/terms' || p === '/terms-of-service') return res.redirect(301, '/terms-and-conditions');
+    if (p === '/privacy') return res.redirect(301, '/privacy-policy');
+
+    const pl = p.toLowerCase();
+
+    // Old /Term/... paths → appropriate policy pages
+    if (pl.startsWith('/term/') || pl === '/term') {
+      const target = pl.includes('privacy') ? '/privacy-policy' : '/terms-and-conditions';
+      return res.redirect(301, target);
+    }
+
+    // All courier / trucking / logistics / same-day delivery paths → homepage
+    // Match both exact paths (/Courier) and sub-paths (/Courier/...)
+    const legacyPrefixes = ['/courier', '/trucking', '/logistics', '/sameday', '/route', '/medical', '/track'];
+    const isLegacy = legacyPrefixes.some(prefix => pl === prefix || pl.startsWith(prefix + '/'));
+    if (isLegacy) {
+      return res.redirect(301, '/');
+    }
+
+    // Old /blog/ courier posts → our /articles listing
+    if (pl.startsWith('/blog/') || pl === '/blog') {
+      return res.redirect(301, '/articles');
+    }
+
+    next();
+  });
 
   const httpServer = createServer(app);
   return httpServer;

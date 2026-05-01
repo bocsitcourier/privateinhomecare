@@ -271,6 +271,109 @@ export async function enrichFacility(facility: Facility): Promise<EnrichmentResu
   }
 }
 
+export async function enrichFacilityByPlaceId(
+  facility: { id: string; name: string; googlePlaceId: string }
+): Promise<EnrichmentResult> {
+  if (!GOOGLE_PLACES_API_KEY) {
+    return { facilityId: facility.id, facilityName: facility.name, success: false, error: "No API key" };
+  }
+  try {
+    const url = `https://places.googleapis.com/v1/places/${encodeURIComponent(facility.googlePlaceId)}`;
+    const response = await fetch(url, {
+      headers: {
+        "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
+        "X-Goog-FieldMask": [
+          "id",
+          "displayName",
+          "formattedAddress",
+          "nationalPhoneNumber",
+          "internationalPhoneNumber",
+          "rating",
+          "userRatingCount",
+          "googleMapsUri",
+          "websiteUri",
+          "businessStatus",
+          "photos",
+          "location",
+          "regularOpeningHours",
+          "accessibilityOptions",
+          "reviews",
+        ].join(","),
+      },
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      return { facilityId: facility.id, facilityName: facility.name, success: false, error: `${response.status}: ${err.substring(0, 100)}` };
+    }
+
+    const place = await response.json();
+
+    const isClosed = place.businessStatus === "CLOSED_PERMANENTLY" ? "yes" : "no";
+    const photoUrls: string[] = [];
+    if (place.photos && place.photos.length > 0) {
+      for (const photo of place.photos.slice(0, 10)) {
+        if (photo.name) photoUrls.push(buildPhotoUrl(photo.name, 1200));
+      }
+    }
+    const heroImageUrl = photoUrls.length > 0 ? photoUrls[0] : null;
+    const latitude = place.location?.latitude ? String(place.location.latitude) : null;
+    const longitude = place.location?.longitude ? String(place.location.longitude) : null;
+    const openingHours = place.regularOpeningHours
+      ? { weekdayDescriptions: place.regularOpeningHours.weekdayDescriptions, openNow: place.regularOpeningHours.openNow }
+      : null;
+    const accessibilityOptions = place.accessibilityOptions
+      ? {
+          wheelchairAccessibleEntrance: place.accessibilityOptions.wheelchairAccessibleEntrance,
+          wheelchairAccessibleParking: place.accessibilityOptions.wheelchairAccessibleParking,
+          wheelchairAccessibleRestroom: place.accessibilityOptions.wheelchairAccessibleRestroom,
+        }
+      : null;
+    const googleReviews: GoogleReview[] = (place.reviews || [])
+      .filter((r: any) => r.rating && r.text?.text)
+      .map((r: any) => ({
+        authorName: r.authorAttribution?.displayName || "Anonymous",
+        authorPhotoUrl: r.authorAttribution?.photoUri,
+        rating: r.rating,
+        text: r.text.text,
+        publishTime: r.publishTime || new Date().toISOString(),
+        relativeTime: r.relativePublishTimeDescription || "",
+      }));
+
+    return {
+      facilityId: facility.id,
+      facilityName: facility.name,
+      success: true,
+      data: {
+        displayName: place.displayName?.text || null,
+        address: place.formattedAddress || null,
+        phone: place.nationalPhoneNumber || place.internationalPhoneNumber || null,
+        website: place.websiteUri || null,
+        rating: place.rating ? String(place.rating) : null,
+        reviewCount: place.userRatingCount || 0,
+        googleMapsUrl: place.googleMapsUri || null,
+        googlePlaceId: place.id || null,
+        businessStatus: place.businessStatus || null,
+        isClosed,
+        heroImageUrl,
+        galleryImages: photoUrls.slice(1),
+        latitude,
+        longitude,
+        openingHours,
+        accessibilityOptions,
+        googleReviews,
+      },
+    };
+  } catch (error) {
+    return {
+      facilityId: facility.id,
+      facilityName: facility.name,
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
 export async function enrichFacilitiesBatch(
   facilities: Facility[],
   onProgress?: (completed: number, total: number, result: EnrichmentResult) => void
