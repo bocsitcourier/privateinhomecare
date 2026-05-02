@@ -7,7 +7,7 @@ services:
       repo: bocsitcourier/privateinhomecare
       branch: main
       deploy_on_push: true
-    build_command: npm ci && npm run build
+    build_command: npm ci && NODE_OPTIONS="--max-old-space-size=768" npm run build
     run_command: node dist/index.js
     environment_slug: node-js
     instance_count: 1
