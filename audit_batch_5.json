@@ -1,0 +1,3062 @@
+{
+  "batch": 5,
+  "total_audited": 156,
+  "issues_count": {
+    "CRITICAL": 208,
+    "WARNING": 33,
+    "INFO": 66
+  },
+  "auto_fixes_applied": 0,
+  "facilities": [
+    {
+      "id": "6d166444-f950-47e8-b71c-c57fa3029cbb",
+      "name": "Salem Senior Living",
+      "facility_type": "independent-living",
+      "city": "Salem",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 28 chars: 'Independent living in Salem.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Independent living in Salem.'",
+          "fixed": false
+        },
+        {
+          "type": "IMAGE_MISMATCH",
+          "severity": "WARNING",
+          "detail": "Hero image is Google Places URL but does not contain google_place_id",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "9d351db1-e8a5-4ab6-9a9a-86cff928c741",
+      "name": "Salisbury Nursing Home",
+      "facility_type": "nursing-home",
+      "city": "Salisbury",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 26 chars: 'Nursing home in Salisbury.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Nursing home in Salisbury.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "a147ab58-668c-4ca8-a741-ab5f7f5ba812",
+      "name": "Salmon VNA and Hospice",
+      "facility_type": "hospice",
+      "city": "Leominster",
+      "issues": [
+        {
+          "type": "MISSING_LOCATION_CONTEXT",
+          "severity": "INFO",
+          "detail": "Description does not mention city 'Leominster'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "6019f9f5-f811-44dd-beb2-05e14ba8eaaf",
+      "name": "Sancta Maria Nursing Facility",
+      "facility_type": "nursing-home",
+      "city": "Cambridge",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 30 chars: 'Nursing facility in Cambridge.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "30e2c258-4e17-43b8-9f26-970cc88fae7c",
+      "name": "Saugus Nursing Home",
+      "facility_type": "nursing-home",
+      "city": "Saugus",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 23 chars: 'Nursing home in Saugus.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Nursing home in Saugus.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "50e8cfeb-1cff-418e-83a6-d1e2647027f8",
+      "name": "Scituate CCRC",
+      "facility_type": "continuing-care",
+      "city": "Scituate",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 32 chars: 'Life plan community in Scituate.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "99f56669-d629-4010-add4-c53ab1a92988",
+      "name": "Seacoast Nursing And Rehabilitation",
+      "facility_type": "nursing-home",
+      "city": "Gloucester",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 32 chars: 'Nursing and rehab in Gloucester.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "b7b75d4d-c5fb-4501-9e1d-4a5ed84159a1",
+      "name": "Seashore Point",
+      "facility_type": "nursing-home",
+      "city": "Provincetown",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 32 chars: 'Skilled nursing in Provincetown.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "576e1a0f-68ce-4ed5-ac3c-7eb6c8643123",
+      "name": "Seasons Hospice",
+      "facility_type": "hospice",
+      "city": "Norwood",
+      "issues": [
+        {
+          "type": "MISSING_LOCATION_CONTEXT",
+          "severity": "INFO",
+          "detail": "Description does not mention city 'Norwood'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "167f596c-78e8-4d17-8bbe-d6f63c64aff9",
+      "name": "Seasons Hospice",
+      "facility_type": "hospice",
+      "city": "Wellesley",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 26 chars: 'Hospice care in Wellesley.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Hospice care in Wellesley.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "0b5a8768-478c-4179-97a1-d89d239e9599",
+      "name": "Seasons Hospice Holyoke",
+      "facility_type": "hospice",
+      "city": "Holyoke",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 24 chars: 'Hospice care in Holyoke.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Hospice care in Holyoke.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "c32af108-255c-4696-a844-b32ed0322759",
+      "name": "Seasons Hospice Leominster",
+      "facility_type": "hospice",
+      "city": "Leominster",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 27 chars: 'Hospice care in Leominster.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Hospice care in Leominster.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://locations.amedisys.com/ma/leominster/hospice-4421/?utm_source=google&utm_medium=organic&utm_campaign=locallisting",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "739b8a67-debc-4e01-9455-384d911f8ad9",
+      "name": "Seasons Hospice Methuen",
+      "facility_type": "hospice",
+      "city": "Methuen",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 24 chars: 'Hospice care in Methuen.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Hospice care in Methuen.'",
+          "fixed": false
+        },
+        {
+          "type": "IMAGE_MISMATCH",
+          "severity": "WARNING",
+          "detail": "Hero image is Google Places URL but does not contain google_place_id",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "64eadb3f-dcc5-4976-ae49-8a40ced1f60f",
+      "name": "Seasons Hospice Pittsfield",
+      "facility_type": "hospice",
+      "city": "Pittsfield",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 31 chars: 'Hospice care in the Berkshires.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Hospice care in the Berkshires.'",
+          "fixed": false
+        },
+        {
+          "type": "MISSING_LOCATION_CONTEXT",
+          "severity": "INFO",
+          "detail": "Description does not mention city 'Pittsfield'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "8b107839-96a4-469d-b3fa-f3d23bd150ea",
+      "name": "Seasons Hospice Quincy",
+      "facility_type": "hospice",
+      "city": "Quincy",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 23 chars: 'Hospice care in Quincy.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Hospice care in Quincy.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "e9369bb7-06f4-4685-9a39-78b3dd9c93ae",
+      "name": "Sharon Health Care",
+      "facility_type": "nursing-home",
+      "city": "Sharon",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 22 chars: 'Health care in Sharon.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "71c0b417-a905-47a1-ae49-4ed00b5651b2",
+      "name": "Sherrill House",
+      "facility_type": "nursing-home",
+      "city": "Boston",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 30 chars: 'Nursing care in Jamaica Plain.'",
+          "fixed": false
+        },
+        {
+          "type": "MISSING_LOCATION_CONTEXT",
+          "severity": "INFO",
+          "detail": "Description does not mention city 'Boston'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "c08bee15-60db-45f7-9e41-3137ecab9479",
+      "name": "Shrewsbury Nursing Home",
+      "facility_type": "nursing-home",
+      "city": "Shrewsbury",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 27 chars: 'Nursing home in Shrewsbury.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Nursing home in Shrewsbury.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "87dd7ce0-213b-4c86-aa5f-5624497c24dd",
+      "name": "Shrewsbury Senior Residences",
+      "facility_type": "independent-living",
+      "city": "Shrewsbury",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 33 chars: 'Independent living in Shrewsbury.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Independent living in Shrewsbury.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "3b02d1d2-61ae-4e4f-949f-e8a996d98871",
+      "name": "Soldiers Home In Chelsea",
+      "facility_type": "nursing-home",
+      "city": "Chelsea",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 33 chars: 'Veterans nursing home in Chelsea.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "b8b8d275-8d4b-4fc3-bf0d-6db497330edd",
+      "name": "Somerset Ridge Center",
+      "facility_type": "nursing-home",
+      "city": "Somerset",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 26 chars: 'Health center in Somerset.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "2f9778bb-0892-4050-9d71-7a049af61e0a",
+      "name": "Somerville Cambridge Elder Services",
+      "facility_type": "nursing-home",
+      "city": "Somerville",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 29 chars: 'Elder services in Somerville.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "42118304-5173-44de-8b96-27c8931a980e",
+      "name": "South Cove Manor Nursing Home",
+      "facility_type": "nursing-home",
+      "city": "Boston",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 26 chars: 'Nursing home in Chinatown.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Nursing home in Chinatown.'",
+          "fixed": false
+        },
+        {
+          "type": "MISSING_LOCATION_CONTEXT",
+          "severity": "INFO",
+          "detail": "Description does not mention city 'Boston'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "1743edec-34d5-4938-a61a-ba1ff38ab9fb",
+      "name": "South Shore Health",
+      "facility_type": "nursing-home",
+      "city": "Weymouth",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 27 chars: 'Health nursing in Weymouth.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "91b68747-7e03-4bec-b8a2-cddf94a0c9bb",
+      "name": "South Shore Hospice - Quincy",
+      "facility_type": "hospice",
+      "city": "Quincy",
+      "issues": [
+        {
+          "type": "CLOSED_FACILITY_PUBLISHED",
+          "severity": "WARNING",
+          "detail": "Facility marked CLOSED_PERMANENTLY but still published",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "b350351d-7f82-46db-a2d8-f561528c477b",
+      "name": "South Shore Hospital",
+      "facility_type": "hospital",
+      "city": "Weymouth",
+      "issues": [
+        {
+          "type": "MISSING_LOCATION_CONTEXT",
+          "severity": "INFO",
+          "detail": "Description does not mention city 'Weymouth'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "f8f837bc-db62-4700-974a-233aa9ea61d6",
+      "name": "South Shore Rehabilitation",
+      "facility_type": "nursing-home",
+      "city": "Hingham",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 26 chars: 'Rehabilitation in Hingham.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "8b4475a7-5209-41a1-9d78-8eb1a518a771",
+      "name": "Southborough Nursing Home",
+      "facility_type": "nursing-home",
+      "city": "Southborough",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 29 chars: 'Nursing home in Southborough.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Nursing home in Southborough.'",
+          "fixed": false
+        },
+        {
+          "type": "INVALID_PHONE_FORMAT",
+          "severity": "WARNING",
+          "detail": "Phone '020 3936 2586' not in (XXX) XXX-XXXX format",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.careuk.com/care-homes/southborough-surbiton?utm_source=Organic&utm_medium=GMB&utm_campaign=Southborough",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "7a9fd524-c736-4995-816a-17b9bccd5901",
+      "name": "Southcoast Health at Home",
+      "facility_type": "hospice",
+      "city": "Fairhaven",
+      "issues": [
+        {
+          "type": "MISSING_LOCATION_CONTEXT",
+          "severity": "INFO",
+          "detail": "Description does not mention city 'Fairhaven'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "2756839f-46cd-43f4-b822-707a8b9a959a",
+      "name": "Southcoast Health at Home",
+      "facility_type": "hospice",
+      "city": "Fairhaven",
+      "issues": [
+        {
+          "type": "MISSING_LOCATION_CONTEXT",
+          "severity": "INFO",
+          "detail": "Description does not mention city 'Fairhaven'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "973e9065-b85f-449a-9ed1-97c4632de584",
+      "name": "Southfield At South Weymouth",
+      "facility_type": "independent-living",
+      "city": "South Weymouth",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 38 chars: 'Active adult living in South Weymouth.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.thecommonsatsouthfield.com/?utm_source=gbp&utm_medium=organic",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "f2b3cc0d-7ed8-404c-9615-4fbf24a475ff",
+      "name": "Southwood At Norwell Nursing",
+      "facility_type": "nursing-home",
+      "city": "Norwell",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 27 chars: 'Skilled nursing in Norwell.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "21ec1107-fe48-4d0d-af07-ca35c42d91bc",
+      "name": "Southwood At Norwell Nursing",
+      "facility_type": "continuing-care",
+      "city": "Norwell",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 38 chars: 'South Shore continuing care community.'",
+          "fixed": false
+        },
+        {
+          "type": "MISSING_LOCATION_CONTEXT",
+          "severity": "INFO",
+          "detail": "Description does not mention city 'Norwell'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "dbb39e5f-e27e-43c0-954f-4d57b285714d",
+      "name": "Southwood At Norwell Nursing",
+      "facility_type": "nursing-home",
+      "city": "Norwell",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 27 chars: 'Skilled nursing in Norwell.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "39674363-e997-4d14-9cda-8bc081b3cecd",
+      "name": "Spaulding Nursing And Therapy",
+      "facility_type": "nursing-home",
+      "city": "Charlestown",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 35 chars: 'Nursing and therapy in Charlestown.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "ed4c2a07-6193-4f5f-9d2c-1c985e621f40",
+      "name": "Spaulding Outpatient Center for Children Salem",
+      "facility_type": "nursing-home",
+      "city": "Salem",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 26 chars: 'Hospital nursing in Salem.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "557c5721-320d-4112-acf3-43321c7464ee",
+      "name": "Spaulding Rehabilitation Hospital",
+      "facility_type": "hospital",
+      "city": "Charlestown",
+      "issues": [
+        {
+          "type": "MISSING_LOCATION_CONTEXT",
+          "severity": "INFO",
+          "detail": "Description does not mention city 'Charlestown'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "13c5323e-bd53-4f6e-b788-629ea6efba07",
+      "name": "Spencer Healthcare",
+      "facility_type": "nursing-home",
+      "city": "Spencer",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 22 chars: 'Healthcare in Spencer.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.ummhealth.org/locations/umass-memorial-medical-group/umass-memorial-medical-group-spencer-internal-medicine?utm_source=organic&utm_medium=google-business&utm_campaign=GBP",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "7c8a7e71-ec1a-4280-aeca-0bf52bc9da14",
+      "name": "Springfield Rehabilitation",
+      "facility_type": "nursing-home",
+      "city": "Springfield",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 30 chars: 'Rehabilitation in Springfield.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://springfieldrehabhc.com/?utm_source=google&utm_medium=organic&utm_campaign=gmb&utm_content=main_button",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "911acfe9-05f1-45f9-9467-92fed995e58b",
+      "name": "Springfield Senior Residences",
+      "facility_type": "independent-living",
+      "city": "Springfield",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 34 chars: 'Independent living in Springfield.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Independent living in Springfield.'",
+          "fixed": false
+        },
+        {
+          "type": "IMAGE_MISMATCH",
+          "severity": "WARNING",
+          "detail": "Hero image is Google Places URL but does not contain google_place_id",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "ec733ae3-6601-4ee6-9d69-27239ff05285",
+      "name": "St Elizabeths Medical Center TCU",
+      "facility_type": "nursing-home",
+      "city": "Boston",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 30 chars: 'Transitional care in Brighton.'",
+          "fixed": false
+        },
+        {
+          "type": "MISSING_LOCATION_CONTEXT",
+          "severity": "INFO",
+          "detail": "Description does not mention city 'Boston'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "5370fa4e-757a-4785-b7be-7ecf55ccaae5",
+      "name": "St Luke Hospital Nursing",
+      "facility_type": "nursing-home",
+      "city": "New Bedford",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 32 chars: 'Hospital nursing in New Bedford.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "c0f454a9-90bc-4c85-8198-d7b284ce364a",
+      "name": "Standish Village At Lower Mills",
+      "facility_type": "nursing-home",
+      "city": "Dorchester",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 30 chars: 'Village nursing in Dorchester.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "deccc04c-96f4-4e6d-950a-935974fb6ddc",
+      "name": "Stoneham Healthcare",
+      "facility_type": "nursing-home",
+      "city": "Stoneham",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 23 chars: 'Healthcare in Stoneham.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "d79bfa2a-d3db-47ac-bf4b-64b8f4c51d7b",
+      "name": "Stoneham Senior Living",
+      "facility_type": "independent-living",
+      "city": "Stoneham",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 31 chars: 'Independent living in Stoneham.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Independent living in Stoneham.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "895d9f4d-5ad0-4972-b20a-867e9be7e7f2",
+      "name": "Stoughton CCRC",
+      "facility_type": "continuing-care",
+      "city": "Stoughton",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 33 chars: 'Life plan community in Stoughton.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "a8a3d2ad-ecdc-4988-b342-8f00d7458fb8",
+      "name": "Sturbridge Senior Center",
+      "facility_type": "continuing-care",
+      "city": "Sturbridge",
+      "issues": [
+        {
+          "type": "SHORT_DESCRIPTION",
+          "severity": "WARNING",
+          "detail": "Description length is 91",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "efef4979-9450-4ca8-86f8-992a96acac07",
+      "name": "Sturdy Memorial Hospital",
+      "facility_type": "hospital",
+      "city": "Attleboro",
+      "issues": [
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: http://www.sturdyhealth.org/?utm_source=Google+Business+Profile&utm_medium=Website+URL&utm_campaign=Website+URL",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "7ee04098-3ba3-4dc9-8bb4-e1bb395ce5bf",
+      "name": "Sudbury Memory Care",
+      "facility_type": "memory-care",
+      "city": "Sudbury",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 23 chars: 'Memory care in Sudbury.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Memory care in Sudbury.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.bridgesbyepoch.com/communities/sudbury-ma/?utm_source=gmb&utm_medium=organic&utm_content=gmb-website",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "7275d013-e677-4963-9c75-0eaf13000b8a",
+      "name": "Sudbury Pines Extended Care",
+      "facility_type": "nursing-home",
+      "city": "Sudbury",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 25 chars: 'Extended care in Sudbury.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "95ca8e73-c201-40a0-8a19-740ba7096e79",
+      "name": "Sunny Acres Nursing",
+      "facility_type": "nursing-home",
+      "city": "Roslindale",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 27 chars: 'Nursing care in Roslindale.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "1fbbc0f5-bc8d-4257-9dbf-384d351dfd27",
+      "name": "Sunrise Avenue",
+      "facility_type": "assisted-living",
+      "city": "Chelmsford",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 30 chars: 'Assisted living in Chelmsford.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Assisted living in Chelmsford.'",
+          "fixed": false
+        },
+        {
+          "type": "MISSING_PHONE",
+          "severity": "CRITICAL",
+          "detail": "Phone is missing",
+          "fixed": false
+        },
+        {
+          "type": "MISSING_WEBSITE",
+          "severity": "CRITICAL",
+          "detail": "Website is missing",
+          "fixed": false
+        },
+        {
+          "type": "GENERIC_PHONE_IN_FAQ",
+          "severity": "CRITICAL",
+          "detail": "FAQ 'Where is Sunrise Of Chelmsford located?' used generic phone text",
+          "fixed": false
+        },
+        {
+          "type": "GENERIC_PHONE_IN_FAQ",
+          "severity": "CRITICAL",
+          "detail": "FAQ 'How do I contact Sunrise Of Chelmsford?' used generic phone text",
+          "fixed": false
+        },
+        {
+          "type": "GENERIC_PHONE_IN_FAQ",
+          "severity": "CRITICAL",
+          "detail": "FAQ 'Can I schedule a tour of Sunrise Of Chelmsford?' used generic phone text",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "e7b433ce-fe66-4a3c-9d4c-443629887c05",
+      "name": "Sunrise Memory Care Andover",
+      "facility_type": "memory-care",
+      "city": "Andover",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 23 chars: 'Memory care in Andover.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Memory care in Andover.'",
+          "fixed": false
+        },
+        {
+          "type": "IMAGE_MISMATCH",
+          "severity": "WARNING",
+          "detail": "Hero image is Google Places URL but does not contain google_place_id",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "7bbf1df9-7e11-468f-a777-795eda3385bc",
+      "name": "Sunrise Memory Care Burlington",
+      "facility_type": "memory-care",
+      "city": "Burlington",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 38 chars: 'Specialized memory care in Burlington.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.sunriseseniorliving.com/communities/ma/sunrise-of-burlington?utm_source=directory_listings&utm_medium=clicks&utm_campaign=google",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "21fb32b5-8eda-494f-b549-7c1c02010923",
+      "name": "Sunrise Memory Care Cohasset",
+      "facility_type": "memory-care",
+      "city": "Cohasset",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 24 chars: 'Memory care in Cohasset.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Memory care in Cohasset.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.sunriseseniorliving.com/communities/ma/sunrise-of-cohasset?utm_source=directory_listings&utm_medium=clicks&utm_campaign=google",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "7e50cc58-4237-4cbd-a018-33301528f159",
+      "name": "Sunrise Memory Care Lowell",
+      "facility_type": "memory-care",
+      "city": "Lowell",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 22 chars: 'Memory care in Lowell.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Memory care in Lowell.'",
+          "fixed": false
+        },
+        {
+          "type": "IMAGE_MISMATCH",
+          "severity": "WARNING",
+          "detail": "Hero image is Google Places URL but does not contain google_place_id",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "ee1415a9-a9b9-4a91-843b-a85ce3b40c05",
+      "name": "Sunrise Memory Care Natick",
+      "facility_type": "memory-care",
+      "city": "Natick",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 22 chars: 'Memory care in Natick.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Memory care in Natick.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.sunriseseniorliving.com/communities/ma/sunrise-of-wayland?utm_source=directory_listings&utm_medium=clicks&utm_campaign=google",
+          "fixed": false
+        },
+        {
+          "type": "IMAGE_MISMATCH",
+          "severity": "WARNING",
+          "detail": "Hero image is Google Places URL but does not contain google_place_id",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "ca3cf0a8-272f-4ddc-be69-6ef2c4948064",
+      "name": "Sunrise Memory Care Norwood",
+      "facility_type": "memory-care",
+      "city": "Norwood",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 23 chars: 'Memory care in Norwood.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Memory care in Norwood.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.sunriseseniorliving.com/communities/ma/sunrise-of-norwood?utm_source=directory_listings&utm_medium=clicks&utm_campaign=google",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "f6072c9f-e65d-48b3-b137-cd1cc9a173f0",
+      "name": "Sunrise Memory Care Peabody",
+      "facility_type": "memory-care",
+      "city": "Peabody",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 23 chars: 'Memory care in Peabody.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Memory care in Peabody.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.sunriseseniorliving.com/communities/ma/sunrise-at-gardner-park?utm_source=directory_listings&utm_medium=clicks&utm_campaign=google",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "40caf1e6-35d6-48c9-b499-01fcdd9e4007",
+      "name": "Sunrise Memory Care Springfield",
+      "facility_type": "memory-care",
+      "city": "Springfield",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 27 chars: 'Memory care in Springfield.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Memory care in Springfield.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "0e7262f8-dfeb-423f-aef9-159370838e42",
+      "name": "Sunrise Memory Care Weymouth",
+      "facility_type": "memory-care",
+      "city": "Weymouth",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 24 chars: 'Memory care in Weymouth.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Memory care in Weymouth.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "bd8e9de3-6402-454c-bb74-8d3fe9078f71",
+      "name": "Sunrise Memory Care Worcester",
+      "facility_type": "memory-care",
+      "city": "Worcester",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 25 chars: 'Memory care in Worcester.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Memory care in Worcester.'",
+          "fixed": false
+        },
+        {
+          "type": "IMAGE_MISMATCH",
+          "severity": "WARNING",
+          "detail": "Hero image is Google Places URL but does not contain google_place_id",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "90826555-22e6-4f9c-b95e-c687716d0186",
+      "name": "Sunrise Of Arlington",
+      "facility_type": "assisted-living",
+      "city": "Arlington",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 37 chars: 'Premium assisted living in Arlington.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.sunriseseniorliving.com/communities/ma/sunrise-of-arlington?utm_source=directory_listings&utm_medium=clicks&utm_campaign=google",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "8e065e03-4b85-45ce-b01f-a2777c165d9e",
+      "name": "Sunrise Of Beverly",
+      "facility_type": "assisted-living",
+      "city": "Beverly",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 27 chars: 'Assisted living in Beverly.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Assisted living in Beverly.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.sunriseseniorliving.com/communities/ma/sunrise-at-gardner-park?utm_source=directory_listings&utm_medium=clicks&utm_campaign=google",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "c7d1440a-222f-40c1-b510-b85dcd5e1414",
+      "name": "Sunrise Of Burlington",
+      "facility_type": "assisted-living",
+      "city": "Burlington",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 30 chars: 'Assisted living in Burlington.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Assisted living in Burlington.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.sunriseseniorliving.com/communities/ma/sunrise-of-burlington?utm_source=directory_listings&utm_medium=clicks&utm_campaign=google",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "a60a884c-2647-4216-ba4c-7fd03684fbbb",
+      "name": "Sunrise Of Cohasset",
+      "facility_type": "assisted-living",
+      "city": "Cohasset",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 28 chars: 'Assisted living in Cohasset.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Assisted living in Cohasset.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.sunriseseniorliving.com/communities/ma/sunrise-of-cohasset?utm_source=directory_listings&utm_medium=clicks&utm_campaign=google",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "53181695-0e77-44f2-9195-9be1fa29df28",
+      "name": "Sunrise Of Hingham",
+      "facility_type": "assisted-living",
+      "city": "Hingham",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 27 chars: 'Assisted living in Hingham.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Assisted living in Hingham.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.sunriseseniorliving.com/communities/ma/sunrise-of-cohasset?utm_source=directory_listings&utm_medium=clicks&utm_campaign=google",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "86d2af91-dbe5-407b-855a-c8bfbe3fa4e0",
+      "name": "Sunrise Of Hudson",
+      "facility_type": "assisted-living",
+      "city": "Hudson",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 26 chars: 'Assisted living in Hudson.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Assisted living in Hudson.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "27721831-281b-467f-a3e2-0eea69ab8941",
+      "name": "Sunrise Of Malden",
+      "facility_type": "assisted-living",
+      "city": "Malden",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 26 chars: 'Assisted living in Malden.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Assisted living in Malden.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "16c57c20-2d7a-4aca-977f-23e86b7901ee",
+      "name": "Sunrise Of Natick",
+      "facility_type": "assisted-living",
+      "city": "Natick",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 26 chars: 'Assisted living in Natick.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Assisted living in Natick.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.sunriseseniorliving.com/communities/ma/sunrise-of-wayland?utm_source=directory_listings&utm_medium=clicks&utm_campaign=google",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "5313eccf-4f53-4cd3-beee-9cc8014d60e1",
+      "name": "Sunrise Of North Andover",
+      "facility_type": "assisted-living",
+      "city": "North Andover",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 33 chars: 'Assisted living in North Andover.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Assisted living in North Andover.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "b7ed4c6c-c672-44c6-8feb-ef7bb002e61a",
+      "name": "Sunrise Of Norwood",
+      "facility_type": "assisted-living",
+      "city": "Norwood",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 27 chars: 'Assisted living in Norwood.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Assisted living in Norwood.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.sunriseseniorliving.com/communities/ma/sunrise-of-norwood?utm_source=directory_listings&utm_medium=clicks&utm_campaign=google",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "2ba5f936-906a-4546-b459-e652e82d83b7",
+      "name": "Sunrise Of Pittsfield",
+      "facility_type": "assisted-living",
+      "city": "Pittsfield",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 30 chars: 'Assisted living in Pittsfield.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Assisted living in Pittsfield.'",
+          "fixed": false
+        },
+        {
+          "type": "IMAGE_MISMATCH",
+          "severity": "WARNING",
+          "detail": "Hero image is Google Places URL but does not contain google_place_id",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "050cc209-4231-45a7-9bfd-c8420a25eb99",
+      "name": "Sunrise Of Reading",
+      "facility_type": "nursing-home",
+      "city": "Reading",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 23 chars: 'Senior care in Reading.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.sunriseseniorliving.com/communities/ma/sunrise-of-lynnfield?utm_source=directory_listings&utm_medium=clicks&utm_campaign=google",
+          "fixed": false
+        },
+        {
+          "type": "IMAGE_MISMATCH",
+          "severity": "WARNING",
+          "detail": "Hero image is Google Places URL but does not contain google_place_id",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "57d2f6bf-5096-486b-9025-b84d0630e05e",
+      "name": "Sunrise Of Saugus",
+      "facility_type": "assisted-living",
+      "city": "Saugus",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 26 chars: 'Assisted living in Saugus.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Assisted living in Saugus.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.sunriseseniorliving.com/communities/ma/sunrise-of-lynnfield?utm_source=directory_listings&utm_medium=clicks&utm_campaign=google",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "ccf2a2c1-a18d-494c-8ef3-17a5cc48fd39",
+      "name": "Sunrise Of Springfield",
+      "facility_type": "assisted-living",
+      "city": "Springfield",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 31 chars: 'Assisted living in Springfield.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Assisted living in Springfield.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.sunriseseniorliving.com/communities/va/sunrise-of-springfield?utm_source=directory_listings&utm_medium=clicks&utm_campaign=google",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "4d9c7bfd-0881-47c5-8d6a-5af47f74bc4b",
+      "name": "Sunrise Of Stoneham",
+      "facility_type": "assisted-living",
+      "city": "Stoneham",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 28 chars: 'Assisted living in Stoneham.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Assisted living in Stoneham.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.sunriseseniorliving.com/communities/ma/sunrise-of-lynnfield?utm_source=directory_listings&utm_medium=clicks&utm_campaign=google",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "2b67bcda-ff2c-4676-bf77-a8517ecc152a",
+      "name": "Sunrise Of Wayland",
+      "facility_type": "assisted-living",
+      "city": "Wayland",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 27 chars: 'Assisted living in Wayland.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Assisted living in Wayland.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.sunriseseniorliving.com/communities/ma/sunrise-of-wayland?utm_source=directory_listings&utm_medium=clicks&utm_campaign=google",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "36cf60e7-0167-484a-8f87-bf25ec195bcf",
+      "name": "Sunrise Of Worcester",
+      "facility_type": "assisted-living",
+      "city": "Worcester",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 29 chars: 'Assisted living in Worcester.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Assisted living in Worcester.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "dd219c55-9d5c-47dd-98d3-6e2353bf3189",
+      "name": "Sunrise of Cohasset",
+      "facility_type": "memory-care",
+      "city": "Marshfield",
+      "issues": [
+        {
+          "type": "SHORT_DESCRIPTION",
+          "severity": "WARNING",
+          "detail": "Description length is 96",
+          "fixed": false
+        },
+        {
+          "type": "MISSING_LOCATION_CONTEXT",
+          "severity": "INFO",
+          "detail": "Description does not mention city 'Marshfield'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.sunriseseniorliving.com/communities/ma/sunrise-of-cohasset?utm_source=directory_listings&utm_medium=clicks&utm_campaign=google",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "3a2374af-d8f5-42a1-8ede-6fb7a790e52c",
+      "name": "Sunrise of Wellesley",
+      "facility_type": "assisted-living",
+      "city": "Wellesley",
+      "issues": [
+        {
+          "type": "SHORT_DESCRIPTION",
+          "severity": "WARNING",
+          "detail": "Description length is 98",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.sunriseseniorliving.com/communities/ma/sunrise-of-wayland?utm_source=directory_listings&utm_medium=clicks&utm_campaign=google",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "8251e400-579a-424d-a89a-0fb23c73c67e",
+      "name": "Sweetbrook Of Williamstown",
+      "facility_type": "nursing-home",
+      "city": "Williamstown",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 32 chars: 'Skilled nursing in Williamstown.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "46a72515-6911-4506-a843-b99868c11870",
+      "name": "Sweetwood of Williamstown",
+      "facility_type": "memory-care",
+      "city": "Lenox",
+      "issues": [
+        {
+          "type": "SHORT_DESCRIPTION",
+          "severity": "WARNING",
+          "detail": "Description length is 93",
+          "fixed": false
+        },
+        {
+          "type": "MISSING_LOCATION_CONTEXT",
+          "severity": "INFO",
+          "detail": "Description does not mention city 'Lenox'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "de431dc3-da2f-41c6-8d7e-6ab40e9345de",
+      "name": "Taunton City Council On Aging",
+      "facility_type": "continuing-care",
+      "city": "Taunton",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 31 chars: 'Life plan community in Taunton.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "a63343c2-81d2-4629-8d14-646bbb5a38dd",
+      "name": "Taunton Memory Care",
+      "facility_type": "memory-care",
+      "city": "Taunton",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 23 chars: 'Memory care in Taunton.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Memory care in Taunton.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://arborsassistedliving.com/taunton-massachussetts-assisted-living-memory-care-near-you/?utm_source=google&utm_medium=organic&utm_campaign=gmbtaunton",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "c97c0e4f-2cab-4bc0-8255-4a53d8c74e40",
+      "name": "Taunton Senior Living",
+      "facility_type": "assisted-living",
+      "city": "Taunton",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 27 chars: 'Assisted living in Taunton.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Assisted living in Taunton.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://arborsassistedliving.com/taunton-massachussetts-assisted-living-memory-care-near-you/?utm_source=google&utm_medium=organic&utm_campaign=gmbtaunton",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "77311cd3-7a1f-4e4d-b977-2d6e8314704a",
+      "name": "Tewksbury Hospital",
+      "facility_type": "nursing-home",
+      "city": "Tewksbury",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 30 chars: 'Hospital nursing in Tewksbury.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "09362355-798c-46b4-b6cb-522490c48244",
+      "name": "Tewksbury Senior Center",
+      "facility_type": "independent-living",
+      "city": "Tewksbury",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 32 chars: 'Independent living in Tewksbury.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Independent living in Tewksbury.'",
+          "fixed": false
+        },
+        {
+          "type": "MISSING_PHONE",
+          "severity": "CRITICAL",
+          "detail": "Phone is missing",
+          "fixed": false
+        },
+        {
+          "type": "GENERIC_PHONE_IN_FAQ",
+          "severity": "CRITICAL",
+          "detail": "FAQ 'Where is Tewksbury Senior Living located?' used generic phone text",
+          "fixed": false
+        },
+        {
+          "type": "GENERIC_PHONE_IN_FAQ",
+          "severity": "CRITICAL",
+          "detail": "FAQ 'How do I contact Tewksbury Senior Living?' used generic phone text",
+          "fixed": false
+        },
+        {
+          "type": "GENERIC_PHONE_IN_FAQ",
+          "severity": "CRITICAL",
+          "detail": "FAQ 'Can I schedule a tour of Tewksbury Senior Living?' used generic phone text",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "187c636a-e7d5-473a-a66a-93da3b982723",
+      "name": "The Cambridge Homes",
+      "facility_type": "assisted-living",
+      "city": "Cambridge",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 29 chars: 'Assisted living in Cambridge.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Assisted living in Cambridge.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "7e4e0d62-910d-4446-be27-8f3977bc9b87",
+      "name": "The Commons At Andover",
+      "facility_type": "independent-living",
+      "city": "Andover",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 30 chars: 'Independent living in Andover.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Independent living in Andover.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "84f8fb9b-4ee4-40d6-a737-a3ed1364027a",
+      "name": "The Delaney at The Vale",
+      "facility_type": "independent-living",
+      "city": "Revere",
+      "issues": [
+        {
+          "type": "SHORT_DESCRIPTION",
+          "severity": "WARNING",
+          "detail": "Description length is 120",
+          "fixed": false
+        },
+        {
+          "type": "MISSING_LOCATION_CONTEXT",
+          "severity": "INFO",
+          "detail": "Description does not mention city 'Revere'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "40f1f8b1-ad42-4bb2-a505-389a5146811a",
+      "name": "The Gables at Winchester",
+      "facility_type": "independent-living",
+      "city": "Hingham",
+      "issues": [
+        {
+          "type": "SHORT_DESCRIPTION",
+          "severity": "WARNING",
+          "detail": "Description length is 84",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "0b42f5f5-0444-4e77-988d-65953613fd60",
+      "name": "The Residence At Five Corners",
+      "facility_type": "assisted-living",
+      "city": "Brighton",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 28 chars: 'Assisted living in Brighton.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Assisted living in Brighton.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "fcbdc27f-8315-44c7-81f1-d84fd97c5aa4",
+      "name": "The Residences At Wingate",
+      "facility_type": "independent-living",
+      "city": "Needham",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 30 chars: 'Independent living in Needham.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Independent living in Needham.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "361d5b2e-7c17-4a89-b67b-201946d25436",
+      "name": "The Wellington at Springfield",
+      "facility_type": "assisted-living",
+      "city": "Springfield",
+      "issues": [
+        {
+          "type": "SHORT_DESCRIPTION",
+          "severity": "WARNING",
+          "detail": "Description length is 90",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "9f881177-5066-4027-9988-2e5f85a51913",
+      "name": "Tilden House Nursing",
+      "facility_type": "nursing-home",
+      "city": "Medfield",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 25 chars: 'Nursing care in Medfield.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "fbf0fbb9-7147-44dd-8c41-00716df51964",
+      "name": "Traditions of Wayland",
+      "facility_type": "independent-living",
+      "city": "Framingham",
+      "issues": [
+        {
+          "type": "SHORT_DESCRIPTION",
+          "severity": "WARNING",
+          "detail": "Description length is 120",
+          "fixed": false
+        },
+        {
+          "type": "MISSING_LOCATION_CONTEXT",
+          "severity": "INFO",
+          "detail": "Description does not mention city 'Framingham'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "eca986bf-b6c0-4621-aae9-45f56e0aef3c",
+      "name": "Tufts Medical Center",
+      "facility_type": "hospital",
+      "city": "Boston",
+      "issues": [
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.tuftsmedicine.org/get-care/locations/tufts-medical-center?utm_source=Yext&utm_medium=Listings%20Management",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "85e1ded5-3707-4881-b686-42ce555e56d8",
+      "name": "UMass Memorial Medical Center - Memorial Campus",
+      "facility_type": "hospital",
+      "city": "Worcester",
+      "issues": [
+        {
+          "type": "MISSING_LOCATION_CONTEXT",
+          "severity": "INFO",
+          "detail": "Description does not mention city 'Worcester'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.ummhealth.org/umass-memorial-medical-center/patients-visitors/plan-your-visit/directions-parking?qt-locations_medical_center=1&utm_source=datamanager&utm_medium=organic&utm_campaign=listing?utm_source=datamanager&utm_medium=organic&utm_campaign=listing",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "acd0b859-5c12-4fc1-81f6-8693c0cdd5ff",
+      "name": "UMass Memorial Medical Center - University Campus",
+      "facility_type": "hospital",
+      "city": "Worcester",
+      "issues": [
+        {
+          "type": "MISSING_LOCATION_CONTEXT",
+          "severity": "INFO",
+          "detail": "Description does not mention city 'Worcester'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.ummhealth.org/umass-memorial-medical-center?utm_source=datamanager&utm_medium=organic&utm_campaign=listing?utm_source=datamanager&utm_medium=organic&utm_campaign=listing",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "af487572-e591-4171-ad2e-464959822538",
+      "name": "UMass Memorial Medical Center Nursing",
+      "facility_type": "nursing-home",
+      "city": "Worcester",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 36 chars: 'Medical center nursing in Worcester.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.ummhealth.org/umass-memorial-medical-center/patients-visitors/plan-your-visit/directions-parking?qt-locations_medical_center=1&utm_source=datamanager&utm_medium=organic&utm_campaign=listing?utm_source=datamanager&utm_medium=organic&utm_campaign=listing",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "952bd398-ca01-4cbe-8b0a-9a20786b4e4e",
+      "name": "Union Hospital Nursing",
+      "facility_type": "nursing-home",
+      "city": "Lynn",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 25 chars: 'Hospital nursing in Lynn.'",
+          "fixed": false
+        },
+        {
+          "type": "MISSING_WEBSITE",
+          "severity": "CRITICAL",
+          "detail": "Website is missing",
+          "fixed": false
+        },
+        {
+          "type": "CLOSED_FACILITY_PUBLISHED",
+          "severity": "WARNING",
+          "detail": "Facility marked CLOSED_PERMANENTLY but still published",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "0f49133f-beff-474d-aa74-bccaf0b10c77",
+      "name": "VITAS Healthcare Boston",
+      "facility_type": "hospice",
+      "city": "Boston",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 37 chars: 'Comprehensive hospice care in Boston.'",
+          "fixed": false
+        },
+        {
+          "type": "IMAGE_MISMATCH",
+          "severity": "WARNING",
+          "detail": "Hero image is Google Places URL but does not contain google_place_id",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "82aa0def-c4f9-4700-93ad-20e2ae3d4979",
+      "name": "VITAS Healthcare Dedham",
+      "facility_type": "hospice",
+      "city": "Dedham",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 23 chars: 'Hospice care in Dedham.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Hospice care in Dedham.'",
+          "fixed": false
+        },
+        {
+          "type": "IMAGE_MISMATCH",
+          "severity": "WARNING",
+          "detail": "Hero image is Google Places URL but does not contain google_place_id",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "67fbd117-61ca-4922-9f0c-b2488b1b0055",
+      "name": "VITAS Healthcare Longmeadow",
+      "facility_type": "hospice",
+      "city": "Longmeadow",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 27 chars: 'Hospice care in Longmeadow.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Hospice care in Longmeadow.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "6c9c1071-2502-4447-acff-706b9be24794",
+      "name": "VITAS Healthcare Needham",
+      "facility_type": "hospice",
+      "city": "Needham",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 24 chars: 'Hospice care in Needham.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Hospice care in Needham.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "7628c459-ed01-4e27-aa0d-cdb5e6511e18",
+      "name": "VITAS Healthcare Newton",
+      "facility_type": "hospice",
+      "city": "Newton",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 23 chars: 'Hospice care in Newton.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Hospice care in Newton.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "8cc1333c-f8e0-4d25-8b81-0e255ac2e0d1",
+      "name": "VNA Care Hospice",
+      "facility_type": "hospice",
+      "city": "Worcester",
+      "issues": [
+        {
+          "type": "MISSING_LOCATION_CONTEXT",
+          "severity": "INFO",
+          "detail": "Description does not mention city 'Worcester'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "79676e81-5796-4af8-8b59-6f9b458448e8",
+      "name": "VNA of Cape Cod - Martha's Vineyard",
+      "facility_type": "nursing-home",
+      "city": "Vineyard Haven",
+      "issues": [
+        {
+          "type": "SHORT_DESCRIPTION",
+          "severity": "WARNING",
+          "detail": "Description length is 93",
+          "fixed": false
+        },
+        {
+          "type": "MISSING_LOCATION_CONTEXT",
+          "severity": "INFO",
+          "detail": "Description does not mention city 'Vineyard Haven'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.capecodhealth.org/locations/profile/vna-of-cape-cod-martha's-vineyard/?utm_source=YextGoogle&utm_medium=Organic&utm_campaign=Website",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "196188ee-63db-448f-b695-5a7d4a2c8eae",
+      "name": "VNA of Cape Cod - South Dennis",
+      "facility_type": "hospice",
+      "city": "South Dennis",
+      "issues": [
+        {
+          "type": "MISSING_LOCATION_CONTEXT",
+          "severity": "INFO",
+          "detail": "Description does not mention city 'South Dennis'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "a3faf803-f559-47d1-bc6e-d6ec3ebeecab",
+      "name": "VSM Care",
+      "facility_type": "hospice",
+      "city": "Waltham",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 24 chars: 'Hospice care in Waltham.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Hospice care in Waltham.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "b5c0c996-2379-4fac-a63d-b6c0370d1e8e",
+      "name": "Vero Health Springfield",
+      "facility_type": "nursing-home",
+      "city": "Springfield",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 31 chars: 'Health services in Springfield.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.verohealthcenter.com/?utm_source=google&utm_medium=organic&utm_campaign=gbp_listing",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "e3412103-b6e7-4469-879e-6d82c6a428ed",
+      "name": "Wakefield Nursing Center",
+      "facility_type": "nursing-home",
+      "city": "Wakefield",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 28 chars: 'Nursing center in Wakefield.'",
+          "fixed": false
+        },
+        {
+          "type": "IMAGE_MISMATCH",
+          "severity": "WARNING",
+          "detail": "Hero image is Google Places URL but does not contain google_place_id",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "f486fd9d-b171-4630-98b9-39595d0d44f4",
+      "name": "Wakefield Senior Living",
+      "facility_type": "independent-living",
+      "city": "Wakefield",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 32 chars: 'Independent living in Wakefield.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Independent living in Wakefield.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "73939798-62fe-428a-b49e-038d00644f35",
+      "name": "Walpole Healthcare",
+      "facility_type": "nursing-home",
+      "city": "Walpole",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 22 chars: 'Healthcare in Walpole.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "c3baae7e-dae4-48aa-9943-7b3693324c55",
+      "name": "Waltham Care And Rehabilitation",
+      "facility_type": "nursing-home",
+      "city": "Waltham",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 26 chars: 'Care and rehab in Waltham.'",
+          "fixed": false
+        },
+        {
+          "type": "IMAGE_MISMATCH",
+          "severity": "WARNING",
+          "detail": "Hero image is Google Places URL but does not contain google_place_id",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "a3f47810-0abd-4b50-8219-47551674a7f3",
+      "name": "Wareham Healthcare Center",
+      "facility_type": "nursing-home",
+      "city": "Wareham",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 29 chars: 'Healthcare center in Wareham.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Healthcare center in Wareham.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "1bb346ef-6640-4af8-9e90-960361f568a2",
+      "name": "Watertown Memory Care",
+      "facility_type": "memory-care",
+      "city": "Watertown",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 25 chars: 'Memory care in Watertown.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Memory care in Watertown.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.bridgesbyepoch.com/communities/lexington-ma?utm_source=GMB&utm_medium=organic&utm_campaign=BDGL_GMB_Profile",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "9c7a788f-1097-4eed-9417-633647368f2f",
+      "name": "Watertown Nursing",
+      "facility_type": "nursing-home",
+      "city": "Watertown",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 26 chars: 'Nursing care in Watertown.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "d4026872-0206-4ea6-91b9-28cd03b5c0cb",
+      "name": "Wayland Senior Living",
+      "facility_type": "independent-living",
+      "city": "Wayland",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 30 chars: 'Independent living in Wayland.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Independent living in Wayland.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.sunriseseniorliving.com/communities/ma/sunrise-of-wayland?utm_source=directory_listings&utm_medium=clicks&utm_campaign=google",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "d8b63acf-f714-4553-9d2a-4aa19e4556b7",
+      "name": "Webster Park Health",
+      "facility_type": "nursing-home",
+      "city": "Mattapan",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 28 chars: 'Health services in Mattapan.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://websterparkhealthcare.com/?utm_source=google&utm_medium=organic&utm_campaign=gmb&utm_content=main_button",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "89a775dd-dd5f-4ba9-a669-8c703049faa7",
+      "name": "Webster Park Rehab",
+      "facility_type": "nursing-home",
+      "city": "Webster",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 26 chars: 'Rehabilitation in Webster.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://websterparkhealthcare.com/?utm_source=google&utm_medium=organic&utm_campaign=gmb&utm_content=main_button",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "f60bc763-02e9-4c00-a2be-978296263f0f",
+      "name": "Wellesley College Health Service",
+      "facility_type": "nursing-home",
+      "city": "Wellesley",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 31 chars: 'Healthcare center in Wellesley.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Healthcare center in Wellesley.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "861f96a9-9c1b-4cd6-8357-421814ba5222",
+      "name": "Wellesley Senior Residences",
+      "facility_type": "independent-living",
+      "city": "Wellesley",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 32 chars: 'Independent living in Wellesley.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Independent living in Wellesley.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.waterstonesl.com/wellesley/?utm_source=gmb&utm_medium=organic&utm_content=gmb-website",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "a8e5d715-ab00-454c-afb1-c61b8936e234",
+      "name": "West Roxbury Memory Care",
+      "facility_type": "memory-care",
+      "city": "West Roxbury",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 28 chars: 'Memory care in West Roxbury.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Memory care in West Roxbury.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.bridgesbyepoch.com/communities/westwood-ma/?utm_source=gmb&utm_medium=organic&utm_content=gmb-website",
+          "fixed": false
+        },
+        {
+          "type": "IMAGE_MISMATCH",
+          "severity": "WARNING",
+          "detail": "Hero image is Google Places URL but does not contain google_place_id",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "ca757a1f-a3b6-40e5-b5e3-995f2446ed7b",
+      "name": "Westborough Healthcare",
+      "facility_type": "nursing-home",
+      "city": "Westborough",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 26 chars: 'Healthcare in Westborough.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "0426f330-b618-4827-89ae-84c490b42f0b",
+      "name": "Westwood Nursing Home",
+      "facility_type": "nursing-home",
+      "city": "Westwood",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 25 chars: 'Nursing home in Westwood.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Nursing home in Westwood.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.bridgesbyepoch.com/communities/westwood-ma/?utm_source=gmb&utm_medium=organic&utm_content=gmb-website",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "59edaacf-5a49-4e01-8e49-8bfde75670c4",
+      "name": "Weymouth CCRC",
+      "facility_type": "continuing-care",
+      "city": "Weymouth",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 28 chars: 'Continuing care in Weymouth.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Continuing care in Weymouth.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.monarchcommunities.com/the-current-southshore?utm_source=gmb&utm_medium=organic&utm_content=gmb-website",
+          "fixed": false
+        },
+        {
+          "type": "IMAGE_MISMATCH",
+          "severity": "WARNING",
+          "detail": "Hero image is Google Places URL but does not contain google_place_id",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "7d47312b-e037-4794-b915-1d4ca34a0338",
+      "name": "Weymouth Health Care",
+      "facility_type": "nursing-home",
+      "city": "Weymouth",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 24 chars: 'Health care in Weymouth.'",
+          "fixed": false
+        },
+        {
+          "type": "IMAGE_MISMATCH",
+          "severity": "WARNING",
+          "detail": "Hero image is Google Places URL but does not contain google_place_id",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "5ec7de60-0303-4670-919b-f9f1594c50a5",
+      "name": "Whidden Memorial Hospital Nursing",
+      "facility_type": "nursing-home",
+      "city": "Everett",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 28 chars: 'Hospital nursing in Everett.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://www.challiance.org/locations/everett/cha-everett-hospital?utm_source=yxt&utm_medium=search",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "a273a284-3f72-4cd2-bb21-9bcf0999f3f5",
+      "name": "Whitinsville Healthcare",
+      "facility_type": "nursing-home",
+      "city": "Whitinsville",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 27 chars: 'Healthcare in Whitinsville.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "08655bae-feb9-458b-953a-bce55ad992ad",
+      "name": "Whitman Council On Aging",
+      "facility_type": "nursing-home",
+      "city": "Whitman",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 24 chars: 'Nursing home in Whitman.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Nursing home in Whitman.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "cb904564-335e-40eb-a69d-5811c15534a9",
+      "name": "Whitney Place At Natick",
+      "facility_type": "nursing-home",
+      "city": "Natick",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 22 chars: 'Senior care in Natick.'",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://salmonhealth.com/locations/whitney-place-at-natick/?utm_source=google&utm_medium=organic",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "7ce4049c-374a-4022-b94a-ef0b47f84cc1",
+      "name": "Whitney Place at Westborough",
+      "facility_type": "independent-living",
+      "city": "Westborough",
+      "issues": [
+        {
+          "type": "SHORT_DESCRIPTION",
+          "severity": "WARNING",
+          "detail": "Description length is 84",
+          "fixed": false
+        },
+        {
+          "type": "TRACKING_URL",
+          "severity": "INFO",
+          "detail": "Website contains tracking params: https://salmonhealth.com/locations/whitney-place-at-westborough/?utm_source=google&utm_medium=organic",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "c45ca799-240d-4af5-90b7-082f4c987c24",
+      "name": "Wilbraham Nursing Home",
+      "facility_type": "nursing-home",
+      "city": "Wilbraham",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 26 chars: 'Nursing home in Wilbraham.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Nursing home in Wilbraham.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "2c18a2e2-604f-4565-9b23-8680f9811959",
+      "name": "Willowbrook CCRC",
+      "facility_type": "continuing-care",
+      "city": "Worcester",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 31 chars: 'Central MA life plan community.'",
+          "fixed": false
+        },
+        {
+          "type": "MISSING_LOCATION_CONTEXT",
+          "severity": "INFO",
+          "detail": "Description does not mention city 'Worcester'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "706fefbe-705a-4222-b090-2572d5f44da9",
+      "name": "Wilmington Healthcare",
+      "facility_type": "nursing-home",
+      "city": "Wilmington",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 25 chars: 'Healthcare in Wilmington.'",
+          "fixed": false
+        },
+        {
+          "type": "IMAGE_MISMATCH",
+          "severity": "WARNING",
+          "detail": "Hero image is Google Places URL but does not contain google_place_id",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "c8439746-4e3b-4498-bbf1-a34c56d11095",
+      "name": "Winchester Nursing Center",
+      "facility_type": "nursing-home",
+      "city": "Medford",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 26 chars: 'Nursing center in Medford.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "9d605d9b-322a-4fa9-b4ed-1f714fb18585",
+      "name": "Winchester Nursing Home",
+      "facility_type": "nursing-home",
+      "city": "Winchester",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 27 chars: 'Nursing home in Winchester.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Nursing home in Winchester.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "ad5b7256-d60e-447c-b4ef-51248e9b4454",
+      "name": "Winchester Senior Residences",
+      "facility_type": "independent-living",
+      "city": "Winchester",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 33 chars: 'Independent living in Winchester.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Independent living in Winchester.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "9d219587-0ce7-4270-a9b8-2e2a83fa363f",
+      "name": "Wingate At Andover",
+      "facility_type": "nursing-home",
+      "city": "Andover",
+      "issues": [
+        {
+          "type": "SHORT_DESCRIPTION",
+          "severity": "WARNING",
+          "detail": "Description length is 56",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "ff7d6f1e-8def-4ae2-8541-af31684cef2a",
+      "name": "Wingate At Brighton",
+      "facility_type": "nursing-home",
+      "city": "Brighton",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 28 chars: 'Skilled nursing in Brighton.'",
+          "fixed": false
+        },
+        {
+          "type": "MISSING_WEBSITE",
+          "severity": "CRITICAL",
+          "detail": "Website is missing",
+          "fixed": false
+        },
+        {
+          "type": "CLOSED_FACILITY_PUBLISHED",
+          "severity": "WARNING",
+          "detail": "Facility marked CLOSED_PERMANENTLY but still published",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "9645e62c-a0e8-45bb-8d3e-ca82badf5084",
+      "name": "Wingate At Needham",
+      "facility_type": "nursing-home",
+      "city": "Needham",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 27 chars: 'Skilled nursing in Needham.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "f54b5f0c-8665-47e3-a042-5ff8a9b84c65",
+      "name": "Wingate At Silver Lake",
+      "facility_type": "nursing-home",
+      "city": "Kingston",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 28 chars: 'Skilled nursing in Kingston.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "519b5c71-a1bb-4847-9a71-6a12dfb9dd5b",
+      "name": "Winthrop Healthcare Center",
+      "facility_type": "nursing-home",
+      "city": "Winthrop",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 30 chars: 'Healthcare center in Winthrop.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Healthcare center in Winthrop.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "095d984e-0a57-4b90-b55c-d84cc9192a36",
+      "name": "Winthrop Nursing Center",
+      "facility_type": "nursing-home",
+      "city": "Winthrop",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 27 chars: 'Nursing center in Winthrop.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "e6c27ad8-5ad9-4ee6-b0fd-74b5e7ba9e20",
+      "name": "Woburn Nursing Center",
+      "facility_type": "nursing-home",
+      "city": "Woburn",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 25 chars: 'Nursing center in Woburn.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "2dc71931-effe-414a-8500-307c42937039",
+      "name": "Woburn Senior Residences",
+      "facility_type": "independent-living",
+      "city": "Woburn",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 29 chars: 'Independent living in Woburn.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Independent living in Woburn.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "4d041bda-bf76-4444-b320-8829540aab3c",
+      "name": "Worcester Rehabilitation",
+      "facility_type": "nursing-home",
+      "city": "Worcester",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 28 chars: 'Rehabilitation in Worcester.'",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "edc2d8b7-c27d-4d32-9418-999211738cf7",
+      "name": "Worcester Senior Living",
+      "facility_type": "independent-living",
+      "city": "Worcester",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 32 chars: 'Independent living in Worcester.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Independent living in Worcester.'",
+          "fixed": false
+        },
+        {
+          "type": "IMAGE_MISMATCH",
+          "severity": "WARNING",
+          "detail": "Hero image is Google Places URL but does not contain google_place_id",
+          "fixed": false
+        }
+      ]
+    },
+    {
+      "id": "5fa13365-1f20-484c-b268-b3d3aa2d2768",
+      "name": "Youville House",
+      "facility_type": "nursing-home",
+      "city": "Cambridge",
+      "issues": [
+        {
+          "type": "GENERIC_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Description is 26 chars: 'Nursing home in Cambridge.'",
+          "fixed": false
+        },
+        {
+          "type": "TEMPLATE_DESCRIPTION",
+          "severity": "CRITICAL",
+          "detail": "Starts with template prefix: 'Nursing home in Cambridge.'",
+          "fixed": false
+        }
+      ]
+    }
+  ]
+}

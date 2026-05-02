@@ -1,5 +1,4 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "Bb_M3eblDmGlafsPP01DZ"
@@ -1092,3 +1091,39 @@ id = "yrnsu4gNKSKlXENaPrGff"
 uri = "file://attached_assets/ai_generated/private-caregivers-needham-ma.png"
 type = "image"
 title = "private-caregivers-n"
+
+[[outputs]]
+id = "3MyCxmqeYlg2JagS8gBFX"
+uri = "file://audit_master_report.md"
+type = "text"
+title = "Master Audit Report — All 796 Facilities"
+
+[[outputs]]
+id = "gDJo4fOWO_gwrbh8VIYj1"
+uri = "file://audit_batch_1.json"
+type = "unspecified"
+title = "Batch 1 Raw Findings (A → Brockton Health Center)"
+
+[[outputs]]
+id = "Hh1d_OPnXCC2ENzQUAQJo"
+uri = "file://audit_batch_2.json"
+type = "unspecified"
+title = "Batch 2 Raw Findings (Brockton Hospital → Family Care)"
+
+[[outputs]]
+id = "97hw0-W7VFjQbQoys_CW5"
+uri = "file://audit_batch_3.json"
+type = "unspecified"
+title = "Batch 3 Raw Findings (Fidelis Hospice → Maplewood Brewster)"
+
+[[outputs]]
+id = "FBUrhfKbXFgQdzaVQpq6K"
+uri = "file://audit_batch_4.json"
+type = "unspecified"
+title = "Batch 4 Raw Findings (Maplewood Mayflower → Salem Hospital)"
+
+[[outputs]]
+id = "YdPgD0fEnKLIi6EwLUawA"
+uri = "file://audit_batch_5.json"
+type = "unspecified"
+title = "Batch 5 Raw Findings (Salem Senior Living → Z)"
