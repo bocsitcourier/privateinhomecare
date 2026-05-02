@@ -9,6 +9,8 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { v4 as uuidv4 } from 'uuid';
+import { promises as fsPromises } from 'fs';
+import path from 'path';
 
 export interface AuditLogEntry {
   auditId: string;
@@ -152,9 +154,32 @@ function sanitizeParams(params: any): any {
   return sanitized;
 }
 
+const AUDIT_LOG_DIR = path.join(process.cwd(), 'logs');
+const AUDIT_LOG_PATH = path.join(AUDIT_LOG_DIR, 'hipaa-audit.log');
+let auditDirEnsured = false;
+
+async function ensureAuditDir(): Promise<void> {
+  if (auditDirEnsured) return;
+  try {
+    await fsPromises.mkdir(AUDIT_LOG_DIR, { recursive: true });
+    auditDirEnsured = true;
+  } catch (err) {
+    console.error('[HIPAA_AUDIT] Failed to create audit log directory:', err);
+  }
+}
+
 function writeAuditLog(entry: AuditLogEntry): void {
   const logLine = JSON.stringify(entry);
   console.log(`[HIPAA_AUDIT] ${logLine}`);
+  // Persist to file for HIPAA compliance (immutable audit trail)
+  void (async () => {
+    try {
+      await ensureAuditDir();
+      await fsPromises.appendFile(AUDIT_LOG_PATH, logLine + '\n', 'utf8');
+    } catch (err) {
+      console.error('[HIPAA_AUDIT] Failed to persist audit log entry:', err);
+    }
+  })();
 }
 
 /**

@@ -368,14 +368,6 @@ export default function Header() {
               >
                 Contact
               </a>
-              <Link 
-                href="/admin" 
-                className="text-foreground hover-elevate px-3 py-3 rounded-md text-base" 
-                data-testid="link-admin-mobile"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Admin
-              </Link>
               
               <div className="pt-4 border-t mt-2 flex flex-col gap-3 lg:hidden">
                 <a 

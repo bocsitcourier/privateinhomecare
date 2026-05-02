@@ -79,9 +79,32 @@ declare module 'express-session' {
   }
 }
 
-// Seed admin user on startup
+// Helper: timing-safe check for the admin setup secret
+function isValidSetupSecret(req: Request): boolean {
+  const secret = process.env.ADMIN_SETUP_SECRET;
+  const provided = req.header('x-admin-setup-secret');
+  if (!secret || !provided) return false;
+  const a = Buffer.from(secret);
+  const b = Buffer.from(provided);
+  if (a.length !== b.length) return false;
+  try {
+    return crypto.timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
+}
+
+// Seed admin user on startup (gated: only runs in development OR when explicitly enabled)
 async function seedAdminUser() {
   try {
+    // SAFETY: never auto-seed a default admin in production unless explicitly enabled.
+    // This prevents an empty production DB from silently getting admin/demo123 credentials.
+    const isProd = process.env.NODE_ENV === 'production';
+    if (isProd && process.env.ENABLE_DEV_SEED !== 'true') {
+      console.log("[STARTUP] Skipping default admin seed in production (set ENABLE_DEV_SEED=true to override)");
+      return;
+    }
+
     const existingUser = await storage.getUserByUsername("admin");
     if (existingUser) {
       console.log("[STARTUP] Admin user already exists");
@@ -679,6 +702,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/seed-admin", async (req, res) => {
     try {
+      // SECURITY: this endpoint creates an admin user and must NOT be world-callable.
+      // Allowed only in non-production OR when caller proves possession of ADMIN_SETUP_SECRET.
+      const isProd = process.env.NODE_ENV === 'production';
+      if (isProd && !isValidSetupSecret(req)) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+
       const existingUser = await storage.getUserByUsername("admin");
       if (existingUser) {
         return res.status(400).json({ error: "Admin user already exists" });
@@ -714,7 +744,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/seed/articles", async (req, res) => {
+  app.post("/api/seed/articles", requireAuth, async (req, res) => {
     try {
       const forceReseed = req.query.force === 'true';
       const result = await seedComprehensiveArticles(forceReseed);
@@ -1499,11 +1529,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const errors: string[] = [];
       for (const art of missing) {
         try {
+          // Sanitize body HTML to match the safety guarantees of create/update endpoints
+          const sanitizedBody = typeof art.body === 'string'
+            ? DOMPurify.sanitize(art.body)
+            : art.body;
           await storage.createArticle({
             title: art.title,
             slug: art.slug,
             excerpt: art.excerpt ?? null,
-            body: art.body,
+            body: sanitizedBody,
             category: art.category ?? "Care Tips",
             heroImageUrl: art.heroImageUrl ?? art.hero_image_url ?? null,
             metaTitle: art.metaTitle ?? art.meta_title ?? null,

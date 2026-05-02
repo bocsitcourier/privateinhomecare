@@ -30,7 +30,8 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(null, false);
+      console.warn(`[CORS] Blocked origin: ${origin}`);
+      callback(new Error('Origin not allowed by CORS policy'), false);
     }
   },
   credentials: true,
@@ -211,7 +212,7 @@ async function checkIPLocation(ip: string): Promise<{ country: string; allowed: 
   }
 
   try {
-    const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode`);
+    const response = await fetch(`https://ip-api.com/json/${ip}?fields=status,country,countryCode`);
     const data = await response.json();
 
     if (data.status === 'success') {
@@ -333,10 +334,16 @@ app.use((req, res, next) => {
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+    const isProd = process.env.NODE_ENV === 'production';
+    const message = isProd && status >= 500
+      ? "Internal Server Error"
+      : (err.message || "Internal Server Error");
 
-    res.status(status).json({ message });
-    throw err;
+    console.error('[ERROR]', err);
+
+    if (!res.headersSent) {
+      res.status(status).json({ message });
+    }
   });
 
   // importantly only setup vite in development and after

@@ -203,6 +203,26 @@ export function detectXSS(req: Request, res: Response, next: NextFunction) {
  * Prevents brute force attacks on sensitive endpoints
  */
 const requestCounts = new Map<string, { count: number; resetTime: number }>();
+const THROTTLE_MAP_MAX_SIZE = 50000;
+
+// Periodic cleanup of expired throttle entries to prevent unbounded memory growth
+const throttleCleanupInterval = setInterval(() => {
+  const now = Date.now();
+  const entries = Array.from(requestCounts.entries());
+  for (const [ip, record] of entries) {
+    if (now > record.resetTime) {
+      requestCounts.delete(ip);
+    }
+  }
+  // Hard cap as a safety valve in case TTL cleanup can't keep up
+  if (requestCounts.size > THROTTLE_MAP_MAX_SIZE) {
+    const remaining = Array.from(requestCounts.entries());
+    remaining.sort((a, b) => a[1].resetTime - b[1].resetTime);
+    const toDelete = remaining.slice(0, remaining.length - THROTTLE_MAP_MAX_SIZE);
+    toDelete.forEach(([ip]) => requestCounts.delete(ip));
+  }
+}, 5 * 60 * 1000); // every 5 minutes
+throttleCleanupInterval.unref?.();
 
 export function throttleByIP(maxRequests: number = 10, windowMs: number = 60000) {
   return (req: Request, res: Response, next: NextFunction) => {

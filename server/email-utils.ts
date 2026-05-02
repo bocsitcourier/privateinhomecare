@@ -4,14 +4,30 @@ interface EmailOptions {
   html: string;
 }
 
+const APP_BASE_URL = (process.env.APP_URL || 'https://privateinhomecaregiver.com').replace(/\/$/, '');
+
+const escapeHtml = (s: unknown): string =>
+  String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const safeUrlPart = (s: unknown): string => encodeURIComponent(String(s ?? '').trim());
+
 export async function sendEmail(options: EmailOptions): Promise<{ success: boolean; error?: string }> {
   const resendApiKey = process.env.RESEND_API_KEY;
-  
+
   if (!resendApiKey) {
     console.log('[EMAIL] Resend API key not configured. Email would have been sent:');
     console.log('[EMAIL] To:', options.to);
     console.log('[EMAIL] Subject:', options.subject);
-    console.log('[EMAIL] Body:', options.html);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[EMAIL] Body:', options.html);
+    } else {
+      console.log('[EMAIL] Body: [redacted in production - configure RESEND_API_KEY to actually send]');
+    }
     return { success: true };
   }
 
@@ -61,9 +77,7 @@ export function generateApplicationNotificationEmail(application: {
   resumeUrl?: string;
   coverLetter?: string;
 }): string {
-  const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-    ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
-    : 'http://localhost:5000';
+  const baseUrl = APP_BASE_URL;
 
   return `
     <!DOCTYPE html>
@@ -88,90 +102,90 @@ export function generateApplicationNotificationEmail(application: {
           <h1 style="margin: 0;">New Job Application Received</h1>
         </div>
         <div class="content">
-          <p>A new application has been submitted for the position: <strong>${application.jobTitle}</strong></p>
+          <p>A new application has been submitted for the position: <strong>${escapeHtml(application.jobTitle)}</strong></p>
           
           <div class="field">
             <div class="label">Applicant Name:</div>
-            <div class="value">${application.fullName}</div>
+            <div class="value">${escapeHtml(application.fullName)}</div>
           </div>
           
           <div class="field">
             <div class="label">Email:</div>
-            <div class="value"><a href="mailto:${application.email}">${application.email}</a></div>
+            <div class="value"><a href="mailto:${safeUrlPart(application.email)}">${escapeHtml(application.email)}</a></div>
           </div>
           
           <div class="field">
             <div class="label">Phone:</div>
-            <div class="value"><a href="tel:${application.phone}">${application.phone}</a></div>
+            <div class="value"><a href="tel:${safeUrlPart(application.phone)}">${escapeHtml(application.phone)}</a></div>
           </div>
           
           ${application.address ? `
           <div class="field">
             <div class="label">Address:</div>
-            <div class="value">${application.address}</div>
+            <div class="value">${escapeHtml(application.address)}</div>
           </div>
           ` : ''}
           
           ${application.backgroundScreeningConsent ? `
           <div class="field">
             <div class="label">Background Screening Consent:</div>
-            <div class="value">${application.backgroundScreeningConsent}</div>
+            <div class="value">${escapeHtml(application.backgroundScreeningConsent)}</div>
           </div>
           ` : ''}
           
           ${application.certificationType ? `
           <div class="field">
             <div class="label">Certification:</div>
-            <div class="value">${application.certificationType}</div>
+            <div class="value">${escapeHtml(application.certificationType)}</div>
           </div>
           ` : ''}
           
           ${application.drivingStatus ? `
           <div class="field">
             <div class="label">Driving Status:</div>
-            <div class="value">${application.drivingStatus.replace(/_/g, ' ')}</div>
+            <div class="value">${escapeHtml(application.drivingStatus.replace(/_/g, ' '))}</div>
           </div>
           ` : ''}
           
           ${application.availability && application.availability.length > 0 ? `
           <div class="field">
             <div class="label">Availability:</div>
-            <div class="value">${application.availability.join(', ')}</div>
+            <div class="value">${escapeHtml(application.availability.join(', '))}</div>
           </div>
           ` : ''}
           
           ${application.startDate ? `
           <div class="field">
             <div class="label">Available Start Date:</div>
-            <div class="value">${application.startDate}</div>
+            <div class="value">${escapeHtml(application.startDate)}</div>
           </div>
           ` : ''}
           
           ${application.yearsExperience !== undefined ? `
           <div class="field">
             <div class="label">Years of Experience:</div>
-            <div class="value">${application.yearsExperience} years</div>
+            <div class="value">${escapeHtml(String(application.yearsExperience))} years</div>
           </div>
           ` : ''}
           
           ${application.specialSkills && application.specialSkills.length > 0 ? `
           <div class="field">
             <div class="label">Special Skills:</div>
-            <div class="value">${application.specialSkills.join(', ')}</div>
+            <div class="value">${escapeHtml(application.specialSkills.join(', '))}</div>
           </div>
           ` : ''}
           
           ${application.resumeUrl ? `
           <div class="field">
             <div class="label">Resume:</div>
-            <div class="value"><a href="${baseUrl}${application.resumeUrl}">Download Resume</a></div>
+            <div class="value"><a href="${baseUrl}${escapeHtml(application.resumeUrl)}">Download Resume</a></div>
           </div>
           ` : ''}
           
           ${application.coverLetter ? `
           <div class="field">
             <div class="label">Cover Letter:</div>
-            <div class="value" style="white-space: pre-wrap;">${application.coverLetter}</div>
+            <div class="value" style="white-space: pre-wrap;">${escapeHtml(application.coverLetter)}</div>
           </div>
           ` : ''}
           
@@ -193,9 +207,7 @@ export function generateInquiryNotificationEmail(inquiry: {
   service?: string;
   message?: string;
 }): string {
-  const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-    ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
-    : 'http://localhost:5000';
+  const baseUrl = APP_BASE_URL;
 
   return `
     <!DOCTYPE html>
@@ -224,30 +236,30 @@ export function generateInquiryNotificationEmail(inquiry: {
           
           <div class="field">
             <div class="label">Name:</div>
-            <div class="value">${inquiry.name}</div>
+            <div class="value">${escapeHtml(inquiry.name)}</div>
           </div>
           
           <div class="field">
             <div class="label">Email:</div>
-            <div class="value"><a href="mailto:${inquiry.email}">${inquiry.email}</a></div>
+            <div class="value"><a href="mailto:${safeUrlPart(inquiry.email)}">${escapeHtml(inquiry.email)}</a></div>
           </div>
           
           <div class="field">
             <div class="label">Phone:</div>
-            <div class="value"><a href="tel:${inquiry.phone}">${inquiry.phone}</a></div>
+            <div class="value"><a href="tel:${safeUrlPart(inquiry.phone)}">${escapeHtml(inquiry.phone)}</a></div>
           </div>
           
           ${inquiry.service ? `
           <div class="field">
             <div class="label">Service Interested:</div>
-            <div class="value">${inquiry.service}</div>
+            <div class="value">${escapeHtml(inquiry.service)}</div>
           </div>
           ` : ''}
           
           ${inquiry.message ? `
           <div class="field">
             <div class="label">Message:</div>
-            <div class="value" style="white-space: pre-wrap;">${inquiry.message}</div>
+            <div class="value" style="white-space: pre-wrap;">${escapeHtml(inquiry.message)}</div>
           </div>
           ` : ''}
           
@@ -274,9 +286,7 @@ export function generateReferralNotificationEmail(referral: {
   primaryNeedForCare: string;
   additionalInfo?: string;
 }): string {
-  const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-    ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
-    : 'http://localhost:5000';
+  const baseUrl = APP_BASE_URL;
 
   return `
     <!DOCTYPE html>
@@ -311,22 +321,22 @@ export function generateReferralNotificationEmail(referral: {
             
             <div class="field">
               <div class="label">Name:</div>
-              <div class="value">${referral.referrerName}</div>
+              <div class="value">${escapeHtml(referral.referrerName)}</div>
             </div>
             
             <div class="field">
               <div class="label">Email:</div>
-              <div class="value"><a href="mailto:${referral.referrerEmail}">${referral.referrerEmail}</a></div>
+              <div class="value"><a href="mailto:${safeUrlPart(referral.referrerEmail)}">${escapeHtml(referral.referrerEmail)}</a></div>
             </div>
             
             <div class="field">
               <div class="label">Phone:</div>
-              <div class="value"><a href="tel:${referral.referrerPhone}">${referral.referrerPhone}</a></div>
+              <div class="value"><a href="tel:${safeUrlPart(referral.referrerPhone)}">${escapeHtml(referral.referrerPhone)}</a></div>
             </div>
             
             <div class="field">
               <div class="label">Relationship to Referred:</div>
-              <div class="value">${referral.relationshipToReferred}</div>
+              <div class="value">${escapeHtml(referral.relationshipToReferred)}</div>
             </div>
           </div>
           
@@ -335,35 +345,35 @@ export function generateReferralNotificationEmail(referral: {
             
             <div class="field">
               <div class="label">Name:</div>
-              <div class="value">${referral.referredName}</div>
+              <div class="value">${escapeHtml(referral.referredName)}</div>
             </div>
             
             <div class="field">
               <div class="label">Phone:</div>
-              <div class="value"><a href="tel:${referral.referredPhone}">${referral.referredPhone}</a></div>
+              <div class="value"><a href="tel:${safeUrlPart(referral.referredPhone)}">${escapeHtml(referral.referredPhone)}</a></div>
             </div>
             
             ${referral.referredEmail ? `
             <div class="field">
               <div class="label">Email:</div>
-              <div class="value"><a href="mailto:${referral.referredEmail}">${referral.referredEmail}</a></div>
+              <div class="value"><a href="mailto:${safeUrlPart(referral.referredEmail)}">${escapeHtml(referral.referredEmail)}</a></div>
             </div>
             ` : ''}
             
             <div class="field">
               <div class="label">Location:</div>
-              <div class="value">${referral.referredLocation}</div>
+              <div class="value">${escapeHtml(referral.referredLocation)}</div>
             </div>
             
             <div class="field">
               <div class="label">Primary Need for Care:</div>
-              <div class="value">${referral.primaryNeedForCare}</div>
+              <div class="value">${escapeHtml(referral.primaryNeedForCare)}</div>
             </div>
             
             ${referral.additionalInfo ? `
             <div class="field">
               <div class="label">Additional Information:</div>
-              <div class="value" style="white-space: pre-wrap;">${referral.additionalInfo}</div>
+              <div class="value" style="white-space: pre-wrap;">${escapeHtml(referral.additionalInfo)}</div>
             </div>
             ` : ''}
           </div>

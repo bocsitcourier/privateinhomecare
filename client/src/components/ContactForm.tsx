@@ -225,7 +225,7 @@ export default function ContactForm({ preselectedService }: ContactFormProps) {
                 data-testid="label-terms"
               >
                 I agree to the{" "}
-                <Link href="/terms-of-service" className="text-primary hover:underline" data-testid="link-terms">
+                <Link href="/terms-and-conditions" className="text-primary hover:underline" data-testid="link-terms">
                   Terms of Service
                 </Link>
               </label>
