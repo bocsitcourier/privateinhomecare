@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-05-02T20:12:36.114Z",
+  "total_facilities": 796,
+  "issues": {
+    "descriptions_too_short": 0,
+    "descriptions_critical": 0,
+    "tracking_urls": 0,
+    "closed_published": 0,
+    "missing_phone": 14,
+    "missing_website": 34,
+    "image_mismatch": 7,
+    "faqs_generic_phone": 0
+  },
+  "notes": [
+    "14 facilities have no phone (Google Places returns no listing) — primarily hospices and mobile services.",
+    "34 facilities have no website on Google Places.",
+    "7 facilities have an image URL that doesn't match their place_id (Google Places has no current photo)."
+  ]
+}
