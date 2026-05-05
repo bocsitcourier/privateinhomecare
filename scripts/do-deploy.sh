@@ -85,8 +85,31 @@ if [ "\$SKIP_BUILD" = "false" ]; then
   echo "--- npm ci ---"
   npm ci
 
+  # Snapshot the previous build so a failed/partial build can be rolled back.
+  # Vite writes into dist/ in-place; if the build dies mid-write the running
+  # Node process can serve a half-written dist/public, breaking the live site
+  # even though we never restarted the service.
+  if [ -d dist ]; then
+    rm -rf dist.prev
+    cp -a dist dist.prev
+    echo "--- snapshotted previous dist -> dist.prev ---"
+  fi
+
   echo "--- npm run build (with extra heap for 1GB server) ---"
-  NODE_OPTIONS="--max-old-space-size=768" npm run build
+  if NODE_OPTIONS="--max-old-space-size=768" npm run build; then
+    echo "--- build OK; removing dist.prev ---"
+    rm -rf dist.prev
+  else
+    BUILD_RC=\$?
+    echo "ERROR: build failed (exit \$BUILD_RC)." >&2
+    if [ -d dist.prev ]; then
+      echo "Rolling back dist/ to previous snapshot..." >&2
+      rm -rf dist
+      mv dist.prev dist
+      echo "Rollback complete; live process keeps serving previous build." >&2
+    fi
+    exit \$BUILD_RC
+  fi
 fi
 
 echo "--- update nginx config ---"
@@ -95,22 +118,43 @@ nginx -t
 systemctl reload nginx
 echo "nginx reloaded"
 
-echo "--- PM2 reload ---"
-pm2 reload privateinhomecare
-pm2 save
+echo "--- restart application ---"
+# Prefer systemd (deploy/install-systemd.sh); fall back to PM2 for legacy droplets.
+if systemctl list-unit-files | grep -q '^privateinhomecare\.service'; then
+  echo "Using systemd."
+  systemctl restart privateinhomecare
+  SUPERVISOR="systemd"
+else
+  echo "Using PM2 (legacy)."
+  pm2 reload privateinhomecare
+  pm2 save
+  SUPERVISOR="pm2"
+fi
 
-echo "--- health check ---"
-sleep 5
-HTTP=\$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5000/api/health || echo "000")
-echo "Health check: \$HTTP"
+echo "--- health check (up to 30s) ---"
+HTTP="000"
+for i in 1 2 3 4 5 6; do
+  sleep 5
+  HTTP=\$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5000/api/health || echo "000")
+  echo "  attempt \$i: HTTP \$HTTP"
+  [ "\$HTTP" = "200" ] && break
+done
 if [ "\$HTTP" != "200" ]; then
-  echo "ERROR: Health check returned \$HTTP (expected 200)." >&2
-  pm2 list >&2
+  echo "ERROR: Health check returned \$HTTP after 30s (expected 200)." >&2
+  if [ "\$SUPERVISOR" = "systemd" ]; then
+    journalctl -u privateinhomecare -n 100 --no-pager >&2 || true
+  else
+    pm2 logs privateinhomecare --lines 50 --nostream >&2 || pm2 list >&2
+  fi
   exit 1
 fi
 
-pm2 list
-echo "--- $(date): Server update DONE ---"
+if [ "\$SUPERVISOR" = "systemd" ]; then
+  systemctl status privateinhomecare --no-pager -n 10 || true
+else
+  pm2 list || true
+fi
+echo "--- \$(date): Server update DONE ---"
 REMOTE_SCRIPT
 
 echo "Copying update script to server..."

@@ -1,0 +1,33 @@
+[Unit]
+Description=PrivateInHomeCareGiver Node.js application
+Documentation=https://github.com/bocsitcourier/privateinhomecare
+After=network-online.target
+Wants=network-online.target
+# Disable systemd's start-rate limiter — we want indefinite restart on crash.
+# (Without this, 10 rapid failures could put the unit in start-limit-hit and
+# require manual `systemctl reset-failed`.)
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+# TODO (security follow-up): switch to a dedicated non-root service user.
+# Current value matches the existing droplet's root-owned app directory;
+# changing it requires also chowning /var/www/html/privateinhomecare,
+# /var/www/html/privateinhomecare/uploads, and /var/www/html/privateinhomecare/attached_assets.
+User=root
+WorkingDirectory=/var/www/html/privateinhomecare
+EnvironmentFile=/etc/privateinhomecare.env
+ExecStart=/usr/bin/node /var/www/html/privateinhomecare/dist/index.js
+Restart=always
+RestartSec=5
+
+# Stdout / stderr go to journald (view with: journalctl -u privateinhomecare -f)
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=privateinhomecare
+
+# Resource hardening — leave headroom on the 1GB droplet
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
