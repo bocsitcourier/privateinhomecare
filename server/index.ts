@@ -25,9 +25,12 @@ const allowedOrigins = [
   ...(process.env.NODE_ENV === 'development' ? ['http://localhost:5000', 'http://127.0.0.1:5000'] : [])
 ];
 
+const isReplitDevOrigin = (origin: string) =>
+  process.env.NODE_ENV === 'development' && /\.replit\.(dev|app)$/.test(new URL(origin).hostname);
+
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin) || (origin && isReplitDevOrigin(origin))) {
       callback(null, true);
     } else {
       console.warn(`[CORS] Blocked origin: ${origin}`);
