@@ -17,7 +17,7 @@ Type=simple
 User=root
 WorkingDirectory=/var/www/html/privateinhomecare
 EnvironmentFile=/etc/privateinhomecare.env
-ExecStart=/usr/bin/node /var/www/html/privateinhomecare/dist/index.js
+ExecStart=/usr/local/bin/node /var/www/html/privateinhomecare/dist/index.js
 Restart=always
 RestartSec=5
 
