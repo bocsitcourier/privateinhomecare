@@ -55,7 +55,9 @@ export default function QuizPage() {
         <meta property="og:title" content={quiz.metaTitle || quiz.title} />
         <meta property="og:description" content={quiz.metaDescription || quiz.description || ""} />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href={`${window.location.origin}/quiz/${quiz.slug}`} />
+        <link rel="canonical" href={`https://privateinhomecaregiver.com/quiz/${quiz.slug}`} />
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="googlebot" content="noindex, nofollow" />
       </Helmet>
 
       <Header />

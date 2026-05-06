@@ -444,6 +444,27 @@ const mediaUpload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // ── Canonical domain enforcement ──────────────────────────────────────────
+  // Belt-and-suspenders: nginx already redirects www→bare, but this catches
+  // any request that slips through (e.g. direct node access or cert edge cases).
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const host = req.hostname;
+    if (host && host.startsWith('www.')) {
+      const bare = host.slice(4);
+      return res.redirect(301, `${req.protocol}://${bare}${req.originalUrl}`);
+    }
+    next();
+  });
+
+  // ── Noindex headers for non-public paths ──────────────────────────────────
+  // Prevents quiz lead-gen tools and admin pages from appearing in Google.
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const p = req.path;
+    if (p.startsWith('/admin') || p.startsWith('/quiz/') || p === '/quiz') {
+      res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+    }
+    next();
+  });
   
   // Seed admin user and demo articles on startup
   await seedAdminUser();
@@ -2883,7 +2904,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/robots.txt", (req, res) => {
-    const baseUrl = process.env.APP_URL || req.protocol + '://' + req.get('host');
+    const baseUrl = 'https://privateinhomecaregiver.com';
     
     const robotsTxt = `# robots.txt for Private InHome CareGiver
 # Massachusetts Private Pay In-Home Senior Care
@@ -3017,7 +3038,7 @@ Allow: /api/podcasts
   // XML Sitemap Generation
   app.get("/sitemap.xml", async (req, res) => {
     try {
-      const baseUrl = process.env.APP_URL || req.protocol + '://' + req.get('host');
+      const baseUrl = 'https://privateinhomecaregiver.com';
 
       // Get all locations from database
       const allLocations = await storage.listMaLocations();
@@ -8848,15 +8869,15 @@ Return JSON with exactly these keys:
   app.use((req: Request, res: Response, next: NextFunction) => {
     const p = req.path;
 
-    // Normalise exact case aliases → canonical lowercase equivalents
-    if (p === '/Contact') return res.redirect(301, '/contact');
-    if (p === '/Companies') return res.redirect(301, '/');
-    if (p === '/Applicationform') return res.redirect(301, '/careers');
-    if (p === '/Track/Package') return res.redirect(301, '/');
-
-    // URL alias shortcuts that differ from our canonical routes
+    // URL alias shortcuts — 301 to canonical equivalents
     if (p === '/terms' || p === '/terms-of-service') return res.redirect(301, '/terms-and-conditions');
     if (p === '/privacy') return res.redirect(301, '/privacy-policy');
+
+    // /Contact and /contact → our consultation page (no /contact route exists)
+    if (p === '/Contact' || p === '/contact') return res.redirect(301, '/consultation');
+
+    // Old application form → careers (thematically equivalent)
+    if (p === '/Applicationform') return res.redirect(301, '/careers');
 
     const pl = p.toLowerCase();
 
@@ -8866,17 +8887,21 @@ Return JSON with exactly these keys:
       return res.redirect(301, target);
     }
 
-    // All courier / trucking / logistics / same-day delivery paths → homepage
-    // Match both exact paths (/Courier) and sub-paths (/Courier/...)
+    // Permanently gone: irrelevant courier/trucking/logistics pages from previous
+    // domain use. Returning 410 (Gone) instead of 301→homepage removes the
+    // "soft 404" signal Google was reporting for 90+ of the 111 flagged URLs.
     const legacyPrefixes = ['/courier', '/trucking', '/logistics', '/sameday', '/route', '/medical', '/track'];
     const isLegacy = legacyPrefixes.some(prefix => pl === prefix || pl.startsWith(prefix + '/'));
     if (isLegacy) {
-      return res.redirect(301, '/');
+      return res.status(410).send('<h1>410 Gone</h1><p>This page no longer exists.</p>');
+    }
+    if (pl === '/companies' || pl === '/track/package') {
+      return res.status(410).send('<h1>410 Gone</h1><p>This page no longer exists.</p>');
     }
 
-    // Old /blog/ courier posts → our /articles listing
+    // Old /blog/ courier posts — also permanently gone (courier content, not home care)
     if (pl.startsWith('/blog/') || pl === '/blog') {
-      return res.redirect(301, '/articles');
+      return res.status(410).send('<h1>410 Gone</h1><p>This page no longer exists.</p>');
     }
 
     next();

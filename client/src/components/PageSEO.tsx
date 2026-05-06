@@ -87,7 +87,7 @@ export default function PageSEO({
   const ogImageUrl = pageMeta?.ogImageUrl || `${COMPANY_INFO.url}/og-default.jpg`;
   const keywords = pageMeta?.keywords || [];
 
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : COMPANY_INFO.url;
+  const baseUrl = COMPANY_INFO.url; // always https://privateinhomecaregiver.com — no www
   const canonicalUrl = canonicalPath 
     ? `${baseUrl}${canonicalPath.startsWith('/') ? canonicalPath : `/${canonicalPath}`}`
     : typeof window !== 'undefined' ? `${baseUrl}${window.location.pathname}` : baseUrl;

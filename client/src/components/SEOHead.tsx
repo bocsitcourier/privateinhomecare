@@ -126,7 +126,7 @@ interface SEOHeadProps {
 }
 
 function generateStructuredData(schema: StructuredDataSchema): object {
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://privateinhomecaregiver.com';
+  const baseUrl = 'https://privateinhomecaregiver.com';
   
   switch (schema.type) {
     case "Organization":
@@ -302,7 +302,7 @@ export default function SEOHead({
   modifiedTime,
   articleSection
 }: SEOHeadProps) {
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://privateinhomecaregiver.com';
+  const baseUrl = 'https://privateinhomecaregiver.com';
   const fullCanonicalUrl = canonicalUrl 
     ? (canonicalUrl.startsWith('http') ? canonicalUrl : `${baseUrl}${canonicalUrl.startsWith('/') ? canonicalUrl : `/${canonicalUrl}`}`)
     : `${baseUrl}${typeof window !== 'undefined' ? window.location.pathname : ''}`;
